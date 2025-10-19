@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINOOTS - Distributed Horology for Autonomous Agents</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /**
+         * MINOOTS Marketing - VIB3+ Scroll-Jacking Experience
+         *
+         * Features:
+         * - Multi-tick scroll locking (3-5 ticks per section)
+         * - Real VIB3+ Quantum visualizer with parameter choreography
+         * - Each scroll tick triggers emergent visual transformations
+         * - Theatrical presentation inspired by weare-simone.webflow.io
+         *
+         * A Paul Phillips Manifestation
+         * Paul@clearseassolutions.com | Parserator.com
+         * © 2025 Clear Seas Solutions LLC
+         */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan: #00ffff;
+            --magenta: #ff00ff;
+            --blue: #0080ff;
+            --green: #00ff80;
+            --cyan-glow: rgba(0, 255, 255, 0.6);
+            --magenta-glow: rgba(255, 0, 255, 0.6);
+            --bg-void: #000000;
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* CRITICAL: Disable native scroll for scroll-jacking */
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-void);
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ==== VIB3+ QUANTUM VISUALIZER LAYERS ==== */
+        .quantum-layers {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .quantum-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            mix-blend-mode: screen;
+        }
+
+        #quantum-background { opacity: 0.3; z-index: 1; }
+        #quantum-shadow { opacity: 0.2; z-index: 2; mix-blend-mode: multiply; }
+        #quantum-content { opacity: 0.6; z-index: 3; }
+        #quantum-highlight { opacity: 0.4; z-index: 4; }
+        #quantum-accent { opacity: 0.25; z-index: 5; }
+
+        /* ==== SCROLL CONTAINER ==== */
+        #scroll-container {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        #scroll-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+        }
+
+        /* ==== SECTIONS ==== */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            position: relative;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(60px) scale(0.95);
+            transition: opacity 1s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .section.active .section-content {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ==== MORPHING HERO CARD ==== */
+        .morph-card {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 80px 60px;
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            box-shadow:
+                0 0 60px rgba(0, 255, 255, 0.2),
+                inset 0 0 40px rgba(0, 255, 255, 0.05);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+
+        /* Morphing stages */
+        .morph-stage-1 .morph-card {
+            border-radius: 50%;
+            aspect-ratio: 1;
+            max-width: 600px;
+            padding: 100px 80px;
+        }
+
+        .morph-stage-2 .morph-card {
+            border-radius: 120px;
+            aspect-ratio: 16/10;
+            max-width: 700px;
+        }
+
+        .morph-stage-3 .morph-card {
+            border-radius: 60px;
+            aspect-ratio: 16/9;
+            max-width: 800px;
+        }
+
+        .morph-stage-4 .morph-card {
+            border-radius: 40px;
+            aspect-ratio: auto;
+        }
+
+        /* ==== TYPOGRAPHY ==== */
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--cyan), var(--magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--cyan);
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+        }
+
+        .section.active .subtitle {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .body-text {
+            font-size: clamp(1rem, 1.5vw, 1.3rem);
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease 0.6s, transform 0.8s ease 0.6s;
+        }
+
+        .section.active .body-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ==== ACCENT TEXT ==== */
+        .accent {
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .highlight {
+            color: var(--magenta);
+            font-weight: 700;
+        }
+
+        /* ==== SCROLL INDICATOR ==== */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            animation: fadeInBounce 1s ease 2s forwards;
+        }
+
+        @keyframes fadeInBounce {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .scroll-text {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(0, 255, 255, 0.6);
+        }
+
+        .scroll-arrow {
+            width: 24px;
+            height: 40px;
+            border: 2px solid var(--cyan);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .scroll-arrow::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background: var(--cyan);
+            border-radius: 2px;
+            animation: scrollDot 2s ease infinite;
+        }
+
+        @keyframes scrollDot {
+            0%, 100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                opacity: 0.3;
+                transform: translateX(-50%) translateY(16px);
+            }
+        }
+
+        /* ==== SECTION PROGRESS INDICATOR ==== */
+        .progress-dots {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--cyan);
+            box-shadow: 0 0 20px var(--cyan-glow);
+            transform: scale(1.4);
+        }
+
+        /* ==== STATS GRID ==== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .stat-card {
+            padding: 30px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .section.active .stat-card:nth-child(1) { transition-delay: 0.8s; }
+        .section.active .stat-card:nth-child(2) { transition-delay: 1s; }
+        .section.active .stat-card:nth-child(3) { transition-delay: 1.2s; }
+
+        .section.active .stat-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--cyan);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ==== TICK COUNTER DEBUG ==== */
+        .tick-debug {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--cyan);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--cyan);
+        }
+
+        .tick-debug span {
+            display: block;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- VIB3+ Quantum Visualizer Layers -->
+    <div class="quantum-layers">
+        <canvas id="quantum-background" class="quantum-canvas"></canvas>
+        <canvas id="quantum-shadow" class="quantum-canvas"></canvas>
+        <canvas id="quantum-content" class="quantum-canvas"></canvas>
+        <canvas id="quantum-highlight" class="quantum-canvas"></canvas>
+        <canvas id="quantum-accent" class="quantum-canvas"></canvas>
+    </div>
+
+    <!-- Scroll Container -->
+    <div id="scroll-container">
+        <div id="scroll-content">
+            <!-- Section 1: Hero -->
+            <section class="section active morph-stage-1" data-section="0">
+                <div class="section-content">
+                    <div class="morph-card">
+                        <h1>MINOOTS</h1>
+                        <div class="subtitle">What if time itself could be autonomous?</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Introduction -->
+            <section class="section morph-stage-2" data-section="1">
+                <div class="section-content">
+                    <div class="morph-card">
+                        <h2>Distributed Horology</h2>
+                        <div class="subtitle">for the Autonomous Future</div>
+                        <p class="body-text">
+                            MINOOTS is not just another timer system. It's a <span class="accent">distributed horology platform</span>
+                            that enables <span class="highlight">50M+ concurrent timers</span> with ±50ms precision and 99.99% uptime.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Problem -->
+            <section class="section morph-stage-3" data-section="2">
+                <div class="section-content">
+                    <div class="morph-card">
+                        <h2>The Agentic Challenge</h2>
+                        <p class="body-text">
+                            AI agents need <span class="accent">persistent timers</span> that survive restarts,
+                            scale to millions of instances, and fire with <span class="highlight">millisecond precision</span>.
+                        </p>
+                        <p class="body-text">
+                            Traditional systems fail at scale. MINOOTS thrives.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Architecture -->
+            <section class="section morph-stage-4" data-section="3">
+                <div class="section-content">
+                    <div class="morph-card">
+                        <h2>Battle-Tested Architecture</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">50M+</div>
+                                <div class="stat-label">Concurrent Timers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">±50ms</div>
+                                <div class="stat-label">Precision</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">99.99%</div>
+                                <div class="stat-label">Uptime SLA</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Technology -->
+            <section class="section" data-section="4">
+                <div class="section-content">
+                    <h2>Powered by <span class="accent">Rust</span></h2>
+                    <p class="body-text">
+                        Horology Kernel: <span class="highlight">Tokio async runtime</span> + PostgreSQL + Raft consensus
+                    </p>
+                    <p class="body-text">
+                        Event Fabric: <span class="accent">NATS JetStream</span> + Kafka + Dead Letter Queues
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 6: Integrations -->
+            <section class="section" data-section="5">
+                <div class="section-content">
+                    <h2>Universal Integration</h2>
+                    <p class="body-text">
+                        <span class="accent">Node.js SDK</span> • Python Client • MCP Tools • CLI
+                    </p>
+                    <p class="body-text">
+                        Works with: <span class="highlight">LangChain • AutoGen • LlamaIndex • Slack • Discord</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 7: Call to Action -->
+            <section class="section" data-section="6">
+                <div class="section-content">
+                    <h1>Time is <span class="accent">Autonomous</span></h1>
+                    <p class="body-text">
+                        Join the revolution at <span class="highlight">api-m3waemr5lq-uc.a.run.app</span>
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+        <span class="scroll-text">Scroll to Explore</span>
+        <div class="scroll-arrow"></div>
+    </div>
+
+    <!-- Progress Dots -->
+    <div class="progress-dots">
+        <div class="progress-dot active"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+    </div>
+
+    <!-- Tick Counter Debug -->
+    <div class="tick-debug">
+        <span>Section: <strong id="debug-section">0</strong></span>
+        <span>Ticks: <strong id="debug-ticks">0 / 5</strong></span>
+        <span>Geometry: <strong id="debug-geometry">0</strong></span>
+        <span>Hue: <strong id="debug-hue">200</strong></span>
+    </div>
+
+    <script type="module">
+        /**
+         * VIB3+ Quantum Visualizer - Integrated from vib3-plus-engine
+         * Scroll-Jacking Marketing Experience
+         */
+
+        // ========== VIB3+ QUANTUM VISUALIZER (Embedded) ==========
+        class QuantumHolographicVisualizer {
+            constructor(canvasId, role, reactivity) {
+                this.canvas = document.getElementById(canvasId);
+                this.role = role;
+                this.reactivity = reactivity;
+
+                this.gl = this.canvas.getContext('webgl2') ||
+                          this.canvas.getContext('webgl');
+
+                if (!this.gl) {
+                    console.error(`WebGL not supported for ${canvasId}`);
+                    return;
+                }
+
+                this.startTime = Date.now();
+
+                // Default parameters
+                this.params = {
+                    geometry: 0,
+                    gridDensity: 15,
+                    morphFactor: 1.0,
+                    chaos: 0.2,
+                    speed: 1.0,
+                    hue: 0.556, // Normalized 0-1 (200/360)
+                    intensity: 0.5,
+                    saturation: 0.8,
+                    dimension: 3.5,
+                    rot4dXY: 0.0,
+                    rot4dXZ: 0.0,
+                    rot4dYZ: 0.0,
+                    rot4dXW: 0.0,
+                    rot4dYW: 0.0,
+                    rot4dZW: 0.0
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.initShaders();
+                this.initBuffers();
+                this.resize();
+
+                // Auto-resize on window resize
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            initShaders() {
+                const vertexShader = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+
+                const fragmentShader = `
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform float u_geometry;
+                    uniform float u_gridDensity;
+                    uniform float u_morphFactor;
+                    uniform float u_chaos;
+                    uniform float u_speed;
+                    uniform float u_hue;
+                    uniform float u_intensity;
+                    uniform float u_saturation;
+                    uniform float u_dimension;
+                    uniform float u_rot4dXY;
+                    uniform float u_rot4dXZ;
+                    uniform float u_rot4dYZ;
+                    uniform float u_rot4dXW;
+                    uniform float u_rot4dYW;
+                    uniform float u_rot4dZW;
+                    uniform float u_roleIntensity;
+
+                    // 6D rotation matrices
+                    mat4 rotateXW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(c, 0.0, 0.0, -s, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, s, 0.0, 0.0, c);
+                    }
+
+                    mat4 rotateYW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c);
+                    }
+
+                    mat4 rotateZW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, c, -s, 0.0, 0.0, s, c);
+                    }
+
+                    vec3 project4Dto3D(vec4 p) {
+                        float w = 2.5 / (2.5 + p.w);
+                        return vec3(p.x * w, p.y * w, p.z * w);
+                    }
+
+                    // Simplified Hypersphere warp
+                    vec3 warpHypersphere(vec3 p) {
+                        float radius = length(p);
+                        float w = sin(radius * 1.5 + u_time * 0.0008 * u_speed) * 0.6;
+
+                        vec4 p4d = vec4(p, w);
+                        p4d = rotateXW(u_rot4dXW) * p4d;
+                        p4d = rotateYW(u_rot4dYW) * p4d;
+                        p4d = rotateZW(u_rot4dZW) * p4d;
+
+                        return project4Dto3D(p4d);
+                    }
+
+                    // Hypercube lattice
+                    float hypercubeLattice(vec3 p, float gridSize) {
+                        vec3 grid = fract(p * gridSize);
+                        vec3 edges = min(grid, 1.0 - grid);
+                        float minEdge = min(min(edges.x, edges.y), edges.z);
+                        return 1.0 - smoothstep(0.0, 0.03, minEdge);
+                    }
+
+                    // Sphere lattice
+                    float sphereLattice(vec3 p, float gridSize) {
+                        vec3 cell = fract(p * gridSize) - 0.5;
+                        return 1.0 - smoothstep(0.15, 0.25, length(cell));
+                    }
+
+                    // Torus lattice
+                    float torusLattice(vec3 p, float gridSize) {
+                        vec3 cell = fract(p * gridSize) - 0.5;
+                        float toroidalDist = length(vec2(length(cell.xy) - 0.3, cell.z));
+                        return 1.0 - smoothstep(0.08, 0.12, toroidalDist);
+                    }
+
+                    // Wave lattice
+                    float waveLattice(vec3 p, float gridSize) {
+                        float time = u_time * 0.001 * u_speed;
+                        float wave = sin(p.x * gridSize * 2.0 + time * 2.0) +
+                                   sin(p.y * gridSize * 1.8 + time * 1.5) +
+                                   sin(p.z * gridSize * 2.2 + time * 1.8);
+                        return max(0.0, wave / 3.0);
+                    }
+
+                    float geometryFunction(vec4 p) {
+                        vec3 p3d = project4Dto3D(p);
+                        vec3 warped = warpHypersphere(p3d);
+                        float gridSize = u_gridDensity * 0.08;
+
+                        int geomType = int(mod(u_geometry, 8.0));
+
+                        if (geomType == 0) return hypercubeLattice(warped, gridSize);
+                        else if (geomType == 1) return sphereLattice(warped, gridSize);
+                        else if (geomType == 2) return torusLattice(warped, gridSize);
+                        else if (geomType == 3) return waveLattice(warped, gridSize);
+                        else return hypercubeLattice(warped, gridSize);
+                    }
+
+                    // Layer-based color palettes
+                    vec3 getLayerColor(int layerIndex, float t) {
+                        if (layerIndex == 0) {
+                            // Background: Deep space
+                            vec3 c1 = vec3(0.05, 0.0, 0.2);
+                            vec3 c2 = vec3(0.0, 0.0, 0.1);
+                            return mix(c1, c2, sin(t * 3.0) * 0.5 + 0.5);
+                        } else if (layerIndex == 1) {
+                            // Shadow: Dark cyan
+                            vec3 c1 = vec3(0.0, 0.3, 0.3);
+                            vec3 c2 = vec3(0.0, 0.2, 0.4);
+                            return mix(c1, c2, sin(t * 5.0) * 0.5 + 0.5);
+                        } else if (layerIndex == 2) {
+                            // Content: Bright cyan-magenta
+                            vec3 c1 = vec3(0.0, 1.0, 1.0);
+                            vec3 c2 = vec3(1.0, 0.0, 1.0);
+                            return mix(c1, c2, u_hue);
+                        } else if (layerIndex == 3) {
+                            // Highlight: Electric cyan
+                            vec3 c1 = vec3(0.0, 1.0, 1.0);
+                            vec3 c2 = vec3(0.5, 1.0, 1.0);
+                            return mix(c1, c2, sin(t * 9.0) * 0.5 + 0.5);
+                        } else {
+                            // Accent: Magenta
+                            vec3 c1 = vec3(1.0, 0.0, 1.0);
+                            vec3 c2 = vec3(1.0, 0.3, 1.0);
+                            return mix(c1, c2, sin(t * 12.0) * 0.5 + 0.5);
+                        }
+                    }
+
+                    void main() {
+                        vec2 uv = (gl_FragCoord.xy - u_resolution.xy * 0.5) / min(u_resolution.x, u_resolution.y);
+
+                        float timeSpeed = u_time * 0.0001 * u_speed;
+                        vec4 pos = vec4(uv * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
+
+                        pos = rotateXW(u_rot4dXW) * pos;
+                        pos = rotateYW(u_rot4dYW) * pos;
+                        pos = rotateZW(u_rot4dZW) * pos;
+
+                        float value = geometryFunction(pos);
+                        float noise = sin(pos.x * 7.0) * cos(pos.y * 11.0) * sin(pos.z * 13.0);
+                        value += noise * u_chaos;
+
+                        float geometryIntensity = 1.0 - clamp(abs(value * 0.8), 0.0, 1.0);
+                        geometryIntensity = pow(geometryIntensity, 1.5);
+
+                        float finalIntensity = geometryIntensity * u_intensity;
+
+                        // Layer determination
+                        int layerIndex = 0;
+                        if (u_roleIntensity == 0.6) layerIndex = 1;
+                        else if (u_roleIntensity == 1.0) layerIndex = 2;
+                        else if (u_roleIntensity == 1.3) layerIndex = 3;
+                        else if (u_roleIntensity == 1.6) layerIndex = 4;
+
+                        float colorTime = timeSpeed * 2.0 + value * 3.0 + u_hue * 5.0;
+                        vec3 layerColor = getLayerColor(layerIndex, colorTime);
+
+                        vec3 finalColor = layerColor * finalIntensity;
+
+                        float layerAlpha = u_roleIntensity == 1.0 ? 1.0 :
+                                         u_roleIntensity == 1.3 ? 0.8 :
+                                         u_roleIntensity == 1.6 ? 0.3 :
+                                         u_roleIntensity == 0.6 ? 0.4 : 0.6;
+
+                        gl_FragColor = vec4(finalColor, finalIntensity * layerAlpha);
+                    }
+                `;
+
+                this.program = this.createProgram(vertexShader, fragmentShader);
+
+                // Get uniform locations
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    geometry: this.gl.getUniformLocation(this.program, 'u_geometry'),
+                    gridDensity: this.gl.getUniformLocation(this.program, 'u_gridDensity'),
+                    morphFactor: this.gl.getUniformLocation(this.program, 'u_morphFactor'),
+                    chaos: this.gl.getUniformLocation(this.program, 'u_chaos'),
+                    speed: this.gl.getUniformLocation(this.program, 'u_speed'),
+                    hue: this.gl.getUniformLocation(this.program, 'u_hue'),
+                    intensity: this.gl.getUniformLocation(this.program, 'u_intensity'),
+                    saturation: this.gl.getUniformLocation(this.program, 'u_saturation'),
+                    dimension: this.gl.getUniformLocation(this.program, 'u_dimension'),
+                    rot4dXY: this.gl.getUniformLocation(this.program, 'u_rot4dXY'),
+                    rot4dXZ: this.gl.getUniformLocation(this.program, 'u_rot4dXZ'),
+                    rot4dYZ: this.gl.getUniformLocation(this.program, 'u_rot4dYZ'),
+                    rot4dXW: this.gl.getUniformLocation(this.program, 'u_rot4dXW'),
+                    rot4dYW: this.gl.getUniformLocation(this.program, 'u_rot4dYW'),
+                    rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
+                    roleIntensity: this.gl.getUniformLocation(this.program, 'u_roleIntensity')
+                };
+            }
+
+            createProgram(vertexSource, fragmentSource) {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
+
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program linking failed:', this.gl.getProgramInfoLog(program));
+                    return null;
+                }
+
+                return program;
+            }
+
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compilation failed:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
+
+                return shader;
+            }
+
+            initBuffers() {
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+
+            resize() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                this.canvas.width = this.canvas.clientWidth * dpr;
+                this.canvas.height = this.canvas.clientHeight * dpr;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            updateParameters(params) {
+                Object.assign(this.params, params);
+            }
+
+            render() {
+                if (!this.program) return;
+
+                this.gl.useProgram(this.program);
+                this.gl.clearColor(0, 0, 0, 0);
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+                const roleIntensities = {
+                    'background': 0.4,
+                    'shadow': 0.6,
+                    'content': 1.0,
+                    'highlight': 1.3,
+                    'accent': 1.6
+                };
+
+                const time = Date.now() - this.startTime;
+
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, time);
+                this.gl.uniform1f(this.uniforms.geometry, this.params.geometry);
+                this.gl.uniform1f(this.uniforms.gridDensity, this.params.gridDensity);
+                this.gl.uniform1f(this.uniforms.morphFactor, this.params.morphFactor);
+                this.gl.uniform1f(this.uniforms.chaos, this.params.chaos);
+                this.gl.uniform1f(this.uniforms.speed, this.params.speed);
+                this.gl.uniform1f(this.uniforms.hue, this.params.hue);
+                this.gl.uniform1f(this.uniforms.intensity, this.params.intensity);
+                this.gl.uniform1f(this.uniforms.saturation, this.params.saturation);
+                this.gl.uniform1f(this.uniforms.dimension, this.params.dimension);
+                this.gl.uniform1f(this.uniforms.rot4dXY, this.params.rot4dXY);
+                this.gl.uniform1f(this.uniforms.rot4dXZ, this.params.rot4dXZ);
+                this.gl.uniform1f(this.uniforms.rot4dYZ, this.params.rot4dYZ);
+                this.gl.uniform1f(this.uniforms.rot4dXW, this.params.rot4dXW);
+                this.gl.uniform1f(this.uniforms.rot4dYW, this.params.rot4dYW);
+                this.gl.uniform1f(this.uniforms.rot4dZW, this.params.rot4dZW);
+                this.gl.uniform1f(this.uniforms.roleIntensity, roleIntensities[this.role] || 1.0);
+
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        // ========== SCROLL-JACKING SYSTEM ==========
+        class ScrollJackingController {
+            constructor() {
+                this.currentSection = 0;
+                this.totalSections = 7;
+                this.ticksRequired = 5; // Ticks needed to advance to next section
+                this.currentTicks = 0;
+                this.isTransitioning = false;
+                this.scrollCooldown = false;
+
+                this.scrollContent = document.getElementById('scroll-content');
+                this.sections = document.querySelectorAll('.section');
+                this.progressDots = document.querySelectorAll('.progress-dot');
+
+                this.setupEventListeners();
+                console.log('🎯 Scroll-jacking initialized: 5 ticks per section');
+            }
+
+            setupEventListeners() {
+                // Prevent default scroll
+                document.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    this.handleScroll(e);
+                }, { passive: false });
+
+                // Touch support
+                let touchStartY = 0;
+                document.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touchY = e.touches[0].clientY;
+                    const delta = touchStartY - touchY;
+
+                    if (Math.abs(delta) > 50) { // Threshold for swipe
+                        this.handleScroll({ deltaY: delta });
+                        touchStartY = touchY;
+                    }
+                }, { passive: false });
+            }
+
+            handleScroll(e) {
+                if (this.scrollCooldown || this.isTransitioning) return;
+
+                const direction = e.deltaY > 0 ? 1 : -1; // 1 = down, -1 = up
+
+                this.currentTicks += direction;
+
+                // Update debug display
+                this.updateDebug();
+
+                // Trigger parameter changes on each tick
+                this.updateVisualizerForTick(this.currentTicks);
+
+                // Check if we should advance/retreat section
+                if (this.currentTicks >= this.ticksRequired) {
+                    // Advance to next section
+                    if (this.currentSection < this.totalSections - 1) {
+                        this.currentSection++;
+                        this.currentTicks = 0;
+                        this.transitionToSection(this.currentSection);
+                    } else {
+                        this.currentTicks = this.ticksRequired; // Stay at max
+                    }
+                } else if (this.currentTicks < 0) {
+                    // Retreat to previous section
+                    if (this.currentSection > 0) {
+                        this.currentSection--;
+                        this.currentTicks = this.ticksRequired - 1;
+                        this.transitionToSection(this.currentSection);
+                    } else {
+                        this.currentTicks = 0; // Stay at min
+                    }
+                }
+
+                // Short cooldown to prevent multiple ticks from single scroll
+                this.scrollCooldown = true;
+                setTimeout(() => this.scrollCooldown = false, 100);
+            }
+
+            transitionToSection(index) {
+                this.isTransitioning = true;
+
+                // Update scroll position
+                const offset = -index * window.innerHeight;
+                this.scrollContent.style.transform = `translateY(${offset}px)`;
+
+                // Update active section
+                this.sections.forEach((section, i) => {
+                    if (i === index) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+
+                // Update progress dots
+                this.progressDots.forEach((dot, i) => {
+                    if (i === index) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+
+                // Major parameter changes on section transition
+                this.updateVisualizerForSection(index);
+
+                // Allow next transition after animation
+                setTimeout(() => {
+                    this.isTransitioning = false;
+                }, 1200);
+
+                console.log(`📍 Section ${index} active`);
+            }
+
+            updateVisualizerForTick(tick) {
+                // Map tick (0-4) to parameter micro-adjustments
+                const progress = tick / this.ticksRequired; // 0.0 to 1.0
+
+                // Rotate through 6D space on each tick
+                const rot4dXW = Math.sin(tick * 0.5) * 0.3;
+                const rot4dYW = Math.cos(tick * 0.5) * 0.3;
+                const rot4dZW = tick * 0.2;
+
+                // Morph geometry subtly
+                const morphFactor = 0.8 + progress * 0.4; // 0.8 to 1.2
+
+                // Shift colors
+                const hue = (this.currentSection * 50 + tick * 10) / 360; // Normalized
+
+                // Update all visualizers
+                if (window.quantumVisualizers) {
+                    window.quantumVisualizers.forEach(viz => {
+                        viz.updateParameters({
+                            rot4dXW,
+                            rot4dYW,
+                            rot4dZW,
+                            morphFactor,
+                            hue
+                        });
+                    });
+                }
+
+                console.log(`🎨 Tick ${tick}: rot4dXW=${rot4dXW.toFixed(2)}, hue=${(hue * 360).toFixed(0)}°`);
+            }
+
+            updateVisualizerForSection(sectionIndex) {
+                // Major parameter shifts per section
+                const sectionParams = [
+                    // Section 0: Hero - Hypercube, calm
+                    { geometry: 1, gridDensity: 15, chaos: 0.1, speed: 0.8, intensity: 0.5 },
+                    // Section 1: Intro - Sphere, flowing
+                    { geometry: 2, gridDensity: 20, chaos: 0.2, speed: 1.0, intensity: 0.6 },
+                    // Section 2: Problem - Torus, complex
+                    { geometry: 3, gridDensity: 25, chaos: 0.3, speed: 1.2, intensity: 0.7 },
+                    // Section 3: Architecture - Wave, dynamic
+                    { geometry: 7, gridDensity: 30, chaos: 0.4, speed: 1.4, intensity: 0.8 },
+                    // Section 4: Technology - Crystal, structured
+                    { geometry: 7, gridDensity: 35, chaos: 0.3, speed: 1.1, intensity: 0.7 },
+                    // Section 5: Integrations - Hypersphere Core
+                    { geometry: 10, gridDensity: 25, chaos: 0.5, speed: 1.3, intensity: 0.75 },
+                    // Section 6: Call to Action - Explosive
+                    { geometry: 15, gridDensity: 40, chaos: 0.6, speed: 1.6, intensity: 0.9 }
+                ];
+
+                const params = sectionParams[sectionIndex];
+
+                if (window.quantumVisualizers) {
+                    window.quantumVisualizers.forEach(viz => {
+                        viz.updateParameters(params);
+                    });
+                }
+
+                console.log(`🌟 Section ${sectionIndex} params:`, params);
+            }
+
+            updateDebug() {
+                document.getElementById('debug-section').textContent = this.currentSection;
+                document.getElementById('debug-ticks').textContent = `${this.currentTicks} / ${this.ticksRequired}`;
+
+                // Update geometry from first visualizer
+                if (window.quantumVisualizers && window.quantumVisualizers[0]) {
+                    const geom = window.quantumVisualizers[0].params.geometry;
+                    const hue = Math.round(window.quantumVisualizers[0].params.hue * 360);
+                    document.getElementById('debug-geometry').textContent = geom;
+                    document.getElementById('debug-hue').textContent = hue;
+                }
+            }
+        }
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create quantum visualizers
+            const layers = [
+                { id: 'quantum-background', role: 'background', reactivity: 0.4 },
+                { id: 'quantum-shadow', role: 'shadow', reactivity: 0.6 },
+                { id: 'quantum-content', role: 'content', reactivity: 1.0 },
+                { id: 'quantum-highlight', role: 'highlight', reactivity: 1.3 },
+                { id: 'quantum-accent', role: 'accent', reactivity: 1.6 }
+            ];
+
+            window.quantumVisualizers = [];
+
+            layers.forEach(layer => {
+                const viz = new QuantumHolographicVisualizer(layer.id, layer.role, layer.reactivity);
+                if (viz.gl) {
+                    window.quantumVisualizers.push(viz);
+                    console.log(`✅ Created ${layer.role} visualizer`);
+                }
+            });
+
+            // Start render loop
+            function renderLoop() {
+                window.quantumVisualizers.forEach(viz => viz.render());
+                requestAnimationFrame(renderLoop);
+            }
+            renderLoop();
+
+            // Initialize scroll-jacking
+            window.scrollController = new ScrollJackingController();
+
+            console.log('🚀 MINOOTS Marketing Experience Initialized');
+            console.log('📜 Scroll-jacking: 5 ticks per section');
+            console.log('🌌 Quantum visualizers: 5 layers active');
+        });
+    </script>
+</body>
+</html>
+
+<!--
+🌟 A Paul Phillips Manifestation
+
+Send Love, Hate, or Opportunity to: Paul@clearseassolutions.com
+Join The Exoditical Moral Architecture Movement today: Parserator.com
+
+"The Revolution Will Not be in a Structured Format"
+
+© 2025 Paul Phillips - Clear Seas Solutions LLC
+All Rights Reserved - Proprietary Technology
+-->
