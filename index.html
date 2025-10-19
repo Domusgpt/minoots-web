@@ -76,20 +76,57 @@
             justify-content: center;
         }
 
-        /* MORPH CARD */
-        .morph-card {
+        /* CARD CHOREOGRAPHY SYSTEM */
+        .card-stage {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            padding: 80px 60px;
+            max-width: 1200px;
+            height: 600px;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+            gap: 40px;
+            perspective: 2000px;
+            transform-style: preserve-3d;
+        }
+
+        .morph-card {
+            position: relative;
+            padding: 60px 50px;
             background: rgba(10, 10, 20, 0.85);
             backdrop-filter: blur(20px);
             border: 2px solid rgba(0, 255, 255, 0.3);
             box-shadow:
                 0 0 60px rgba(0, 255, 255, 0.2),
                 inset 0 0 40px rgba(0, 255, 255, 0.05);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
+            will-change: transform, opacity, border-radius;
+            overflow: hidden;
+        }
+
+        /* Card States for Splitting */
+        .card-stage.split-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card-stage.split-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .card-stage.split-4 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        .morph-card.card-clone {
+            opacity: 0;
+            transform: scale(0.8) rotateY(-20deg);
+        }
+
+        .morph-card.card-clone.active {
+            opacity: 1;
+            transform: scale(1) rotateY(0deg);
         }
 
         /* Card background accent */
@@ -338,10 +375,12 @@
     <!-- Content Container - Always Centered -->
     <div id="content-container">
         <div class="content-wrapper">
-            <div class="morph-card active" id="morph-card">
-                <div class="card-bg-accent"></div>
-                <div id="section-content">
-                    <!-- Content injected by JavaScript -->
+            <div class="card-stage" id="card-stage">
+                <div class="morph-card active" id="morph-card">
+                    <div class="card-bg-accent"></div>
+                    <div id="section-content">
+                        <!-- Content injected by JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -364,7 +403,7 @@
     </div>
 
     <script type="module">
-        // ========== SECTION DEFINITIONS ==========
+        // ========== SECTION DEFINITIONS WITH COMPLETE VIB3+ ORCHESTRATION ==========
         const SECTIONS = [
             {
                 id: 0,
@@ -372,16 +411,83 @@
                     <h1>MINOOTS</h1>
                     <div class="subtitle">What if time itself could be autonomous?</div>
                 `,
-                visualizer: {
-                    geometry: 1,
-                    baseDensity: 40,
-                    baseRot4dXW: 0.0,
-                    baseRot4dYW: 0.0,
-                    baseRot4dZW: 0.0,
-                    chaos: 0.1,
-                    speed: 0.8,
-                    intensity: 0.5,
-                    hue: 0.556 // Cyan
+                // CARD CHOREOGRAPHY
+                cards: {
+                    count: 1, // Single card for intro
+                    splitAnimation: 'fade-scale'
+                },
+                // COMPLETE 17+ PARAMETER SYSTEM PER LAYER
+                layers: {
+                    background: {
+                        geometry: 1, // Hypersphere
+                        gridDensity: 8.0,
+                        morphFactor: 0.3,
+                        dimension: 3.5,
+                        rotationSpeed: 0.2,
+                        lineThickness: 0.015,
+                        patternIntensity: 0.4,
+                        universeModifier: 0.8,
+                        glitchIntensity: 0.0,
+                        colorShift: 0.0,
+                        rot4dXW: 0.0,
+                        rot4dYW: 0.0,
+                        rot4dZW: 0.0,
+                        offsetY: 0.0
+                    },
+                    shadow: {
+                        geometry: 1,
+                        gridDensity: 10.0,
+                        morphFactor: 0.4,
+                        dimension: 3.6,
+                        rotationSpeed: 0.3,
+                        lineThickness: 0.02,
+                        patternIntensity: 0.5,
+                        universeModifier: 0.9,
+                        glitchIntensity: 0.02,
+                        colorShift: 0.1
+                    },
+                    content: {
+                        geometry: 1,
+                        gridDensity: 12.0,
+                        morphFactor: 0.5,
+                        dimension: 3.8,
+                        rotationSpeed: 0.4,
+                        lineThickness: 0.025,
+                        patternIntensity: 0.7,
+                        universeModifier: 1.0,
+                        glitchIntensity: 0.03,
+                        colorShift: 0.0
+                    },
+                    highlight: {
+                        geometry: 1,
+                        gridDensity: 15.0,
+                        morphFactor: 0.7,
+                        dimension: 4.0,
+                        rotationSpeed: 0.6,
+                        lineThickness: 0.03,
+                        patternIntensity: 0.9,
+                        universeModifier: 1.2,
+                        glitchIntensity: 0.05,
+                        colorShift: 0.2
+                    },
+                    accent: {
+                        geometry: 1,
+                        gridDensity: 18.0,
+                        morphFactor: 0.9,
+                        dimension: 4.2,
+                        rotationSpeed: 0.8,
+                        lineThickness: 0.035,
+                        patternIntensity: 1.1,
+                        universeModifier: 1.4,
+                        glitchIntensity: 0.08,
+                        colorShift: -0.3
+                    }
+                },
+                // ELEMENT TAKEOVER CONFIGURATION
+                elementTakeover: {
+                    enabled: false,
+                    blendMode: 'screen',
+                    intensity: 0.0
                 },
                 cardStyle: {
                     borderRadius: '50%',
@@ -401,16 +507,87 @@
                         that enables <span class="highlight">50M+ concurrent timers</span> with ±50ms precision and 99.99% uptime.
                     </p>
                 `,
-                visualizer: {
-                    geometry: 2,
-                    baseDensity: 35,
-                    baseRot4dXW: 0.5,
-                    baseRot4dYW: 0.3,
-                    baseRot4dZW: 0.2,
-                    chaos: 0.2,
-                    speed: 1.0,
-                    intensity: 0.6,
-                    hue: 0.6 // Cyan-blue
+                // CARD SPLITS INTO 2
+                cards: {
+                    count: 2,
+                    splitAnimation: 'slide-split',
+                    contents: [
+                        `<h2>Distributed</h2><p class="body-text">50M+ concurrent timers</p>`,
+                        `<h2>Horology</h2><p class="body-text">±50ms precision</p>`
+                    ]
+                },
+                // UNIQUE PARAMETERS PER LAYER WITH TORUS GEOMETRY
+                layers: {
+                    background: {
+                        geometry: 2, // Torus
+                        gridDensity: 6.0,
+                        morphFactor: 0.4,
+                        dimension: 3.6,
+                        rotationSpeed: 0.3,
+                        lineThickness: 0.018,
+                        patternIntensity: 0.5,
+                        universeModifier: 1.0,
+                        glitchIntensity: 0.02,
+                        colorShift: 0.15,
+                        rot4dXW: 0.2,
+                        rot4dYW: 0.15,
+                        rot4dZW: 0.1
+                    },
+                    shadow: {
+                        geometry: 2,
+                        gridDensity: 9.0,
+                        morphFactor: 0.6,
+                        dimension: 3.8,
+                        rotationSpeed: 0.45,
+                        lineThickness: 0.022,
+                        patternIntensity: 0.65,
+                        universeModifier: 1.1,
+                        glitchIntensity: 0.04,
+                        colorShift: 0.2
+                    },
+                    content: {
+                        geometry: 2,
+                        gridDensity: 12.0,
+                        morphFactor: 0.8,
+                        dimension: 4.0,
+                        rotationSpeed: 0.6,
+                        lineThickness: 0.028,
+                        patternIntensity: 0.85,
+                        universeModifier: 1.3,
+                        glitchIntensity: 0.06,
+                        colorShift: 0.1
+                    },
+                    highlight: {
+                        geometry: 2,
+                        gridDensity: 16.0,
+                        morphFactor: 1.0,
+                        dimension: 4.3,
+                        rotationSpeed: 0.8,
+                        lineThickness: 0.032,
+                        patternIntensity: 1.1,
+                        universeModifier: 1.5,
+                        glitchIntensity: 0.09,
+                        colorShift: -0.2
+                    },
+                    accent: {
+                        geometry: 2,
+                        gridDensity: 20.0,
+                        morphFactor: 1.2,
+                        dimension: 4.5,
+                        rotationSpeed: 1.1,
+                        lineThickness: 0.038,
+                        patternIntensity: 1.4,
+                        universeModifier: 1.8,
+                        glitchIntensity: 0.12,
+                        colorShift: 0.4
+                    }
+                },
+                // ELEMENT TAKEOVER BEGINS
+                elementTakeover: {
+                    enabled: true,
+                    blendMode: 'screen',
+                    intensity: 0.2,
+                    particleCount: 50
                 },
                 cardStyle: {
                     borderRadius: '120px',
@@ -947,25 +1124,131 @@
                 const section = SECTIONS[this.currentSection];
                 const progress = this.currentTick / (this.ticksPerSection - 1);
 
-                // VISUALIZER MOVES UP (illusion of motion)
-                const offsetY = progress * -0.5;
+                // SMOOTH EASING FUNCTIONS FOR GRACEFUL CHOREOGRAPHY
+                const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+                const easeInOutSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
 
-                // DENSITY LOWERS (zoom effect)
-                const density = section.visualizer.baseDensity - (progress * 8);
+                const smoothProgress = easeInOutCubic(progress);
+                const floatyProgress = easeInOutSine(progress);
+                const dynamicProgress = easeOutQuart(progress);
 
-                // 4D ROTATION EVOLVES
-                const rot4dXW = section.visualizer.baseRot4dXW + (Math.sin(progress * Math.PI) * 0.3);
-                const rot4dYW = section.visualizer.baseRot4dYW + (Math.cos(progress * Math.PI) * 0.2);
-                const rot4dZW = section.visualizer.baseRot4dZW + (progress * 0.4);
-
+                // UPDATE EACH LAYER INDEPENDENTLY WITH UNIQUE CHOREOGRAPHY
                 window.quantumVisualizers.forEach(viz => {
+                    const layerConfig = section.layers[viz.role];
+                    if (!layerConfig) return;
+
+                    // CALCULATE PROGRESSIVE PARAMETER EVOLUTION
+                    const baseOffsetY = layerConfig.offsetY || 0;
+                    const progressiveOffsetY = baseOffsetY + (floatyProgress * -0.5);
+
+                    // DENSITY EVOLUTION WITH LAYER-SPECIFIC VARIANCE
+                    const layerDensityMultiplier = {
+                        'background': 0.7,
+                        'shadow': 0.85,
+                        'content': 1.0,
+                        'highlight': 1.15,
+                        'accent': 1.3
+                    }[viz.role] || 1.0;
+
+                    const densityDrop = progress * 8 * layerDensityMultiplier;
+                    const progressiveGridDensity = Math.max(
+                        layerConfig.gridDensity * 0.3,
+                        layerConfig.gridDensity - densityDrop
+                    );
+
+                    // 4D ROTATION CHOREOGRAPHY - UNIQUE PER LAYER
+                    const baseRot4dXW = layerConfig.rot4dXW || 0;
+                    const baseRot4dYW = layerConfig.rot4dYW || 0;
+                    const baseRot4dZW = layerConfig.rot4dZW || 0;
+
+                    const rot4dXW = baseRot4dXW + (Math.sin(smoothProgress * Math.PI) * 0.4 * layerDensityMultiplier);
+                    const rot4dYW = baseRot4dYW + (Math.cos(dynamicProgress * Math.PI * 0.7) * 0.3 * layerDensityMultiplier);
+                    const rot4dZW = baseRot4dZW + (smoothProgress * 0.5 * layerDensityMultiplier);
+
+                    // MORPH FACTOR EVOLUTION
+                    const progressiveMorphFactor = layerConfig.morphFactor + (dynamicProgress * 0.3);
+
+                    // DIMENSION EVOLUTION (3D → 4D+ HYPERCUBE)
+                    const progressiveDimension = layerConfig.dimension + (smoothProgress * 0.5);
+
+                    // ROTATION SPEED CHOREOGRAPHY
+                    const progressiveRotationSpeed = layerConfig.rotationSpeed * (1.0 + floatyProgress * 0.4);
+
+                    // PATTERN INTENSITY MODULATION
+                    const progressivePatternIntensity = layerConfig.patternIntensity * (1.0 + progress * 0.3);
+
+                    // GLITCH INTENSITY BUILDUP
+                    const progressiveGlitchIntensity = layerConfig.glitchIntensity + (Math.pow(progress, 2) * 0.05);
+
+                    // COLOR SHIFT EVOLUTION
+                    const progressiveColorShift = layerConfig.colorShift + (Math.sin(progress * Math.PI) * 0.2);
+
+                    // APPLY COMPLETE PARAMETER SET TO THIS LAYER
                     viz.updateParameters({
-                        offsetY,
-                        gridDensity: Math.max(10, density),
+                        geometry: layerConfig.geometry,
+                        gridDensity: progressiveGridDensity,
+                        morphFactor: progressiveMorphFactor,
+                        dimension: progressiveDimension,
+                        rotationSpeed: progressiveRotationSpeed,
+                        lineThickness: layerConfig.lineThickness,
+                        patternIntensity: progressivePatternIntensity,
+                        universeModifier: layerConfig.universeModifier,
+                        glitchIntensity: progressiveGlitchIntensity,
+                        colorShift: progressiveColorShift,
                         rot4dXW,
                         rot4dYW,
-                        rot4dZW
+                        rot4dZW,
+                        offsetY: progressiveOffsetY,
+                        // Legacy compatibility
+                        chaos: progressiveGlitchIntensity * 3.0,
+                        speed: progressiveRotationSpeed,
+                        intensity: progressivePatternIntensity,
+                        hue: 0.556 + (progressiveColorShift * 0.1)
                     });
+                });
+
+                // CARD CHOREOGRAPHY
+                this.updateCardChoreography(progress, smoothProgress);
+            }
+
+            updateCardChoreography(progress, smoothProgress) {
+                const section = SECTIONS[this.currentSection];
+                const cardStage = document.getElementById('card-stage');
+
+                // CARD MORPHING WITH SMOOTH PROGRESS
+                const cards = cardStage.querySelectorAll('.morph-card');
+
+                cards.forEach((card, index) => {
+                    // INDIVIDUAL CARD CHOREOGRAPHY
+                    const cardDelay = index * 0.1;
+                    const cardProgress = Math.max(0, Math.min(1, (progress - cardDelay) / (1 - cardDelay)));
+                    const cardSmooth = Math.pow(cardProgress, 1.5);
+
+                    // 3D TRANSFORM CHOREOGRAPHY
+                    const rotateY = Math.sin(smoothProgress * Math.PI) * 15;
+                    const rotateX = Math.cos(smoothProgress * Math.PI * 0.7) * 8;
+                    const translateZ = cardSmooth * 50;
+                    const scale = 1.0 + (Math.sin(cardProgress * Math.PI) * 0.05);
+
+                    card.style.transform = `
+                        perspective(2000px)
+                        rotateY(${rotateY}deg)
+                        rotateX(${rotateX}deg)
+                        translateZ(${translateZ}px)
+                        scale(${scale})
+                    `;
+
+                    // OPACITY PULSING
+                    const opacityPulse = 0.9 + (Math.sin(progress * Math.PI * 2) * 0.1);
+                    card.style.opacity = opacityPulse;
+
+                    // BORDER GLOW INTENSITY
+                    const glowIntensity = 0.2 + (smoothProgress * 0.3);
+                    card.style.boxShadow = `
+                        0 0 ${60 + smoothProgress * 40}px rgba(0, 255, 255, ${glowIntensity}),
+                        inset 0 0 ${40 + smoothProgress * 20}px rgba(0, 255, 255, ${glowIntensity * 0.25})
+                    `;
                 });
             }
 
@@ -978,19 +1261,32 @@
 
                 this.loadSection(index);
 
+                // UPDATE EACH LAYER INDEPENDENTLY WITH NEW SECTION CONFIGURATION
                 const section = SECTIONS[index];
                 window.quantumVisualizers.forEach(viz => {
+                    const layerConfig = section.layers[viz.role];
+                    if (!layerConfig) return;
+
                     viz.updateParameters({
-                        geometry: section.visualizer.geometry,
-                        gridDensity: section.visualizer.baseDensity,
-                        chaos: section.visualizer.chaos,
-                        speed: section.visualizer.speed,
-                        intensity: section.visualizer.intensity,
-                        hue: section.visualizer.hue,
-                        rot4dXW: section.visualizer.baseRot4dXW,
-                        rot4dYW: section.visualizer.baseRot4dYW,
-                        rot4dZW: section.visualizer.baseRot4dZW,
-                        offsetY: 0.0
+                        geometry: layerConfig.geometry,
+                        gridDensity: layerConfig.gridDensity,
+                        morphFactor: layerConfig.morphFactor,
+                        dimension: layerConfig.dimension,
+                        rotationSpeed: layerConfig.rotationSpeed,
+                        lineThickness: layerConfig.lineThickness,
+                        patternIntensity: layerConfig.patternIntensity,
+                        universeModifier: layerConfig.universeModifier,
+                        glitchIntensity: layerConfig.glitchIntensity,
+                        colorShift: layerConfig.colorShift,
+                        rot4dXW: layerConfig.rot4dXW || 0,
+                        rot4dYW: layerConfig.rot4dYW || 0,
+                        rot4dZW: layerConfig.rot4dZW || 0,
+                        offsetY: 0.0,
+                        // Legacy compatibility
+                        chaos: layerConfig.glitchIntensity * 3.0,
+                        speed: layerConfig.rotationSpeed,
+                        intensity: layerConfig.patternIntensity,
+                        hue: 0.556 + (layerConfig.colorShift * 0.1)
                     });
                 });
 
@@ -1001,20 +1297,62 @@
 
             loadSection(index) {
                 const section = SECTIONS[index];
+                const cardStage = document.getElementById('card-stage');
 
-                this.morphCard.classList.remove('active');
+                // FADE OUT CURRENT CARDS
+                const currentCards = cardStage.querySelectorAll('.morph-card');
+                currentCards.forEach(card => card.classList.remove('active'));
 
                 setTimeout(() => {
-                    this.sectionContent.innerHTML = section.content;
+                    // CONFIGURE CARD STAGE FOR SPLITTING
+                    cardStage.className = 'card-stage';
+                    if (section.cards && section.cards.count > 1) {
+                        cardStage.classList.add(`split-${section.cards.count}`);
+                    }
 
-                    Object.entries(section.cardStyle).forEach(([key, value]) => {
-                        this.morphCard.style.setProperty(key, value);
-                    });
+                    // CREATE CARDS
+                    cardStage.innerHTML = '';
+                    const cardCount = section.cards?.count || 1;
 
-                    setTimeout(() => {
-                        this.morphCard.classList.add('active');
-                    }, 50);
+                    for (let i = 0; i < cardCount; i++) {
+                        const card = document.createElement('div');
+                        card.className = 'morph-card' + (i > 0 ? ' card-clone' : '');
+
+                        // CARD BACKGROUND ACCENT
+                        const accent = document.createElement('div');
+                        accent.className = 'card-bg-accent';
+                        card.appendChild(accent);
+
+                        // CARD CONTENT
+                        const content = document.createElement('div');
+                        if (section.cards && section.cards.contents && section.cards.contents[i]) {
+                            content.innerHTML = section.cards.contents[i];
+                        } else {
+                            content.innerHTML = section.content;
+                        }
+                        card.appendChild(content);
+
+                        // APPLY CARD STYLES
+                        if (section.cardStyle) {
+                            Object.entries(section.cardStyle).forEach(([key, value]) => {
+                                card.style.setProperty(key, value);
+                            });
+                        }
+
+                        cardStage.appendChild(card);
+
+                        // STAGGERED ACTIVATION
+                        setTimeout(() => {
+                            card.classList.add('active');
+                        }, 50 + (i * 150));
+                    }
                 }, 300);
+
+                // Store reference to first card for backwards compatibility
+                setTimeout(() => {
+                    this.morphCard = cardStage.querySelector('.morph-card');
+                    this.sectionContent = this.morphCard?.querySelector('div:last-child');
+                }, 350);
             }
 
             jumpToSection(index) {
