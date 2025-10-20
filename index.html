@@ -3,326 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MINOOTS - Distributed Horology Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>SIMONE - A New Reality</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #F5F3EF;
+            --text-color: #2E4E4B;
+            --accent-color: #D4FC79;
+            --circle-bg: #2E4E4B;
+            --font-main: 'Poppins', sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --cyan: #00ffff;
-            --magenta: #ff00ff;
-            --blue: #0080ff;
-            --green: #00ff80;
-            --font-display: 'Orbitron', sans-serif;
-            --font-body: 'Inter', system-ui, sans-serif;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000000;
-        }
-
         body {
-            font-family: var(--font-body);
-            color: #ffffff;
-            -webkit-font-smoothing: antialiased;
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
         }
 
-        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND */
+        /* Simple background texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('data:image/svg+xml,%3Csvg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%232E4E4B" fill-opacity="0.02" fill-rule="evenodd"%3E%3Cpath d="M5 0h1L0 6V5zM6 5v1H5z"/%3E%3C/g%3E%3C/svg%3E');
+            z-index: -1;
+        }
+
         .quantum-layers {
             position: fixed;
             inset: 0;
-            z-index: 0;
+            z-index: -2;
             pointer-events: none;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
+            opacity: 0.1; /* Blend visualizer with light theme */
         }
 
         .quantum-canvas {
             position: absolute;
             width: 100%;
             height: 100%;
-            mix-blend-mode: screen;
         }
 
-        #quantum-background { opacity: 0.3; z-index: 1; }
-        #quantum-shadow { opacity: 0.2; z-index: 2; mix-blend-mode: multiply; }
-        #quantum-content { opacity: 0.6; z-index: 3; }
-        #quantum-highlight { opacity: 0.4; z-index: 4; }
-        #quantum-accent { opacity: 0.25; z-index: 5; }
-
-        /* CONTENT CONTAINER - ALWAYS CENTERED */
-        #content-container {
+        header {
             position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        .content-wrapper {
-            max-width: 1200px;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 2rem 4rem;
+            z-index: 100;
         }
 
-        /* MORPH CARD */
-        .morph-card {
+        nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        main {
+            width: 100%;
+        }
+
+        section {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
-            width: 100%;
-            max-width: 800px;
-            padding: 80px 60px;
-            background: rgba(10, 10, 20, 0.85);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            box-shadow:
-                0 0 60px rgba(0, 255, 255, 0.2),
-                inset 0 0 40px rgba(0, 255, 255, 0.05);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-            transform-style: preserve-3d;
         }
 
-        /* Card background accent */
-        .card-bg-accent {
+        .hero {
+            flex-direction: column;
+        }
+
+        .simone-title {
+            font-size: clamp(4rem, 15vw, 12rem);
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex; /* For letter animation targets */
+            position: relative;
+            transition: transform 0.5s ease-out; /* For parallax */
+        }
+
+        .image-container {
             position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at var(--accent-x, 50%) var(--accent-y, 50%),
-                        rgba(0, 255, 255, 0.1) 0%, transparent 60%);
-            opacity: 0;
-            transition: opacity 0.8s ease;
-            pointer-events: none;
+            width: 100%;
+            height: 100%;
         }
 
-        /* TYPOGRAPHY */
-        h1 {
-            font-family: var(--font-display);
-            font-size: clamp(3rem, 7vw, 6rem);
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 30px;
-            background: linear-gradient(135deg, var(--cyan), var(--magenta));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            opacity: 0;
-            transform: translateY(60px) scale(0.8);
-            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        h2 {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-            font-weight: 700;
-            margin-bottom: 24px;
-            color: var(--cyan);
-            opacity: 0;
-            transform: translateY(50px) scale(0.85);
-            transition: all 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s;
-        }
-
-        .subtitle {
-            font-size: clamp(1.3rem, 2.5vw, 2rem);
-            font-weight: 300;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 40px;
-            opacity: 0;
-            transform: translateY(40px) translateX(-20px);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
-        }
-
-        .body-text {
-            font-size: clamp(1.1rem, 1.8vw, 1.5rem);
-            line-height: 1.9;
-            color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 30px;
-            opacity: 0;
-            transform: translateY(30px) translateX(20px);
-            transition: all 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
-        }
-
-        /* ACTIVE STATE - Show all elements */
-        .active h1 {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        .active h2 {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        .active .subtitle {
-            opacity: 1;
-            transform: translateY(0) translateX(0);
-        }
-
-        .active .body-text {
-            opacity: 1;
-            transform: translateY(0) translateX(0);
-        }
-
-        .active .card-bg-accent {
-            opacity: 1;
-        }
-
-        /* STATS GRID */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .stat-card {
-            padding: 30px;
-            background: rgba(0, 255, 255, 0.05);
-            border: 1px solid rgba(0, 255, 255, 0.2);
+        .small-image {
+            position: absolute;
+            width: 100px;
+            height: 120px;
+            background-color: var(--text-color); /* Placeholder color */
             border-radius: 20px;
-            text-align: center;
+            /* Initial positions will be set by JS */
             opacity: 0;
-            transform: translateY(40px) rotateX(-15deg);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.1s linear, top 0.1s linear, left 0.1s linear; /* Smooth movement */
         }
 
-        .active .stat-card:nth-child(1) { transition-delay: 0.4s; }
-        .active .stat-card:nth-child(2) { transition-delay: 0.5s; }
-        .active .stat-card:nth-child(3) { transition-delay: 0.6s; }
-
-        .active .stat-card {
-            opacity: 1;
-            transform: translateY(0) rotateX(0);
+        .expanding-circle-section {
+            height: 150vh; /* Taller section for scroll animations */
         }
 
-        .stat-number {
-            font-family: var(--font-display);
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--cyan);
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* ACCENT TEXT */
-        .accent { color: var(--cyan); font-weight: 700; }
-        .highlight { color: var(--magenta); font-weight: 700; }
-
-        /* SCROLL INDICATOR */
-        .scroll-indicator {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-        }
-
-        .scroll-indicator.hidden {
-            opacity: 0;
-        }
-
-        .scroll-text {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: rgba(0, 255, 255, 0.6);
-        }
-
-        .scroll-arrow {
-            width: 24px;
-            height: 40px;
-            border: 2px solid var(--cyan);
-            border-radius: 12px;
-            position: relative;
-        }
-
-        .scroll-arrow::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 8px;
-            background: var(--cyan);
-            border-radius: 2px;
-            animation: scrollDot 2s ease infinite;
-        }
-
-        @keyframes scrollDot {
-            0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            50% { opacity: 0.3; transform: translateX(-50%) translateY(16px); }
-        }
-
-        /* PROGRESS DOTS */
-        .progress-dots {
-            position: fixed;
-            right: 40px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .progress-dot {
-            width: 12px;
-            height: 12px;
+        .expanding-circle {
+            width: 300px; /* Initial state: circle */
+            height: 300px;
+            background-color: var(--circle-bg);
             border-radius: 50%;
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            background: transparent;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            color: var(--bg-color);
+            position: sticky; /* Sticky positioning for the scroll effect */
+            top: calc(50vh - 150px);
+            transform-origin: center center;
+            transition: width 0.5s ease-out, height 0.5s ease-out, border-radius 0.5s ease-out; /* Smooth transitions */
         }
 
-        .progress-dot.active {
-            background: var(--cyan);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-            transform: scale(1.5);
+        .circle-text-1 {
+            font-size: 1.5rem;
+            font-weight: 500;
         }
 
-        /* TICK DEBUG */
-        .tick-debug {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 16px 22px;
-            border-radius: 12px;
-            border: 1px solid var(--cyan);
-            font-family: 'Courier New', monospace;
-            font-size: 0.95rem;
-            color: var(--cyan);
+        .circle-text-2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            padding: 0.2rem 0.5rem;
+            opacity: 0; /* Initially hidden */
+            transition: opacity 0.3s ease-in-out;
         }
 
-        .tick-debug span {
-            display: block;
-            margin: 5px 0;
-        }
-
-        .tick-debug strong {
-            color: var(--magenta);
-        }
     </style>
 </head>
 <body>
@@ -335,249 +165,37 @@
         <canvas id="quantum-accent" class="quantum-canvas"></canvas>
     </div>
 
-    <!-- Content Container - Always Centered -->
-    <div id="content-container">
-        <div class="content-wrapper">
-            <div class="morph-card active" id="morph-card">
-                <div class="card-bg-accent"></div>
-                <div id="section-content">
-                    <!-- Content injected by JavaScript -->
-                </div>
+    <header>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Work</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </nav>
+    </header>
+
+    <main id="smooth-scroll-container">
+        <section class="hero">
+            <h1 class="simone-title">
+                <span>S</span><span>I</span><span>M</span><span>O</span><span>N</span><span>E</span>
+            </h1>
+            <div class="image-container">
+                <div class="small-image" id="img1"></div>
+                <div class="small-image" id="img2"></div>
+                <div class="small-image" id="img3"></div>
+                <div class="small-image" id="img4"></div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- UI Elements -->
-    <div class="scroll-indicator" id="scroll-indicator">
-        <span class="scroll-text">Scroll to Explore</span>
-        <div class="scroll-arrow"></div>
-    </div>
-
-    <div class="progress-dots" id="progress-dots"></div>
-
-    <div class="tick-debug">
-        <span>Section: <strong id="debug-section">0</strong></span>
-        <span>Ticks: <strong id="debug-ticks">0 / 5</strong></span>
-        <span>Vis Offset: <strong id="debug-offset">0</strong></span>
-        <span>Density: <strong id="debug-density">40</strong></span>
-        <span>Rot4dXW: <strong id="debug-rot">0.00</strong></span>
-    </div>
+        <section class="expanding-circle-section">
+            <div class="expanding-circle">
+                <p class="circle-text-1">What if we could alter reality</p>
+                <p class="circle-text-2">for the better?</p>
+            </div>
+        </section>
+    </main>
 
     <script type="module">
-        // ========== SECTION DEFINITIONS ==========
-        const SECTIONS = [
-            {
-                id: 0,
-                content: `
-                    <h1>MINOOTS</h1>
-                    <div class="subtitle">What if time itself could be autonomous?</div>
-                `,
-                visualizer: {
-                    geometry: 1,
-                    baseDensity: 40,
-                    baseRot4dXW: 0.0,
-                    baseRot4dYW: 0.0,
-                    baseRot4dZW: 0.0,
-                    chaos: 0.1,
-                    speed: 0.8,
-                    intensity: 0.5,
-                    hue: 0.556 // Cyan
-                },
-                cardStyle: {
-                    borderRadius: '50%',
-                    aspectRatio: '1',
-                    maxWidth: '650px',
-                    '--accent-x': '30%',
-                    '--accent-y': '40%'
-                }
-            },
-            {
-                id: 1,
-                content: `
-                    <h2>Distributed Horology</h2>
-                    <div class="subtitle">for the Autonomous Future</div>
-                    <p class="body-text">
-                        MINOOTS is not just another timer system. It's a <span class="accent">distributed horology platform</span>
-                        that enables <span class="highlight">50M+ concurrent timers</span> with ±50ms precision and 99.99% uptime.
-                    </p>
-                `,
-                visualizer: {
-                    geometry: 2,
-                    baseDensity: 35,
-                    baseRot4dXW: 0.5,
-                    baseRot4dYW: 0.3,
-                    baseRot4dZW: 0.2,
-                    chaos: 0.2,
-                    speed: 1.0,
-                    intensity: 0.6,
-                    hue: 0.6 // Cyan-blue
-                },
-                cardStyle: {
-                    borderRadius: '120px',
-                    aspectRatio: '16/10',
-                    maxWidth: '750px',
-                    '--accent-x': '70%',
-                    '--accent-y': '30%'
-                }
-            },
-            {
-                id: 2,
-                content: `
-                    <h2>The Agentic Challenge</h2>
-                    <p class="body-text">
-                        AI agents need <span class="accent">persistent timers</span> that survive restarts,
-                        scale to millions of instances, and fire with <span class="highlight">millisecond precision</span>.
-                    </p>
-                    <p class="body-text">
-                        Traditional systems fail at scale. MINOOTS thrives.
-                    </p>
-                `,
-                visualizer: {
-                    geometry: 3,
-                    baseDensity: 30,
-                    baseRot4dXW: 1.0,
-                    baseRot4dYW: 0.7,
-                    baseRot4dZW: 0.5,
-                    chaos: 0.3,
-                    speed: 1.2,
-                    intensity: 0.7,
-                    hue: 0.65 // Cyan-magenta
-                },
-                cardStyle: {
-                    borderRadius: '80px',
-                    aspectRatio: '16/9',
-                    maxWidth: '850px',
-                    '--accent-x': '50%',
-                    '--accent-y': '60%'
-                }
-            },
-            {
-                id: 3,
-                content: `
-                    <h2>Battle-Tested Architecture</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number">50M+</div>
-                            <div class="stat-label">Concurrent Timers</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">±50ms</div>
-                            <div class="stat-label">Precision</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">99.99%</div>
-                            <div class="stat-label">Uptime SLA</div>
-                        </div>
-                    </div>
-                `,
-                visualizer: {
-                    geometry: 7,
-                    baseDensity: 25,
-                    baseRot4dXW: 1.5,
-                    baseRot4dYW: 1.2,
-                    baseRot4dZW: 0.8,
-                    chaos: 0.4,
-                    speed: 1.4,
-                    intensity: 0.8,
-                    hue: 0.7 // Magenta
-                },
-                cardStyle: {
-                    borderRadius: '60px',
-                    aspectRatio: 'auto',
-                    maxWidth: '900px',
-                    '--accent-x': '40%',
-                    '--accent-y': '50%'
-                }
-            },
-            {
-                id: 4,
-                content: `
-                    <h2>Powered by <span class="accent">Rust</span></h2>
-                    <p class="body-text">
-                        Horology Kernel: <span class="highlight">Tokio async runtime</span> + PostgreSQL + Raft consensus
-                    </p>
-                    <p class="body-text">
-                        Event Fabric: <span class="accent">NATS JetStream</span> + Kafka + Dead Letter Queues
-                    </p>
-                `,
-                visualizer: {
-                    geometry: 7,
-                    baseDensity: 22,
-                    baseRot4dXW: 2.0,
-                    baseRot4dYW: 1.5,
-                    baseRot4dZW: 1.0,
-                    chaos: 0.3,
-                    speed: 1.1,
-                    intensity: 0.7,
-                    hue: 0.75 // Magenta-red
-                },
-                cardStyle: {
-                    borderRadius: '50px',
-                    aspectRatio: 'auto',
-                    maxWidth: '850px',
-                    '--accent-x': '60%',
-                    '--accent-y': '40%'
-                }
-            },
-            {
-                id: 5,
-                content: `
-                    <h2>Universal Integration</h2>
-                    <p class="body-text">
-                        <span class="accent">Node.js SDK</span> • Python Client • MCP Tools • CLI
-                    </p>
-                    <p class="body-text">
-                        Works with: <span class="highlight">LangChain • AutoGen • LlamaIndex • Slack • Discord</span>
-                    </p>
-                `,
-                visualizer: {
-                    geometry: 10,
-                    baseDensity: 20,
-                    baseRot4dXW: 2.5,
-                    baseRot4dYW: 2.0,
-                    baseRot4dZW: 1.5,
-                    chaos: 0.5,
-                    speed: 1.3,
-                    intensity: 0.75,
-                    hue: 0.8 // Purple
-                },
-                cardStyle: {
-                    borderRadius: '50px',
-                    aspectRatio: 'auto',
-                    maxWidth: '850px',
-                    '--accent-x': '35%',
-                    '--accent-y': '55%'
-                }
-            },
-            {
-                id: 6,
-                content: `
-                    <h1>Time is <span class="accent">Autonomous</span></h1>
-                    <p class="body-text">
-                        Join the revolution at <span class="highlight">api-m3waemr5lq-uc.a.run.app</span>
-                    </p>
-                `,
-                visualizer: {
-                    geometry: 15,
-                    baseDensity: 18,
-                    baseRot4dXW: 3.0,
-                    baseRot4dYW: 2.5,
-                    baseRot4dZW: 2.0,
-                    chaos: 0.6,
-                    speed: 1.6,
-                    intensity: 0.9,
-                    hue: 0.85 // Magenta-purple
-                },
-                cardStyle: {
-                    borderRadius: '40px',
-                    aspectRatio: 'auto',
-                    maxWidth: '900px',
-                    '--accent-x': '50%',
-                    '--accent-y': '50%'
-                }
-            }
-        ];
-
         // ========== VIB3+ QUANTUM VISUALIZER ==========
         class QuantumVisualizer {
             constructor(canvasId, role, reactivity) {
@@ -590,13 +208,13 @@
 
                 this.startTime = Date.now();
                 this.params = {
-                    geometry: 1,
-                    gridDensity: 40,
+                    geometry: 2,
+                    gridDensity: 30,
                     morphFactor: 1.0,
-                    chaos: 0.2,
-                    speed: 1.0,
+                    chaos: 0.1, // Reduced chaos
+                    speed: 0.8,
                     hue: 0.556,
-                    intensity: 0.5,
+                    intensity: 0.2, // Reduced intensity
                     saturation: 0.8,
                     dimension: 3.5,
                     rot4dXW: 0.0,
@@ -650,16 +268,10 @@
                         return mat4(c, 0.0, 0.0, -s, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, s, 0.0, 0.0, c);
                     }
 
-                    mat4 rotateYW(float theta) {
-                        float c = cos(theta);
-                        float s = sin(theta);
-                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c);
-                    }
-
-                    mat4 rotateZW(float theta) {
-                        float c = cos(theta);
-                        float s = sin(theta);
-                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, c, -s, 0.0, 0.0, s, c);
+                    vec3 hsv2rgb(vec3 c) {
+                        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
                     }
 
                     vec3 project4Dto3D(vec4 p) {
@@ -667,97 +279,30 @@
                         return vec3(p.x * w, p.y * w, p.z * w);
                     }
 
-                    vec3 warpHypersphere(vec3 p) {
-                        float radius = length(p);
-                        float w = sin(radius * 1.5 + u_time * 0.0008 * u_speed) * 0.6;
-                        vec4 p4d = vec4(p, w);
-                        p4d = rotateXW(u_rot4dXW) * p4d;
-                        p4d = rotateYW(u_rot4dYW) * p4d;
-                        p4d = rotateZW(u_rot4dZW) * p4d;
-                        return project4Dto3D(p4d);
-                    }
-
-                    float hypercubeLattice(vec3 p, float gridSize) {
-                        vec3 grid = fract(p * gridSize);
-                        vec3 edges = min(grid, 1.0 - grid);
-                        float minEdge = min(min(edges.x, edges.y), edges.z);
-                        return 1.0 - smoothstep(0.0, 0.03, minEdge);
-                    }
-
                     float sphereLattice(vec3 p, float gridSize) {
                         vec3 cell = fract(p * gridSize) - 0.5;
                         return 1.0 - smoothstep(0.15, 0.25, length(cell));
                     }
 
-                    float torusLattice(vec3 p, float gridSize) {
-                        vec3 cell = fract(p * gridSize) - 0.5;
-                        float toroidalDist = length(vec2(length(cell.xy) - 0.3, cell.z));
-                        return 1.0 - smoothstep(0.08, 0.12, toroidalDist);
-                    }
-
-                    float waveLattice(vec3 p, float gridSize) {
-                        float time = u_time * 0.001 * u_speed;
-                        float wave = sin(p.x * gridSize * 2.0 + time * 2.0) +
-                                   sin(p.y * gridSize * 1.8 + time * 1.5) +
-                                   sin(p.z * gridSize * 2.2 + time * 1.8);
-                        return max(0.0, wave / 3.0);
-                    }
-
-                    float geometryFunction(vec4 p) {
-                        vec3 p3d = project4Dto3D(p);
-                        vec3 warped = warpHypersphere(p3d);
-                        float gridSize = u_gridDensity * 0.08;
-
-                        int geomType = int(mod(u_geometry, 8.0));
-
-                        if (geomType == 0) return hypercubeLattice(warped, gridSize);
-                        else if (geomType == 1) return sphereLattice(warped, gridSize);
-                        else if (geomType == 2) return torusLattice(warped, gridSize);
-                        else if (geomType == 3) return waveLattice(warped, gridSize);
-                        else return hypercubeLattice(warped, gridSize);
-                    }
-
-                    vec3 getLayerColor(int layerIndex, float hueShift) {
-                        if (layerIndex == 0) return vec3(0.05, 0.0, 0.2);
-                        else if (layerIndex == 1) return vec3(0.0, 0.3, 0.3);
-                        else if (layerIndex == 2) return mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 0.0, 1.0), hueShift);
-                        else if (layerIndex == 3) return vec3(0.0, 1.0, 1.0);
-                        else return vec3(1.0, 0.0, 1.0);
-                    }
-
                     void main() {
                         vec2 uv = (gl_FragCoord.xy - u_resolution.xy * 0.5) / min(u_resolution.x, u_resolution.y);
-                        uv.y += u_offsetY;
 
                         float timeSpeed = u_time * 0.0001 * u_speed;
                         vec4 pos = vec4(uv * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
 
                         pos = rotateXW(u_rot4dXW) * pos;
-                        pos = rotateYW(u_rot4dYW) * pos;
-                        pos = rotateZW(u_rot4dZW) * pos;
 
-                        float value = geometryFunction(pos);
+                        vec3 p3d = project4Dto3D(pos);
+                        float value = sphereLattice(p3d, u_gridDensity * 0.08);
+
                         float noise = sin(pos.x * 7.0) * cos(pos.y * 11.0);
                         value += noise * u_chaos;
 
-                        float geometryIntensity = 1.0 - clamp(abs(value * 0.8), 0.0, 1.0);
-                        geometryIntensity = pow(geometryIntensity, 1.5);
-                        float finalIntensity = geometryIntensity * u_intensity;
+                        float finalIntensity = pow(1.0 - clamp(abs(value), 0.0, 1.0), 2.0) * u_intensity;
 
-                        int layerIndex = u_roleIntensity == 0.4 ? 0 :
-                                       u_roleIntensity == 0.6 ? 1 :
-                                       u_roleIntensity == 1.0 ? 2 :
-                                       u_roleIntensity == 1.3 ? 3 : 4;
+                        vec3 color = hsv2rgb(vec3(u_hue, 0.3, 0.8)); // Softer colors
 
-                        vec3 layerColor = getLayerColor(layerIndex, u_hue);
-                        vec3 finalColor = layerColor * finalIntensity;
-
-                        float layerAlpha = u_roleIntensity == 1.0 ? 1.0 :
-                                         u_roleIntensity == 1.3 ? 0.8 :
-                                         u_roleIntensity == 1.6 ? 0.3 :
-                                         u_roleIntensity == 0.6 ? 0.4 : 0.6;
-
-                        gl_FragColor = vec4(finalColor, finalIntensity * layerAlpha);
+                        gl_FragColor = vec4(color * finalIntensity, finalIntensity * 0.5);
                     }
                 `;
 
@@ -773,10 +318,6 @@
                     hue: this.gl.getUniformLocation(this.program, 'u_hue'),
                     intensity: this.gl.getUniformLocation(this.program, 'u_intensity'),
                     rot4dXW: this.gl.getUniformLocation(this.program, 'u_rot4dXW'),
-                    rot4dYW: this.gl.getUniformLocation(this.program, 'u_rot4dYW'),
-                    rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
-                    roleIntensity: this.gl.getUniformLocation(this.program, 'u_roleIntensity'),
-                    offsetY: this.gl.getUniformLocation(this.program, 'u_offsetY')
                 };
             }
 
@@ -831,14 +372,6 @@
                 this.gl.clearColor(0, 0, 0, 0);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-                const roleIntensities = {
-                    'background': 0.4,
-                    'shadow': 0.6,
-                    'content': 1.0,
-                    'highlight': 1.3,
-                    'accent': 1.6
-                };
-
                 const time = Date.now() - this.startTime;
 
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
@@ -850,225 +383,131 @@
                 this.gl.uniform1f(this.uniforms.hue, this.params.hue);
                 this.gl.uniform1f(this.uniforms.intensity, this.params.intensity);
                 this.gl.uniform1f(this.uniforms.rot4dXW, this.params.rot4dXW);
-                this.gl.uniform1f(this.uniforms.rot4dYW, this.params.rot4dYW);
-                this.gl.uniform1f(this.uniforms.rot4dZW, this.params.rot4dZW);
-                this.gl.uniform1f(this.uniforms.roleIntensity, roleIntensities[this.role] || 1.0);
-                this.gl.uniform1f(this.uniforms.offsetY, this.params.offsetY);
 
                 this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
             }
         }
 
-        // ========== SCROLL CONTROLLER ==========
-        class ScrollController {
-            constructor() {
-                this.currentSection = 0;
-                this.currentTick = 0;
-                this.ticksPerSection = 5;
-                this.isTransitioning = false;
-                this.scrollCooldown = false;
+        // ========== SCROLL CHOREOGRAPHY ==========
+        class ScrollChoreography {
+            constructor(visualizers) {
+                this.visualizers = visualizers;
+                this.heroSection = document.querySelector('.hero');
+                this.simoneTitle = document.querySelector('.simone-title');
+                this.titleLetters = document.querySelectorAll('.simone-title span');
+                this.images = document.querySelectorAll('.small-image');
+                this.circleSection = document.querySelector('.expanding-circle-section');
+                this.expandingCircle = document.querySelector('.expanding-circle');
+                this.circleText2 = document.querySelector('.circle-text-2');
 
-                this.morphCard = document.getElementById('morph-card');
-                this.sectionContent = document.getElementById('section-content');
-                this.scrollIndicator = document.getElementById('scroll-indicator');
+                // For smooth lerping
+                this.targetScroll = window.scrollY;
+                this.currentScroll = window.scrollY;
+                this.lerpFactor = 0.1;
 
-                this.createProgressDots();
-                this.loadSection(0);
-                this.setupEventListeners();
-
-                console.log('🎬 Scroll Controller Ready');
+                this.init();
             }
 
-            createProgressDots() {
-                const container = document.getElementById('progress-dots');
-                SECTIONS.forEach((_, i) => {
-                    const dot = document.createElement('div');
-                    dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
-                    dot.addEventListener('click', () => this.jumpToSection(i));
-                    container.appendChild(dot);
-                });
-                this.progressDots = container.querySelectorAll('.progress-dot');
-            }
-
-            setupEventListeners() {
-                document.addEventListener('wheel', (e) => {
-                    e.preventDefault();
-                    this.handleScroll(e.deltaY);
-                }, { passive: false });
-
-                let touchStartY = 0;
-                document.addEventListener('touchstart', (e) => {
-                    touchStartY = e.touches[0].clientY;
+            init() {
+                this.setupInitialImagePositions();
+                window.addEventListener('scroll', () => {
+                    this.targetScroll = window.scrollY;
                 });
 
-                document.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    const delta = touchStartY - e.touches[0].clientY;
-                    if (Math.abs(delta) > 30) {
-                        this.handleScroll(delta);
-                        touchStartY = e.touches[0].clientY;
-                    }
-                }, { passive: false });
-            }
-
-            handleScroll(delta) {
-                if (this.scrollCooldown || this.isTransitioning) return;
-
-                const direction = delta > 0 ? 1 : -1;
-                this.currentTick += direction;
-
-                this.scrollIndicator.classList.add('hidden');
-                this.updatePerTickChoreography();
-
-                if (this.currentTick >= this.ticksPerSection) {
-                    if (this.currentSection < SECTIONS.length - 1) {
-                        this.currentSection++;
-                        this.currentTick = 0;
-                        this.transitionToSection(this.currentSection);
-                    } else {
-                        this.currentTick = this.ticksPerSection - 1;
-                    }
-                } else if (this.currentTick < 0) {
-                    if (this.currentSection > 0) {
-                        this.currentSection--;
-                        this.currentTick = this.ticksPerSection - 1;
-                        this.transitionToSection(this.currentSection);
-                    } else {
-                        this.currentTick = 0;
-                    }
+                // Animation loop for smooth scrolling
+                const animate = () => {
+                    this.currentScroll += (this.targetScroll - this.currentScroll) * this.lerpFactor;
+                    this.updateAnimations(this.currentScroll);
+                    requestAnimationFrame(animate);
                 }
-
-                this.updateDebug();
-                this.scrollCooldown = true;
-                setTimeout(() => this.scrollCooldown = false, 100);
+                animate();
             }
 
-            updatePerTickChoreography() {
-                const section = SECTIONS[this.currentSection];
-                const progress = this.currentTick / (this.ticksPerSection - 1);
-
-                // VISUALIZER MOVES UP (illusion of motion)
-                const offsetY = progress * -0.5;
-
-                // DENSITY LOWERS (zoom effect)
-                const density = section.visualizer.baseDensity - (progress * 8);
-
-                // 4D ROTATION EVOLVES
-                const rot4dXW = section.visualizer.baseRot4dXW + (Math.sin(progress * Math.PI) * 0.3);
-                const rot4dYW = section.visualizer.baseRot4dYW + (Math.cos(progress * Math.PI) * 0.2);
-                const rot4dZW = section.visualizer.baseRot4dZW + (progress * 0.4);
-
-                window.quantumVisualizers.forEach(viz => {
-                    viz.updateParameters({
-                        offsetY,
-                        gridDensity: Math.max(10, density),
-                        rot4dXW,
-                        rot4dYW,
-                        rot4dZW
-                    });
-                });
+            setupInitialImagePositions() {
+                this.images[0].style.cssText = 'top: 20%; left: 30%; transform: translate(-50%, -50%); opacity: 1;';
+                this.images[1].style.cssText = 'top: 25%; left: 70%; transform: translate(-50%, -50%); opacity: 1;';
+                this.images[2].style.cssText = 'top: 60%; left: 25%; transform: translate(-50%, -50%); opacity: 1;';
+                this.images[3].style.cssText = 'top: 65%; left: 75%; transform: translate(-50%, -50%); opacity: 1;';
             }
 
-            transitionToSection(index) {
-                this.isTransitioning = true;
-
-                this.progressDots.forEach((dot, i) => {
-                    dot.classList.toggle('active', i === index);
-                });
-
-                this.loadSection(index);
-
-                const section = SECTIONS[index];
-                window.quantumVisualizers.forEach(viz => {
-                    viz.updateParameters({
-                        geometry: section.visualizer.geometry,
-                        gridDensity: section.visualizer.baseDensity,
-                        chaos: section.visualizer.chaos,
-                        speed: section.visualizer.speed,
-                        intensity: section.visualizer.intensity,
-                        hue: section.visualizer.hue,
-                        rot4dXW: section.visualizer.baseRot4dXW,
-                        rot4dYW: section.visualizer.baseRot4dYW,
-                        rot4dZW: section.visualizer.baseRot4dZW,
-                        offsetY: 0.0
-                    });
-                });
-
-                setTimeout(() => {
-                    this.isTransitioning = false;
-                }, 1200);
+            easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
             }
 
-            loadSection(index) {
-                const section = SECTIONS[index];
+            updateAnimations(scrollY) {
+                const wh = window.innerHeight;
 
-                this.morphCard.classList.remove('active');
+                // Animate visualizer with scroll
+                const scrollProgress = scrollY / (document.body.scrollHeight - wh);
+                this.visualizers.forEach(v => v.updateParameters({ rot4dXW: scrollProgress * 2.0 }));
 
-                setTimeout(() => {
-                    this.sectionContent.innerHTML = section.content;
+                // --- Hero Section Animation ---
+                const heroProgress = this.easeInOutCubic(Math.min(scrollY / wh, 1));
+                this.animateHero(heroProgress, scrollY);
 
-                    Object.entries(section.cardStyle).forEach(([key, value]) => {
-                        this.morphCard.style.setProperty(key, value);
-                    });
-
-                    setTimeout(() => {
-                        this.morphCard.classList.add('active');
-                    }, 50);
-                }, 300);
-            }
-
-            jumpToSection(index) {
-                if (index === this.currentSection || this.isTransitioning) return;
-                this.currentSection = index;
-                this.currentTick = 0;
-                this.transitionToSection(index);
-            }
-
-            updateDebug() {
-                document.getElementById('debug-section').textContent = this.currentSection;
-                document.getElementById('debug-ticks').textContent = `${this.currentTick} / ${this.ticksPerSection}`;
-
-                if (window.quantumVisualizers && window.quantumVisualizers[0]) {
-                    const viz = window.quantumVisualizers[0];
-                    document.getElementById('debug-offset').textContent = viz.params.offsetY.toFixed(2);
-                    document.getElementById('debug-density').textContent = viz.params.gridDensity.toFixed(1);
-                    document.getElementById('debug-rot').textContent = viz.params.rot4dXW.toFixed(2);
+                // --- Expanding Circle Animation ---
+                const circleSectionTop = this.circleSection.offsetTop;
+                if (scrollY > circleSectionTop - wh) {
+                    const circleProgress = (scrollY - (circleSectionTop - wh)) / (this.circleSection.scrollHeight - wh);
+                    this.animateCircle(this.easeInOutCubic(circleProgress));
                 }
+            }
+
+            animateHero(progress, scrollY) {
+                // Parallax for the title
+                this.simoneTitle.style.transform = `translateY(${scrollY * 0.2}px)`;
+
+                const targetLetters = [this.titleLetters[0], this.titleLetters[2], this.titleLetters[3], this.titleLetters[5]];
+
+                this.images.forEach((img, i) => {
+                    const letterRect = targetLetters[i].getBoundingClientRect();
+                    const initialX = parseFloat(img.style.left);
+                    const initialY = parseFloat(img.style.top);
+
+                    const targetX = (letterRect.left + letterRect.width / 2) / window.innerWidth * 100;
+                    const targetY = (letterRect.top + letterRect.height / 2) / window.innerHeight * 100;
+
+                    const currentX = initialX + (targetX - initialX) * progress;
+                    const currentY = initialY + (targetY - initialY) * progress;
+
+                    img.style.left = `${currentX}%`;
+                    img.style.top = `${currentY}%`;
+                    img.style.transform = `translate(-50%, -50%) scale(${1 - progress * 0.5})`;
+                });
+            }
+
+            animateCircle(progress) {
+                const p = Math.max(0, Math.min(1, progress));
+
+                const width = 300 + (Math.min(window.innerWidth * 0.8, 800) - 300) * p;
+                this.expandingCircle.style.width = `${width}px`;
+                this.expandingCircle.style.height = `${width * 0.6}px`;
+                this.expandingCircle.style.borderRadius = `${150 - (150 - 40) * p}px`;
+
+                this.circleText2.style.opacity = (p > 0.5) ? (p - 0.5) * 2 : 0;
             }
         }
 
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', () => {
             const layers = [
-                { id: 'quantum-background', role: 'background', reactivity: 0.4 },
-                { id: 'quantum-shadow', role: 'shadow', reactivity: 0.6 },
-                { id: 'quantum-content', role: 'content', reactivity: 1.0 },
-                { id: 'quantum-highlight', role: 'highlight', reactivity: 1.3 },
-                { id: 'quantum-accent', role: 'accent', reactivity: 1.6 }
+                { id: 'quantum-background', role: 'background' },
+                { id: 'quantum-shadow', role: 'shadow' },
+                { id: 'quantum-content', role: 'content' },
+                { id: 'quantum-highlight', role: 'highlight' },
+                { id: 'quantum-accent', role: 'accent' }
             ];
 
-            window.quantumVisualizers = layers.map(layer => {
-                const viz = new QuantumVisualizer(layer.id, layer.role, layer.reactivity);
-                console.log(`✅ ${layer.role} visualizer created`);
-                return viz;
-            }).filter(viz => viz.gl);
+            const visualizers = layers.map(layer => new QuantumVisualizer(layer.id, layer.role)).filter(v => v.gl);
 
             function renderLoop() {
-                window.quantumVisualizers.forEach(viz => viz.render());
+                visualizers.forEach(viz => viz.render());
                 requestAnimationFrame(renderLoop);
             }
             renderLoop();
 
-            window.scrollController = new ScrollController();
-
-            console.log('🚀 MINOOTS Experience Ready');
+            new ScrollChoreography(visualizers);
         });
     </script>
 </body>
 </html>
-
-<!--
-🌟 A Paul Phillips Manifestation
-Paul@clearseassolutions.com | Parserator.com
-© 2025 Clear Seas Solutions LLC
--->
