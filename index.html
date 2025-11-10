@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MINOOTS - Distributed Horology Platform</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -99,10 +101,17 @@
             box-shadow:
                 0 0 60px rgba(0, 255, 255, 0.2),
                 inset 0 0 40px rgba(0, 255, 255, 0.05);
-            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 1.0s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
             will-change: transform, opacity, border-radius;
             overflow: hidden;
+        }
+
+        .morph-card:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow:
+                0 0 80px rgba(0, 255, 255, 0.3),
+                inset 0 0 60px rgba(0, 255, 255, 0.08);
         }
 
         /* Card States for Splitting */
@@ -188,28 +197,33 @@
         }
 
         /* ACTIVE STATE - Show all elements */
-        .active h1 {
+        .active h1, .morph-card h1 {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
 
-        .active h2 {
+        .active h2, .morph-card h2 {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
 
-        .active .subtitle {
+        .active .subtitle, .morph-card .subtitle {
             opacity: 1;
             transform: translateY(0) translateX(0);
         }
 
-        .active .body-text {
+        .active .body-text, .morph-card .body-text {
             opacity: 1;
             transform: translateY(0) translateX(0);
         }
 
-        .active .card-bg-accent {
+        .active .card-bg-accent, .morph-card .card-bg-accent {
             opacity: 1;
+        }
+
+        /* Smooth text transitions */
+        h1, h2, .subtitle, .body-text {
+            will-change: opacity, transform;
         }
 
         /* STATS GRID */
@@ -257,56 +271,27 @@
         .accent { color: var(--cyan); font-weight: 700; }
         .highlight { color: var(--magenta); font-weight: 700; }
 
-        /* SCROLL INDICATOR */
-        .scroll-indicator {
+        /* VISUAL NAVIGATION HINTS */
+        .section-hint {
             position: fixed;
-            bottom: 40px;
+            bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-        }
-
-        .scroll-indicator.hidden {
+            padding: 12px 24px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: var(--cyan);
+            text-align: center;
             opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
         }
 
-        .scroll-text {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: rgba(0, 255, 255, 0.6);
-        }
-
-        .scroll-arrow {
-            width: 24px;
-            height: 40px;
-            border: 2px solid var(--cyan);
-            border-radius: 12px;
-            position: relative;
-        }
-
-        .scroll-arrow::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 8px;
-            background: var(--cyan);
-            border-radius: 2px;
-            animation: scrollDot 2s ease infinite;
-        }
-
-        @keyframes scrollDot {
-            0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            50% { opacity: 0.3; transform: translateX(-50%) translateY(16px); }
+        .section-hint.visible {
+            opacity: 1;
         }
 
         /* PROGRESS DOTS */
@@ -387,11 +372,7 @@
     </div>
 
     <!-- UI Elements -->
-    <div class="scroll-indicator" id="scroll-indicator">
-        <span class="scroll-text">Scroll to Explore</span>
-        <div class="scroll-arrow"></div>
-    </div>
-
+    <div class="section-hint" id="section-hint"></div>
     <div class="progress-dots" id="progress-dots"></div>
 
     <div class="tick-debug">
@@ -409,7 +390,11 @@
                 id: 0,
                 content: `
                     <h1>MINOOTS</h1>
-                    <div class="subtitle">What if time itself could be autonomous?</div>
+                    <div class="subtitle">Independent Timer System for Autonomous Agents</div>
+                    <p class="body-text">
+                        A production-ready timer system that runs independently of your main application.
+                        <span class="accent">Survive crashes, scale infinitely, coordinate autonomously.</span>
+                    </p>
                 `,
                 // CARD CHOREOGRAPHY
                 cards: {
@@ -500,11 +485,15 @@
             {
                 id: 1,
                 content: `
-                    <h2>Distributed Horology</h2>
-                    <div class="subtitle">for the Autonomous Future</div>
+                    <h2>Agent-First Architecture</h2>
+                    <div class="subtitle">Built for AI Agents & Enterprise Workflows</div>
                     <p class="body-text">
-                        MINOOTS is not just another timer system. It's a <span class="accent">distributed horology platform</span>
-                        that enables <span class="highlight">50M+ concurrent timers</span> with ±50ms precision and 99.99% uptime.
+                        <span class="accent">Durable independence:</span> Timer state persists across infrastructure failures and process restarts.
+                        Your agents keep their memory, even when systems crash.
+                    </p>
+                    <p class="body-text">
+                        <span class="highlight">Zero-trust multitenancy:</span> Full audit trails, tenant-isolated credentials,
+                        and policy enforcement at every layer.
                     </p>
                 `,
                 // CARD SPLITS INTO 2
@@ -600,13 +589,18 @@
             {
                 id: 2,
                 content: `
-                    <h2>The Agentic Challenge</h2>
+                    <h2>Four-Layer System</h2>
                     <p class="body-text">
-                        AI agents need <span class="accent">persistent timers</span> that survive restarts,
-                        scale to millions of instances, and fire with <span class="highlight">millisecond precision</span>.
+                        <span class="accent">Control Plane:</span> REST API with multi-tenant validation, authentication & RBAC policies
                     </p>
                     <p class="body-text">
-                        Traditional systems fail at scale. MINOOTS thrives.
+                        <span class="highlight">Horology Kernel:</span> Rust/Tokio scheduler with timing wheels, Raft consensus & PostgreSQL persistence
+                    </p>
+                    <p class="body-text">
+                        <span class="accent">Event Fabric:</span> NATS JetStream + Kafka for ordered event delivery with replay & idempotency
+                    </p>
+                    <p class="body-text">
+                        <span class="highlight">Action Orchestrator:</span> Webhooks, CLI commands, file operations, agent notifications
                     </p>
                 `,
                 visualizer: {
@@ -631,7 +625,7 @@
             {
                 id: 3,
                 content: `
-                    <h2>Battle-Tested Architecture</h2>
+                    <h2>Production-Ready Performance</h2>
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-number">50M+</div>
@@ -639,13 +633,17 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-number">±50ms</div>
-                            <div class="stat-label">Precision</div>
+                            <div class="stat-label">Sub-Second Precision</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-number">99.99%</div>
-                            <div class="stat-label">Uptime SLA</div>
+                            <div class="stat-label">Uptime Guarantee</div>
                         </div>
                     </div>
+                    <p class="body-text" style="margin-top: 30px;">
+                        Trigger accuracy stays within sub-second tolerances even at scale.
+                        <span class="accent">Event replay and idempotency built in.</span>
+                    </p>
                 `,
                 visualizer: {
                     geometry: 7,
@@ -669,12 +667,19 @@
             {
                 id: 4,
                 content: `
-                    <h2>Powered by <span class="accent">Rust</span></h2>
+                    <h2>Universal Integration</h2>
                     <p class="body-text">
-                        Horology Kernel: <span class="highlight">Tokio async runtime</span> + PostgreSQL + Raft consensus
+                        <span class="accent">LangChain • AutoGen • LlamaIndex • Swarm.js</span>
                     </p>
                     <p class="body-text">
-                        Event Fabric: <span class="accent">NATS JetStream</span> + Kafka + Dead Letter Queues
+                        Composable orchestration with multiple LLM frameworks. Timers coordinate both
+                        individual agents and agent swarms through <span class="highlight">standardized command interfaces.</span>
+                    </p>
+                    <p class="body-text">
+                        <span class="accent">MCP Protocol • GitHub Actions • Slack Bot • REST API</span>
+                    </p>
+                    <p class="body-text">
+                        Claude Code compatible. CI/CD ready. Human-friendly.
                     </p>
                 `,
                 visualizer: {
@@ -699,12 +704,20 @@
             {
                 id: 5,
                 content: `
-                    <h2>Universal Integration</h2>
+                    <h2>Simple API, Powerful Results</h2>
                     <p class="body-text">
-                        <span class="accent">Node.js SDK</span> • Python Client • MCP Tools • CLI
+                        <span class="accent">Duration formats:</span> '30s' • '5m' • '2h' • '1d' • 3600000ms
                     </p>
                     <p class="body-text">
-                        Works with: <span class="highlight">LangChain • AutoGen • LlamaIndex • Slack • Discord</span>
+                        <span class="highlight">Action types:</span> HTTP webhooks • CLI commands • File writes • Agent notifications
+                    </p>
+                    <p class="body-text">
+                        Create, monitor, cancel. Real-time progress tracking.
+                        Firebase backend for <span class="accent">global synchronization.</span>
+                    </p>
+                    <p class="body-text">
+                        Team collaboration with enterprise authentication.
+                        <span class="highlight">Works across all your infrastructure.</span>
                     </p>
                 `,
                 visualizer: {
@@ -729,9 +742,18 @@
             {
                 id: 6,
                 content: `
-                    <h1>Time is <span class="accent">Autonomous</span></h1>
+                    <h1>Wake-Up Signals for AI</h1>
+                    <div class="subtitle">Long-horizon coordination with full auditability</div>
                     <p class="body-text">
-                        Join the revolution at <span class="highlight">api-m3waemr5lq-uc.a.run.app</span>
+                        Timers function as <span class="accent">wake-up signals</span> that inject contextual commands
+                        into agent decision cycles, enabling long-horizon coordination while maintaining
+                        auditability and recovery from partial failures.
+                    </p>
+                    <p class="body-text">
+                        <span class="highlight">Time is now autonomous.</span>
+                    </p>
+                    <p class="body-text" style="margin-top: 40px; font-size: 1.2rem;">
+                        <span class="accent">api-m3waemr5lq-uc.a.run.app</span>
                     </p>
                 `,
                 visualizer: {
@@ -1047,13 +1069,45 @@
 
                 this.morphCard = document.getElementById('morph-card');
                 this.sectionContent = document.getElementById('section-content');
-                this.scrollIndicator = document.getElementById('scroll-indicator');
+                this.sectionHint = document.getElementById('section-hint');
 
                 this.createProgressDots();
+                this.initGSAPAnimations();
                 this.loadSection(0);
                 this.setupEventListeners();
 
                 console.log('🎬 Scroll Controller Ready');
+            }
+
+            initGSAPAnimations() {
+                // Initialize GSAP with smooth defaults
+                gsap.defaults({
+                    ease: "power2.out",
+                    duration: 0.8
+                });
+
+                // Show initial hint after a delay
+                setTimeout(() => {
+                    this.showHint('Scroll to discover MINOOTS');
+                }, 2000);
+            }
+
+            showHint(text) {
+                this.sectionHint.textContent = text;
+                gsap.to(this.sectionHint, {
+                    opacity: 1,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    gsap.to(this.sectionHint, {
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "power2.in"
+                    });
+                }, 3000);
             }
 
             createProgressDots() {
@@ -1094,7 +1148,11 @@
                 const direction = delta > 0 ? 1 : -1;
                 this.currentTick += direction;
 
-                this.scrollIndicator.classList.add('hidden');
+                // Hide hint on first scroll
+                if (this.sectionHint) {
+                    gsap.to(this.sectionHint, { opacity: 0, duration: 0.3 });
+                }
+
                 this.updatePerTickChoreography();
 
                 if (this.currentTick >= this.ticksPerSection) {
@@ -1225,11 +1283,14 @@
                     const cardProgress = Math.max(0, Math.min(1, (progress - cardDelay) / (1 - cardDelay)));
                     const cardSmooth = Math.pow(cardProgress, 1.5);
 
-                    // 3D TRANSFORM CHOREOGRAPHY
-                    const rotateY = Math.sin(smoothProgress * Math.PI) * 15;
-                    const rotateX = Math.cos(smoothProgress * Math.PI * 0.7) * 8;
-                    const translateZ = cardSmooth * 50;
-                    const scale = 1.0 + (Math.sin(cardProgress * Math.PI) * 0.05);
+                    // 3D TRANSFORM CHOREOGRAPHY with GSAP-style easing
+                    const rotateY = Math.sin(smoothProgress * Math.PI) * 10;
+                    const rotateX = Math.cos(smoothProgress * Math.PI * 0.7) * 5;
+                    const translateZ = cardSmooth * 30;
+                    const scale = 1.0 + (Math.sin(cardProgress * Math.PI) * 0.03);
+
+                    // Smooth transition with cubic-bezier similar to GSAP
+                    card.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease, box-shadow 0.5s ease';
 
                     card.style.transform = `
                         perspective(2000px)
@@ -1239,15 +1300,15 @@
                         scale(${scale})
                     `;
 
-                    // OPACITY PULSING
-                    const opacityPulse = 0.9 + (Math.sin(progress * Math.PI * 2) * 0.1);
+                    // OPACITY PULSING - more subtle
+                    const opacityPulse = 0.95 + (Math.sin(progress * Math.PI * 2) * 0.05);
                     card.style.opacity = opacityPulse;
 
-                    // BORDER GLOW INTENSITY
-                    const glowIntensity = 0.2 + (smoothProgress * 0.3);
+                    // BORDER GLOW INTENSITY - smoother progression
+                    const glowIntensity = 0.2 + (smoothProgress * 0.2);
                     card.style.boxShadow = `
-                        0 0 ${60 + smoothProgress * 40}px rgba(0, 255, 255, ${glowIntensity}),
-                        inset 0 0 ${40 + smoothProgress * 20}px rgba(0, 255, 255, ${glowIntensity * 0.25})
+                        0 0 ${60 + smoothProgress * 30}px rgba(0, 255, 255, ${glowIntensity}),
+                        inset 0 0 ${40 + smoothProgress * 15}px rgba(0, 255, 255, ${glowIntensity * 0.25})
                     `;
                 });
             }
@@ -1299,9 +1360,18 @@
                 const section = SECTIONS[index];
                 const cardStage = document.getElementById('card-stage');
 
-                // FADE OUT CURRENT CARDS
+                // FADE OUT CURRENT CARDS with GSAP
                 const currentCards = cardStage.querySelectorAll('.morph-card');
-                currentCards.forEach(card => card.classList.remove('active'));
+
+                if (currentCards.length > 0) {
+                    gsap.to(currentCards, {
+                        opacity: 0,
+                        scale: 0.95,
+                        duration: 0.4,
+                        ease: "power2.in",
+                        stagger: 0.05
+                    });
+                }
 
                 setTimeout(() => {
                     // CONFIGURE CARD STAGE FOR SPLITTING
@@ -1340,13 +1410,29 @@
                         }
 
                         cardStage.appendChild(card);
-
-                        // STAGGERED ACTIVATION
-                        setTimeout(() => {
-                            card.classList.add('active');
-                        }, 50 + (i * 150));
                     }
-                }, 300);
+
+                    // GSAP STAGGERED ANIMATION for smooth entrance
+                    const newCards = cardStage.querySelectorAll('.morph-card');
+                    gsap.fromTo(newCards,
+                        {
+                            opacity: 0,
+                            scale: 0.8,
+                            rotateY: -20
+                        },
+                        {
+                            opacity: 1,
+                            scale: 1,
+                            rotateY: 0,
+                            duration: 1.0,
+                            ease: "power3.out",
+                            stagger: 0.15,
+                            onComplete: () => {
+                                newCards.forEach(card => card.classList.add('active'));
+                            }
+                        }
+                    );
+                }, 450);
 
                 // Store reference to first card for backwards compatibility
                 setTimeout(() => {
