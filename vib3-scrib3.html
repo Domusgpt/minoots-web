@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB3 SCRIB3 - Reality Transcription Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- GSAP Core + Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Natural earthy palette from Simone branch */
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #E8E5DD;
+            --text-primary: #2E4E4B;
+            --text-secondary: #5A7470;
+            --accent-lime: #D4FC79;
+            --accent-sage: #8FBC8F;
+            --accent-terracotta: #C97064;
+            --accent-ochre: #E8B86D;
+            --accent-moss: #4A6741;
+
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Poppins', sans-serif;
+        }
+
+        /* Holographic animation keyframes */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            background: var(--bg-primary);
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            overflow-y: scroll;
+        }
+
+        /* Background texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('data:image/svg+xml,%3Csvg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%232E4E4B" fill-opacity="0.02" fill-rule="evenodd"%3E%3Cpath d="M5 0h1L0 6V5zM6 5v1H5z"/%3E%3C/g%3E%3C/svg%3E');
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* SMOOTH SCROLLER WRAPPER */
+        #smooth-wrapper {
+            overflow: visible;
+        }
+
+        #smooth-content {
+            overflow: visible;
+            will-change: transform;
+        }
+
+        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND */
+        .quantum-layers {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform, opacity, filter;
+            opacity: 0.15;
+        }
+
+        .quantum-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            mix-blend-mode: multiply;
+        }
+
+        #quantum-background { opacity: 0.4; z-index: 1; }
+        #quantum-shadow { opacity: 0.3; z-index: 2; }
+        #quantum-content { opacity: 0.5; z-index: 3; }
+        #quantum-highlight { opacity: 0.35; z-index: 4; }
+        #quantum-accent { opacity: 0.25; z-index: 5; }
+
+        /* INTRO HERO */
+        #intro-hero {
+            position: relative;
+            height: 250vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #intro-hero-content {
+            position: relative;
+            text-align: center;
+            z-index: 15;
+            width: 100%;
+            max-width: 900px;
+            padding: 0 20px;
+        }
+
+        .intro-title {
+            font-family: var(--font-display);
+            font-size: clamp(4rem, 12vw, 9rem);
+            font-weight: 900;
+            color: var(--text-primary);
+            opacity: 1;
+            will-change: transform, opacity;
+            letter-spacing: -3px;
+            line-height: 0.9;
+        }
+
+        .intro-subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-top: 30px;
+            opacity: 0;
+        }
+
+        /* Formation card - appears around title */
+        .formation-card {
+            position: absolute;
+            inset: -80px -150px;
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(0px);
+            border: 0px solid var(--accent-sage);
+            border-radius: 0px;
+            box-shadow: none;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            will-change: all;
+        }
+
+        /* SECTION SYSTEM */
+        .section {
+            position: relative;
+            min-height: 180vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 40px;
+            z-index: 10;
+        }
+
+        .section-content {
+            max-width: 1300px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Section-specific color themes */
+        .section[data-theme="sage"] {
+            --theme-primary: var(--accent-sage);
+            --theme-secondary: var(--accent-moss);
+            --theme-accent: var(--accent-lime);
+        }
+
+        .section[data-theme="terracotta"] {
+            --theme-primary: var(--accent-terracotta);
+            --theme-secondary: var(--accent-ochre);
+            --theme-accent: var(--accent-lime);
+        }
+
+        .section[data-theme="lime"] {
+            --theme-primary: var(--accent-lime);
+            --theme-secondary: var(--accent-sage);
+            --theme-accent: var(--text-primary);
+        }
+
+        .section[data-theme="ochre"] {
+            --theme-primary: var(--accent-ochre);
+            --theme-secondary: var(--accent-terracotta);
+            --theme-accent: var(--accent-moss);
+        }
+
+        .section[data-theme="moss"] {
+            --theme-primary: var(--accent-moss);
+            --theme-secondary: var(--accent-sage);
+            --theme-accent: var(--accent-lime);
+        }
+
+        /* MORPH CARDS */
+        .morph-card {
+            position: relative;
+            padding: 60px 50px;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--theme-primary, var(--accent-sage));
+            border-radius: 30px;
+            box-shadow:
+                0 10px 40px rgba(46, 78, 75, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+            cursor: pointer;
+            overflow: hidden;
+            margin: 40px 0;
+        }
+
+        .morph-card::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                var(--theme-primary, var(--accent-sage)),
+                transparent
+            );
+            border-radius: 30px;
+            opacity: 0;
+            animation: shimmer 3s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+
+        .morph-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: var(--theme-primary, var(--accent-sage));
+            box-shadow:
+                0 20px 60px rgba(46, 78, 75, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        .morph-card:hover::after {
+            opacity: 0.4;
+        }
+
+        /* Card Grid Layouts */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .card-grid.two-col {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (max-width: 1024px) {
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* TYPOGRAPHY */
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+            letter-spacing: -2px;
+            transition: all 0.5s ease;
+        }
+
+        h1.gradient {
+            background: linear-gradient(
+                135deg,
+                var(--theme-primary, var(--accent-sage)),
+                var(--theme-secondary, var(--accent-moss))
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2.2rem, 4.5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+            transition: all 0.4s ease;
+        }
+
+        h3 {
+            font-family: var(--font-display);
+            font-size: clamp(1.6rem, 3vw, 2.5rem);
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: clamp(1.3rem, 2.5vw, 2.2rem);
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .body-text {
+            font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+        }
+
+        .body-text.large {
+            font-size: clamp(1.2rem, 1.9vw, 1.6rem);
+            line-height: 1.7;
+        }
+
+        /* ACCENT TEXT */
+        .accent {
+            color: var(--accent-lime);
+            font-weight: 600;
+            background: var(--accent-lime);
+            color: var(--text-primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .highlight {
+            color: var(--accent-terracotta);
+            font-weight: 600;
+        }
+
+        .glow {
+            color: var(--accent-sage);
+            font-weight: 600;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .stat-card {
+            padding: 40px 30px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid var(--accent-sage);
+            border-radius: 24px;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.75);
+            border-color: var(--accent-moss);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 45px rgba(46, 78, 75, 0.2);
+        }
+
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 4.5vw, 4rem);
+            font-weight: 900;
+            color: var(--accent-moss);
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: clamp(0.95rem, 1.3vw, 1.2rem);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* FEATURE LIST */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin: 50px 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            padding: 35px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            border: 1px solid rgba(46, 78, 75, 0.1);
+            transition: all 0.5s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: var(--accent-sage);
+            transform: translateX(10px);
+        }
+
+        .feature-icon {
+            min-width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-lime);
+            border-radius: 14px;
+            font-size: 1.8rem;
+        }
+
+        .feature-content h3 {
+            margin-bottom: 10px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-block;
+            padding: 16px 36px;
+            background: var(--accent-moss);
+            color: var(--bg-primary);
+            font-weight: 600;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 30px rgba(74, 103, 65, 0.3);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 45px rgba(74, 103, 65, 0.4);
+            background: var(--accent-sage);
+        }
+
+        .btn.btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent-moss);
+            color: var(--accent-moss);
+        }
+
+        .btn.btn-outline:hover {
+            background: rgba(74, 103, 65, 0.1);
+        }
+
+        /* SCROLL PROGRESS BAR */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(212, 252, 121, 0.2);
+            z-index: 10000;
+        }
+
+        .scroll-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-sage), var(--accent-lime));
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        /* REVEAL ANIMATIONS */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 768px) {
+            .section {
+                padding: 60px 20px;
+            }
+
+            .morph-card {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress -->
+    <div class="scroll-progress">
+        <div class="scroll-progress-bar" id="scroll-progress"></div>
+    </div>
+
+    <!-- VIB3+ Quantum Visualizer - Fixed Background -->
+    <div class="quantum-layers" id="quantum-layers">
+        <canvas id="quantum-background" class="quantum-canvas"></canvas>
+        <canvas id="quantum-shadow" class="quantum-canvas"></canvas>
+        <canvas id="quantum-content" class="quantum-canvas"></canvas>
+        <canvas id="quantum-highlight" class="quantum-canvas"></canvas>
+        <canvas id="quantum-accent" class="quantum-canvas"></canvas>
+    </div>
+
+    <!-- Main Content -->
+    <div id="smooth-wrapper">
+        <div id="smooth-content">
+
+            <!-- INTRO HERO -->
+            <section id="intro-hero">
+                <div id="intro-hero-content">
+                    <div class="formation-card" id="formation-card"></div>
+                    <h1 class="intro-title" id="intro-title">VIB3 SCRIB3</h1>
+                    <p class="intro-subtitle" id="intro-subtitle">Transcribe Reality • Amplify Vibrations</p>
+                </div>
+            </section>
+
+            <!-- HERO SECTION -->
+            <section class="section" id="hero" data-theme="sage">
+                <div class="section-content">
+                    <h1 class="reveal gradient">Reality Transcription Platform</h1>
+                    <div class="subtitle reveal">
+                        Transform vibrations into <span class="accent">meaningful signals</span>
+                    </div>
+                    <p class="body-text large reveal">
+                        VIB3 SCRIB3 captures the essence of reality's frequencies,
+                        translating raw <span class="highlight">vibrational patterns</span> into
+                        actionable intelligence.
+                    </p>
+                </div>
+            </section>
+
+            <!-- OVERVIEW SECTION -->
+            <section class="section" id="overview" data-theme="lime">
+                <div class="section-content">
+                    <div class="morph-card reveal">
+                        <h2>Harmonic Reality Mapping</h2>
+                        <p class="body-text">
+                            VIB3 SCRIB3 isn't just another transcription tool. It's a <span class="accent">reality decoder</span>
+                            that transforms the unseen vibrations around us into <span class="highlight">coherent narratives</span>.
+                        </p>
+                        <p class="body-text">
+                            Built for creators, researchers, and reality architects who understand that
+                            <span class="glow">everything is frequency</span>.
+                        </p>
+
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon">🎵</div>
+                                <div class="feature-content">
+                                    <h3>Vibrational Sensing</h3>
+                                    <p class="body-text">Multi-dimensional frequency detection across acoustic, electromagnetic, and quantum spectrums.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">✨</div>
+                                <div class="feature-content">
+                                    <h3>Pattern Recognition</h3>
+                                    <p class="body-text">AI-powered pattern matching identifies meaningful signals in the noise of reality.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">📡</div>
+                                <div class="feature-content">
+                                    <h3>Signal Amplification</h3>
+                                    <p class="body-text">Boost weak signals, clarify distorted patterns, and reveal hidden harmonics.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATS SECTION -->
+            <section class="section" id="stats" data-theme="terracotta">
+                <div class="section-content">
+                    <h2 class="reveal">Precision Metrics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card reveal">
+                            <div class="stat-number">432Hz</div>
+                            <div class="stat-label">Natural Tuning</div>
+                        </div>
+                        <div class="stat-card reveal">
+                            <div class="stat-number">∞</div>
+                            <div class="stat-label">Frequency Range</div>
+                        </div>
+                        <div class="stat-card reveal">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">Pattern Accuracy</div>
+                        </div>
+                        <div class="stat-card reveal">
+                            <div class="stat-number">3D+</div>
+                            <div class="stat-label">Dimensional Mapping</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ARCHITECTURE SECTION -->
+            <section class="section" id="architecture" data-theme="ochre">
+                <div class="section-content">
+                    <div class="card-grid two-col">
+                        <div class="morph-card reveal">
+                            <h2>Hypercube Processing</h2>
+                            <p class="body-text">
+                                Multi-dimensional signal processing using <span class="highlight">4D hypercube topology</span>
+                                for capturing reality's hidden dimensions.
+                            </p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <div class="feature-icon">🔮</div>
+                                    <div class="feature-content">
+                                        <h3>Tesseract Engine</h3>
+                                        <p class="body-text">
+                                            Four-dimensional data structures that preserve temporal and spatial
+                                            relationships in vibrational patterns.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">🌀</div>
+                                    <div class="feature-content">
+                                        <h3>Quantum Superposition</h3>
+                                        <p class="body-text">
+                                            Process multiple vibrational states simultaneously through
+                                            quantum-inspired algorithms.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="morph-card reveal">
+                            <h2>Tetrahedron Lattice</h2>
+                            <p class="body-text">
+                                Fundamental <span class="accent">tetrahedral geometry</span> creates the most
+                                stable structure for reality mapping.
+                            </p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <div class="feature-icon">△</div>
+                                    <div class="feature-content">
+                                        <h3>Harmonic Vertices</h3>
+                                        <p class="body-text">
+                                            Each vertex represents a harmonic node in the universal frequency network.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">⚡</div>
+                                    <div class="feature-content">
+                                        <h3>Energy Flow Paths</h3>
+                                        <p class="body-text">
+                                            Tetrahedral edges form optimal pathways for vibrational energy transfer.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- USE CASES SECTION -->
+            <section class="section" id="use-cases" data-theme="moss">
+                <div class="section-content">
+                    <h2 class="reveal">Reality Applications</h2>
+                    <p class="body-text large reveal">
+                        From sound healing to quantum research, VIB3 SCRIB3 bridges
+                        <span class="highlight">science and consciousness</span>.
+                    </p>
+
+                    <div class="card-grid three-col">
+                        <div class="morph-card reveal">
+                            <h3>🎼 Sound Healing</h3>
+                            <p class="body-text">
+                                Map binaural beats, solfeggio frequencies, and harmonic resonances
+                                for therapeutic applications.
+                            </p>
+                        </div>
+
+                        <div class="morph-card reveal">
+                            <h3>🧬 Biofield Mapping</h3>
+                            <p class="body-text">
+                                Detect and visualize electromagnetic field patterns around
+                                living organisms.
+                            </p>
+                        </div>
+
+                        <div class="morph-card reveal">
+                            <h3>🌍 Earth Resonance</h3>
+                            <p class="body-text">
+                                Track Schumann resonances and planetary vibrations for
+                                geophysical research.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA SECTION -->
+            <section class="section" id="cta" data-theme="sage">
+                <div class="section-content">
+                    <div class="morph-card reveal">
+                        <h1 style="text-align: center;">Tune Into <span class="accent">Reality</span></h1>
+                        <p class="body-text large" style="text-align: center; margin-bottom: 40px;">
+                            Join the vibration revolution. Transcribe what others can't perceive.
+                        </p>
+                        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                            <a href="https://domusgpt.github.io/Vib3-Scrib3/" class="btn">Get Started</a>
+                            <a href="https://domusgpt.github.io/Vib3-Scrib3/" class="btn btn-outline">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script type="module">
+        // ========== VIB3+ QUANTUM VISUALIZER (Hypercube + Tetrahedron) ==========
+        class QuantumVisualizer {
+            constructor(canvasId, role, reactivity) {
+                this.canvas = document.getElementById(canvasId);
+                this.role = role;
+                this.reactivity = reactivity;
+
+                this.gl = this.canvas.getContext('webgl2') || this.canvas.getContext('webgl');
+                if (!this.gl) return;
+
+                this.startTime = Date.now();
+                this.scrollProgress = 0;
+                this.params = {
+                    geometry: 1,
+                    gridDensity: 35,
+                    morphFactor: 1.0,
+                    chaos: 0.15,
+                    speed: 0.9,
+                    hue: 0.3,
+                    intensity: 0.4,
+                    saturation: 0.6,
+                    dimension: 3.5,
+                    rot4dXW: 0.0,
+                    rot4dYW: 0.0,
+                    rot4dZW: 0.0,
+                    offsetY: 0.0
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.initShaders();
+                this.initBuffers();
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            initShaders() {
+                const vertexShader = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+
+                const fragmentShader = `
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform float u_geometry;
+                    uniform float u_gridDensity;
+                    uniform float u_chaos;
+                    uniform float u_speed;
+                    uniform float u_hue;
+                    uniform float u_intensity;
+                    uniform float u_rot4dXW;
+                    uniform float u_rot4dYW;
+                    uniform float u_rot4dZW;
+                    uniform float u_roleIntensity;
+                    uniform float u_offsetY;
+                    uniform float u_scrollProgress;
+
+                    mat4 rotateXW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(c, 0.0, 0.0, -s, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, s, 0.0, 0.0, c);
+                    }
+
+                    mat4 rotateYW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c);
+                    }
+
+                    mat4 rotateZW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, c, -s, 0.0, 0.0, s, c);
+                    }
+
+                    vec3 project4Dto3D(vec4 p) {
+                        float w = 2.5 / (2.5 + p.w);
+                        return vec3(p.x * w, p.y * w, p.z * w);
+                    }
+
+                    vec3 warpHypersphere(vec3 p) {
+                        float radius = length(p);
+                        float scrollMorph = u_scrollProgress * 0.4;
+                        float w = sin(radius * (1.3 + scrollMorph) + u_time * 0.0007 * u_speed) * 0.5;
+                        vec4 p4d = vec4(p, w);
+                        p4d = rotateXW(u_rot4dXW + scrollMorph * 0.2) * p4d;
+                        p4d = rotateYW(u_rot4dYW + scrollMorph * 0.15) * p4d;
+                        p4d = rotateZW(u_rot4dZW + scrollMorph * 0.3) * p4d;
+                        return project4Dto3D(p4d);
+                    }
+
+                    // HYPERCUBE LATTICE
+                    float hypercubeLattice(vec3 p, float gridSize) {
+                        vec3 grid = fract(p * gridSize);
+                        vec3 edges = min(grid, 1.0 - grid);
+                        float minEdge = min(min(edges.x, edges.y), edges.z);
+                        return 1.0 - smoothstep(0.0, 0.04, minEdge);
+                    }
+
+                    // TETRAHEDRON LATTICE
+                    float tetrahedronLattice(vec3 p, float gridSize) {
+                        vec3 cell = fract(p * gridSize) - 0.5;
+
+                        // Four vertices of tetrahedron
+                        vec3 v1 = vec3(0.0, 0.5, 0.0);
+                        vec3 v2 = vec3(0.5, -0.5, 0.5);
+                        vec3 v3 = vec3(-0.5, -0.5, 0.5);
+                        vec3 v4 = vec3(0.0, -0.5, -0.5);
+
+                        float d1 = length(cell - v1);
+                        float d2 = length(cell - v2);
+                        float d3 = length(cell - v3);
+                        float d4 = length(cell - v4);
+
+                        float minDist = min(min(d1, d2), min(d3, d4));
+                        return 1.0 - smoothstep(0.1, 0.25, minDist);
+                    }
+
+                    // Mixed geometry function
+                    float geometryFunction(vec4 p) {
+                        vec3 p3d = project4Dto3D(p);
+                        vec3 warped = warpHypersphere(p3d);
+
+                        // Vary density based on layer
+                        float baseDensity = u_gridDensity * 0.08;
+                        float highDensity = baseDensity * 1.8;
+                        float lowDensity = baseDensity * 0.5;
+
+                        // Mix hypercube and tetrahedron based on scroll and geometry param
+                        float geomMix = sin(u_geometry + u_scrollProgress * 0.2) * 0.5 + 0.5;
+
+                        float hypercube = hypercubeLattice(warped, mix(lowDensity, highDensity, geomMix));
+                        float tetrahedron = tetrahedronLattice(warped, mix(highDensity, lowDensity, 1.0 - geomMix));
+
+                        return mix(hypercube, tetrahedron, geomMix);
+                    }
+
+                    vec3 hsv2rgb(vec3 c) {
+                        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                    }
+
+                    void main() {
+                        vec2 uv = (gl_FragCoord.xy - u_resolution.xy * 0.5) / min(u_resolution.x, u_resolution.y);
+                        uv.y += u_offsetY;
+
+                        float timeSpeed = u_time * 0.0001 * u_speed;
+                        vec4 pos = vec4(uv * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
+
+                        pos = rotateXW(u_rot4dXW) * pos;
+                        pos = rotateYW(u_rot4dYW) * pos;
+                        pos = rotateZW(u_rot4dZW) * pos;
+
+                        float value = geometryFunction(pos);
+                        float noise = sin(pos.x * 7.0) * cos(pos.y * 11.0);
+                        value += noise * u_chaos;
+
+                        float geometryIntensity = 1.0 - clamp(abs(value * 0.7), 0.0, 1.0);
+                        geometryIntensity = pow(geometryIntensity, 2.0);
+                        float finalIntensity = geometryIntensity * u_intensity * (1.0 + u_scrollProgress * 0.15);
+
+                        // Natural earthy colors
+                        vec3 color = hsv2rgb(vec3(u_hue, 0.4, 0.6));
+                        vec3 finalColor = color * finalIntensity;
+
+                        float layerAlpha = u_roleIntensity;
+                        gl_FragColor = vec4(finalColor, finalIntensity * layerAlpha * 0.6);
+                    }
+                `;
+
+                this.program = this.createProgram(vertexShader, fragmentShader);
+
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    geometry: this.gl.getUniformLocation(this.program, 'u_geometry'),
+                    gridDensity: this.gl.getUniformLocation(this.program, 'u_gridDensity'),
+                    chaos: this.gl.getUniformLocation(this.program, 'u_chaos'),
+                    speed: this.gl.getUniformLocation(this.program, 'u_speed'),
+                    hue: this.gl.getUniformLocation(this.program, 'u_hue'),
+                    intensity: this.gl.getUniformLocation(this.program, 'u_intensity'),
+                    rot4dXW: this.gl.getUniformLocation(this.program, 'u_rot4dXW'),
+                    rot4dYW: this.gl.getUniformLocation(this.program, 'u_rot4dYW'),
+                    rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
+                    roleIntensity: this.gl.getUniformLocation(this.program, 'u_roleIntensity'),
+                    offsetY: this.gl.getUniformLocation(this.program, 'u_offsetY'),
+                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress')
+                };
+            }
+
+            createProgram(vertexSource, fragmentSource) {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
+
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) return null;
+                return program;
+            }
+
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) return null;
+                return shader;
+            }
+
+            initBuffers() {
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+
+            resize() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                this.canvas.width = this.canvas.clientWidth * dpr;
+                this.canvas.height = this.canvas.clientHeight * dpr;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            updateParameters(params) {
+                Object.assign(this.params, params);
+            }
+
+            updateScrollProgress(progress) {
+                this.scrollProgress = progress;
+            }
+
+            render() {
+                if (!this.program) return;
+
+                this.gl.useProgram(this.program);
+                this.gl.clearColor(0, 0, 0, 0);
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+                const roleIntensities = {
+                    'background': 0.4,
+                    'shadow': 0.5,
+                    'content': 0.7,
+                    'highlight': 0.6,
+                    'accent': 0.35
+                };
+
+                const time = Date.now() - this.startTime;
+
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, time);
+                this.gl.uniform1f(this.uniforms.geometry, this.params.geometry);
+                this.gl.uniform1f(this.uniforms.gridDensity, this.params.gridDensity);
+                this.gl.uniform1f(this.uniforms.chaos, this.params.chaos);
+                this.gl.uniform1f(this.uniforms.speed, this.params.speed);
+                this.gl.uniform1f(this.uniforms.hue, this.params.hue);
+                this.gl.uniform1f(this.uniforms.intensity, this.params.intensity);
+                this.gl.uniform1f(this.uniforms.rot4dXW, this.params.rot4dXW);
+                this.gl.uniform1f(this.uniforms.rot4dYW, this.params.rot4dYW);
+                this.gl.uniform1f(this.uniforms.rot4dZW, this.params.rot4dZW);
+                this.gl.uniform1f(this.uniforms.roleIntensity, roleIntensities[this.role] || 0.5);
+                this.gl.uniform1f(this.uniforms.offsetY, this.params.offsetY);
+                this.gl.uniform1f(this.uniforms.scrollProgress, this.scrollProgress);
+
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        // ========== SECTION-BASED VISUALIZER PRESETS ==========
+        const SECTION_VIZ_PRESETS = {
+            'sage': {
+                geometry: 1,
+                gridDensity: 32,
+                chaos: 0.15,
+                speed: 0.8,
+                hue: 0.35, // Sage green
+                intensity: 0.5,
+                rot4dXW: 0.4,
+                rot4dYW: 0.3,
+                rot4dZW: 0.2
+            },
+            'terracotta': {
+                geometry: 2.5,
+                gridDensity: 28,
+                chaos: 0.2,
+                speed: 1.0,
+                hue: 0.05, // Terracotta orange
+                intensity: 0.6,
+                rot4dXW: 0.6,
+                rot4dYW: 0.5,
+                rot4dZW: 0.4
+            },
+            'lime': {
+                geometry: 3,
+                gridDensity: 42,
+                chaos: 0.1,
+                speed: 1.2,
+                hue: 0.25, // Lime yellow-green
+                intensity: 0.55,
+                rot4dXW: 0.8,
+                rot4dYW: 0.6,
+                rot4dZW: 0.5
+            },
+            'ochre': {
+                geometry: 4,
+                gridDensity: 36,
+                chaos: 0.18,
+                speed: 0.9,
+                hue: 0.12, // Ochre yellow
+                intensity: 0.58,
+                rot4dXW: 0.5,
+                rot4dYW: 0.7,
+                rot4dZW: 0.6
+            },
+            'moss': {
+                geometry: 5,
+                gridDensity: 30,
+                chaos: 0.12,
+                speed: 0.85,
+                hue: 0.32, // Moss green
+                intensity: 0.52,
+                rot4dXW: 0.7,
+                rot4dYW: 0.4,
+                rot4dZW: 0.8
+            }
+        };
+
+        function applyVisualizerPreset(theme) {
+            const preset = SECTION_VIZ_PRESETS[theme];
+            if (!preset || !window.quantumVisualizers) return;
+
+            window.quantumVisualizers.forEach((viz, i) => {
+                const layerMultiplier = (i + 1) * 0.18;
+                gsap.to(viz.params, {
+                    geometry: preset.geometry + (i * 0.3),
+                    gridDensity: preset.gridDensity * (0.85 + layerMultiplier * 0.3),
+                    chaos: preset.chaos * (1 + layerMultiplier * 0.25),
+                    speed: preset.speed,
+                    hue: preset.hue + (i * 0.02),
+                    intensity: preset.intensity * (0.75 + layerMultiplier * 0.25),
+                    rot4dXW: preset.rot4dXW * layerMultiplier,
+                    rot4dYW: preset.rot4dYW * layerMultiplier,
+                    rot4dZW: preset.rot4dZW * layerMultiplier,
+                    duration: 1.8,
+                    ease: 'power2.inOut'
+                });
+            });
+        }
+
+        // ========== INTRO SEQUENCE ==========
+        function initIntroSequence() {
+            const introTitle = document.getElementById('intro-title');
+            const introSubtitle = document.getElementById('intro-subtitle');
+            const formationCard = document.getElementById('formation-card');
+            const introHero = document.getElementById('intro-hero');
+            const introHeroContent = document.getElementById('intro-hero-content');
+
+            ScrollTrigger.create({
+                trigger: introHero,
+                start: 'top top',
+                end: 'bottom bottom',
+                pin: introHeroContent,
+                pinSpacing: false,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+
+                    if (progress < 0.3) {
+                        introSubtitle.style.opacity = progress / 0.3;
+                    } else if (progress >= 0.3 && progress < 0.6) {
+                        const contractProgress = (progress - 0.3) / 0.3;
+                        formationCard.style.opacity = contractProgress;
+                        formationCard.style.background = `rgba(255, 255, 255, ${0.7 * contractProgress})`;
+                        formationCard.style.backdropFilter = `blur(${25 * contractProgress}px)`;
+                        formationCard.style.border = `2px solid rgba(143, 188, 143, ${0.5 * contractProgress})`;
+                        formationCard.style.borderRadius = `${30 * contractProgress}px`;
+                        formationCard.style.boxShadow = `0 10px ${40 * contractProgress}px rgba(74, 103, 65, ${0.2 * contractProgress})`;
+                    } else if (progress >= 0.6) {
+                        const exitProgress = (progress - 0.6) / 0.4;
+                        introHeroContent.style.opacity = 1 - exitProgress;
+                        introHeroContent.style.transform = `translateY(${-exitProgress * 50}vh)`;
+                    }
+                }
+            });
+        }
+
+        // ========== SCROLL ANIMATIONS ==========
+        function initScrollAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Reveal animations
+            gsap.utils.toArray('.reveal').forEach((elem) => {
+                gsap.fromTo(elem,
+                    { opacity: 0, y: 50 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 1,
+                        scrollTrigger: {
+                            trigger: elem,
+                            start: 'top 80%',
+                            end: 'bottom 20%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            });
+
+            // Section theme changes
+            document.querySelectorAll('.section[data-theme]').forEach(section => {
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: 'top center',
+                    end: 'bottom center',
+                    onEnter: () => {
+                        const theme = section.dataset.theme;
+                        applyVisualizerPreset(theme);
+                    },
+                    onEnterBack: () => {
+                        const theme = section.dataset.theme;
+                        applyVisualizerPreset(theme);
+                    }
+                });
+            });
+
+            // Card hover 3D tilt effect
+            document.querySelectorAll('.morph-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 15;
+                    const rotateY = (centerX - x) / 15;
+
+                    gsap.to(card, {
+                        rotateX,
+                        rotateY,
+                        transformPerspective: 1000,
+                        duration: 0.5,
+                        ease: 'power2.out'
+                    });
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, {
+                        rotateX: 0,
+                        rotateY: 0,
+                        duration: 0.5,
+                        ease: 'power2.out'
+                    });
+                });
+            });
+        }
+
+        // ========== SCROLL PROGRESS ==========
+        function initScrollProgress() {
+            const progressBar = document.getElementById('scroll-progress');
+
+            window.addEventListener('scroll', () => {
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
+                const scrollTop = window.scrollY;
+                const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+
+                progressBar.style.width = `${scrollPercent}%`;
+
+                // Update visualizers with scroll progress
+                const normalizedProgress = scrollTop / (documentHeight - windowHeight);
+                window.quantumVisualizers?.forEach((viz, i) => {
+                    viz.updateScrollProgress(normalizedProgress);
+
+                    const layerMultiplier = (i + 1) * 0.15;
+                    viz.updateParameters({
+                        rot4dXW: normalizedProgress * layerMultiplier * 2,
+                        rot4dYW: normalizedProgress * layerMultiplier * 1.5,
+                        rot4dZW: normalizedProgress * layerMultiplier * 1.8,
+                        chaos: 0.15 + (normalizedProgress * 0.2),
+                        geometry: 1 + Math.floor(normalizedProgress * 4)
+                    });
+                });
+            });
+        }
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Quantum Visualizers
+            const layers = [
+                { id: 'quantum-background', role: 'background', reactivity: 0.4 },
+                { id: 'quantum-shadow', role: 'shadow', reactivity: 0.5 },
+                { id: 'quantum-content', role: 'content', reactivity: 0.7 },
+                { id: 'quantum-highlight', role: 'highlight', reactivity: 0.6 },
+                { id: 'quantum-accent', role: 'accent', reactivity: 0.35 }
+            ];
+
+            window.quantumVisualizers = layers.map(layer => {
+                const viz = new QuantumVisualizer(layer.id, layer.role, layer.reactivity);
+                return viz;
+            }).filter(viz => viz.gl);
+
+            function renderLoop() {
+                window.quantumVisualizers.forEach(viz => viz.render());
+                requestAnimationFrame(renderLoop);
+            }
+            renderLoop();
+
+            // Initialize all animation systems
+            initIntroSequence();
+            initScrollAnimations();
+            initScrollProgress();
+
+            console.log('🌀 VIB3 SCRIB3 Experience Ready');
+            console.log('🔮 Hypercube + Tetrahedron geometries active');
+            console.log('🎨 Natural color palette applied');
+            console.log('📡 Mixed high/low density lattices rendering');
+        });
+    </script>
+</body>
+</html>
+
+<!--
+🌟 VIB3 SCRIB3 - Reality Transcription Platform
+Remixed from MINOOTS by Domusgpt
+© 2025
+-->
