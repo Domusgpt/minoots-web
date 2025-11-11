@@ -23,8 +23,80 @@
             --magenta: #ff00ff;
             --blue: #0080ff;
             --green: #00ff80;
+            --yellow: #ffff00;
+            --orange: #ff8800;
+            --purple: #8800ff;
             --font-display: 'Orbitron', sans-serif;
             --font-body: 'Inter', system-ui, sans-serif;
+
+            /* Dynamic section colors */
+            --section-primary: var(--cyan);
+            --section-secondary: var(--magenta);
+            --section-accent: var(--blue);
+        }
+
+        /* Holographic animation keyframes */
+        @keyframes holographic-shift {
+            0%, 100% {
+                background-position: 0% 50%;
+                filter: hue-rotate(0deg);
+            }
+            50% {
+                background-position: 100% 50%;
+                filter: hue-rotate(30deg);
+            }
+        }
+
+        @keyframes holographic-glow {
+            0%, 100% {
+                text-shadow:
+                    0 0 10px var(--section-primary),
+                    0 0 20px var(--section-primary),
+                    0 0 30px var(--section-secondary),
+                    0 0 40px var(--section-secondary);
+            }
+            50% {
+                text-shadow:
+                    0 0 20px var(--section-secondary),
+                    0 0 30px var(--section-secondary),
+                    0 0 40px var(--section-primary),
+                    0 0 50px var(--section-primary);
+            }
+        }
+
+        @keyframes float-particles {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(20px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes card-form {
+            0% {
+                clip-path: circle(0% at 50% 50%);
+                opacity: 0;
+            }
+            50% {
+                clip-path: circle(60% at 50% 50%);
+                opacity: 0.5;
+            }
+            100% {
+                clip-path: circle(100% at 50% 50%);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
         }
 
         html {
@@ -61,8 +133,33 @@
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform, opacity, filter;
+        }
+
+        /* Intro state - visualizer fills screen */
+        .quantum-layers.intro {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Condensing state - shrinking into card */
+        .quantum-layers.condensing {
+            transform: scale(0.5);
+            opacity: 0.8;
+        }
+
+        /* Ejecting state - rapidly leaving */
+        .quantum-layers.ejecting {
+            transform: scale(3) translate(0, -100vh);
+            opacity: 0;
+            transition: all 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Normal scroll state */
+        .quantum-layers.scrolling {
+            transform: scale(1);
+            opacity: 1;
         }
 
         .quantum-canvas {
@@ -78,6 +175,68 @@
         #quantum-highlight { opacity: 0.4; z-index: 4; }
         #quantum-accent { opacity: 0.25; z-index: 5; }
 
+        /* INTRO HERO */
+        #intro-hero {
+            position: relative;
+            height: 200vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #intro-hero-content {
+            position: sticky;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            z-index: 15;
+        }
+
+        .intro-title {
+            opacity: 1;
+            will-change: transform, opacity;
+        }
+
+        /* Formation card - appears around title */
+        .formation-card {
+            position: absolute;
+            inset: -100px -200px;
+            background: rgba(10, 10, 20, 0);
+            backdrop-filter: blur(0px);
+            border: 0px solid rgba(0, 255, 255, 0);
+            border-radius: 0px;
+            box-shadow: none;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: -1;
+        }
+
+        .formation-card.forming {
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(30px);
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            border-radius: 40px;
+            box-shadow:
+                0 0 80px rgba(0, 255, 255, 0.4),
+                inset 0 0 60px rgba(0, 255, 255, 0.1);
+            opacity: 1;
+            animation: card-form 1.5s ease-out;
+        }
+
+        /* Holographic text that floats off */
+        .holographic-text {
+            animation: holographic-glow 3s ease-in-out infinite;
+            will-change: text-shadow, transform;
+            transition: all 0.8s ease;
+        }
+
+        .holographic-text.floating {
+            animation: holographic-glow 3s ease-in-out infinite,
+                       float-particles 4s ease-out forwards;
+        }
+
         /* SECTION SYSTEM */
         .section {
             position: relative;
@@ -87,6 +246,38 @@
             justify-content: center;
             padding: 100px 40px;
             z-index: 10;
+            transition: all 0.8s ease;
+        }
+
+        /* Section-specific color themes */
+        .section[data-theme="cyan"] {
+            --section-primary: var(--cyan);
+            --section-secondary: var(--blue);
+            --section-accent: var(--magenta);
+        }
+
+        .section[data-theme="magenta"] {
+            --section-primary: var(--magenta);
+            --section-secondary: var(--purple);
+            --section-accent: var(--cyan);
+        }
+
+        .section[data-theme="green"] {
+            --section-primary: var(--green);
+            --section-secondary: var(--cyan);
+            --section-accent: var(--yellow);
+        }
+
+        .section[data-theme="purple"] {
+            --section-primary: var(--purple);
+            --section-secondary: var(--magenta);
+            --section-accent: var(--blue);
+        }
+
+        .section[data-theme="orange"] {
+            --section-primary: var(--orange);
+            --section-secondary: var(--yellow);
+            --section-accent: var(--magenta);
         }
 
         .section-content {
@@ -103,13 +294,14 @@
             pointer-events: none;
         }
 
-        /* FLUID MORPHING CARDS */
+        /* FLUID MORPHING CARDS WITH HOLOGRAPHIC EFFECTS */
         .morph-card {
             position: relative;
             padding: 80px 60px;
             background: rgba(10, 10, 20, 0.85);
             backdrop-filter: blur(30px);
-            border: 2px solid rgba(0, 255, 255, 0.3);
+            border: 2px solid var(--section-primary);
+            border-opacity: 0.3;
             border-radius: 40px;
             box-shadow:
                 0 0 80px rgba(0, 255, 255, 0.2),
@@ -123,13 +315,52 @@
             margin: 40px 0;
         }
 
+        /* Holographic border shimmer */
+        .morph-card::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                var(--section-primary),
+                var(--section-secondary),
+                transparent
+            );
+            border-radius: 40px;
+            opacity: 0;
+            animation: shimmer 3s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+
         .morph-card:hover {
             transform: translateY(-10px) scale(1.02);
-            border-color: rgba(0, 255, 255, 0.6);
+            border-color: var(--section-primary);
             box-shadow:
-                0 0 120px rgba(0, 255, 255, 0.4),
-                inset 0 0 80px rgba(0, 255, 255, 0.1),
-                0 40px 120px rgba(0, 0, 0, 0.6);
+                0 0 120px var(--section-primary),
+                inset 0 0 80px var(--section-secondary),
+                0 40px 120px rgba(0, 0, 0, 0.6),
+                0 0 200px var(--section-primary);
+        }
+
+        .morph-card:hover::after {
+            opacity: 0.6;
+        }
+
+        /* Interactive state - clicked/touched */
+        .morph-card.active {
+            border-color: var(--section-secondary);
+            box-shadow:
+                0 0 150px var(--section-secondary),
+                inset 0 0 100px var(--section-primary),
+                0 50px 150px rgba(0, 0, 0, 0.8);
+            transform: translateY(-15px) scale(1.05);
+        }
+
+        .morph-card.active::after {
+            opacity: 1;
         }
 
         .morph-card.expanded {
@@ -242,18 +473,58 @@
             opacity: 1;
         }
 
-        /* TYPOGRAPHY */
+        /* TYPOGRAPHY WITH HOLOGRAPHIC EFFECTS */
         h1 {
             font-family: var(--font-display);
             font-size: clamp(3.5rem, 8vw, 7rem);
             font-weight: 900;
             line-height: 1;
             margin-bottom: 40px;
-            background: linear-gradient(135deg, var(--cyan), var(--magenta), var(--blue));
+            background: linear-gradient(
+                135deg,
+                var(--section-primary),
+                var(--section-secondary),
+                var(--section-accent),
+                var(--section-primary)
+            );
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -2px;
+            animation: holographic-shift 4s ease infinite;
+            position: relative;
+            filter: drop-shadow(0 0 20px var(--section-primary));
+            transition: all 0.5s ease;
+        }
+
+        h1:hover,
+        h1.active {
+            background-size: 300% 300%;
+            filter: drop-shadow(0 0 40px var(--section-primary))
+                    drop-shadow(0 0 60px var(--section-secondary));
+            transform: scale(1.05);
+        }
+
+        /* Holographic shadow effect */
+        h1::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            background: linear-gradient(
+                135deg,
+                var(--section-primary),
+                var(--section-secondary)
+            );
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(20px);
+            opacity: 0.6;
+            animation: holographic-shift 4s ease infinite reverse;
         }
 
         h2 {
@@ -261,8 +532,27 @@
             font-size: clamp(2.5rem, 5vw, 4.5rem);
             font-weight: 700;
             margin-bottom: 30px;
-            color: var(--cyan);
+            background: linear-gradient(
+                90deg,
+                var(--section-primary),
+                var(--section-secondary),
+                var(--section-primary)
+            );
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             letter-spacing: -1px;
+            animation: shimmer 3s linear infinite;
+            filter: drop-shadow(0 0 10px var(--section-primary));
+            transition: all 0.4s ease;
+        }
+
+        h2:hover,
+        h2.active {
+            filter: drop-shadow(0 0 20px var(--section-primary))
+                    drop-shadow(0 0 30px var(--section-secondary));
+            transform: translateX(5px);
         }
 
         h3 {
@@ -525,10 +815,18 @@
     <div id="smooth-wrapper">
         <div id="smooth-content">
 
+            <!-- INTRO HERO - EPIC SEQUENCE -->
+            <section id="intro-hero">
+                <div id="intro-hero-content">
+                    <div class="formation-card" id="formation-card"></div>
+                    <h1 class="intro-title holographic-text" id="intro-title" data-text="MINOOTS">MINOOTS</h1>
+                </div>
+            </section>
+
             <!-- HERO SECTION -->
-            <section class="section" id="hero">
+            <section class="section" id="hero" data-theme="cyan">
                 <div class="section-content">
-                    <h1 class="reveal" data-animate="fade-up">MINOOTS</h1>
+                    <h1 class="reveal" data-animate="fade-up" data-text="Welcome">Welcome</h1>
                     <div class="subtitle reveal" data-animate="fade-up" data-delay="0.2">
                         What if time itself could be <span class="accent">autonomous</span>?
                     </div>
@@ -540,7 +838,7 @@
             </section>
 
             <!-- OVERVIEW SECTION -->
-            <section class="section" id="overview">
+            <section class="section" id="overview" data-theme="magenta">
                 <div class="section-content">
                     <div class="morph-card reveal" data-animate="scale" data-expandable>
                         <div class="card-bg-accent"></div>
@@ -599,9 +897,9 @@
             </section>
 
             <!-- STATS SECTION -->
-            <section class="section" id="stats">
+            <section class="section" id="stats" data-theme="green">
                 <div class="section-content">
-                    <h2 class="reveal" data-animate="fade-up">Battle-Tested at Scale</h2>
+                    <h2 class="reveal" data-animate="fade-up" data-text="Stats">Battle-Tested at Scale</h2>
                     <div class="stats-grid">
                         <div class="stat-card reveal" data-animate="scale" data-delay="0.1">
                             <div class="stat-number">50M+</div>
@@ -624,7 +922,7 @@
             </section>
 
             <!-- ARCHITECTURE SECTION -->
-            <section class="section" id="architecture">
+            <section class="section" id="architecture" data-theme="purple">
                 <div class="section-content">
                     <div class="card-grid two-col">
                         <div class="morph-card reveal-left" data-expandable>
@@ -756,9 +1054,9 @@
             </section>
 
             <!-- USE CASES SECTION -->
-            <section class="section" id="use-cases">
+            <section class="section" id="use-cases" data-theme="orange">
                 <div class="section-content">
-                    <h2 class="reveal" data-animate="fade-up">Built for the Agentic Future</h2>
+                    <h2 class="reveal" data-animate="fade-up" data-text="Use Cases">Built for the Agentic Future</h2>
                     <p class="body-text large reveal" data-animate="fade-up" data-delay="0.2">
                         AI agents need persistent timers that survive restarts, scale to millions of instances,
                         and fire with <span class="highlight">millisecond precision</span>.
@@ -931,12 +1229,12 @@ const timer = await minoots.create({
             </section>
 
             <!-- INTEGRATIONS SECTION -->
-            <section class="section" id="integrations">
+            <section class="section" id="integrations" data-theme="cyan">
                 <div class="section-content">
                     <div class="morph-card reveal" data-animate="scale" data-expandable>
                         <div class="card-bg-accent"></div>
                         <div class="card-close"></div>
-                        <h2>Universal Integration</h2>
+                        <h2 data-text="Integrations">Universal Integration</h2>
                         <p class="body-text large">
                             <span class="accent">Node.js SDK</span> • Python Client • MCP Tools • REST API • CLI
                         </p>
@@ -1020,11 +1318,11 @@ timer = client.timers.create(
             </section>
 
             <!-- CTA SECTION -->
-            <section class="section" id="cta">
+            <section class="section" id="cta" data-theme="magenta">
                 <div class="section-content">
                     <div class="morph-card reveal" data-animate="scale">
                         <div class="card-bg-accent"></div>
-                        <h1 style="text-align: center;">Time is <span class="accent">Autonomous</span></h1>
+                        <h1 style="text-align: center;" data-text="Time is Autonomous">Time is <span class="accent">Autonomous</span></h1>
                         <p class="body-text large" style="text-align: center; margin-bottom: 50px;">
                             Join the revolution. Deploy timers that actually work.
                         </p>
@@ -1331,6 +1629,231 @@ timer = client.timers.create(
             }
         }
 
+        // ========== SECTION-BASED VISUALIZER PRESETS ==========
+        const SECTION_VIZ_PRESETS = {
+            'cyan': {
+                geometry: 1,
+                gridDensity: 35,
+                chaos: 0.2,
+                speed: 1.0,
+                hue: 0.50, // Cyan
+                intensity: 0.6,
+                rot4dXW: 0.5,
+                rot4dYW: 0.3,
+                rot4dZW: 0.2
+            },
+            'magenta': {
+                geometry: 2,
+                gridDensity: 42,
+                chaos: 0.35,
+                speed: 1.3,
+                hue: 0.83, // Magenta
+                intensity: 0.75,
+                rot4dXW: 1.0,
+                rot4dYW: 0.7,
+                rot4dZW: 0.5
+            },
+            'green': {
+                geometry: 3,
+                gridDensity: 28,
+                chaos: 0.15,
+                speed: 0.8,
+                hue: 0.33, // Green
+                intensity: 0.55,
+                rot4dXW: 0.3,
+                rot4dYW: 0.6,
+                rot4dZW: 0.9
+            },
+            'purple': {
+                geometry: 4,
+                gridDensity: 48,
+                chaos: 0.45,
+                speed: 1.5,
+                hue: 0.75, // Purple
+                intensity: 0.85,
+                rot4dXW: 1.5,
+                rot4dYW: 1.2,
+                rot4dZW: 0.8
+            },
+            'orange': {
+                geometry: 5,
+                gridDensity: 38,
+                chaos: 0.3,
+                speed: 1.1,
+                hue: 0.08, // Orange
+                intensity: 0.7,
+                rot4dXW: 0.8,
+                rot4dYW: 1.0,
+                rot4dZW: 0.6
+            }
+        };
+
+        function applyVisualizerPreset(theme) {
+            const preset = SECTION_VIZ_PRESETS[theme];
+            if (!preset || !window.quantumVisualizers) return;
+
+            window.quantumVisualizers.forEach((viz, i) => {
+                const layerMultiplier = (i + 1) * 0.2;
+                gsap.to(viz.params, {
+                    geometry: preset.geometry,
+                    gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
+                    chaos: preset.chaos * (1 + layerMultiplier * 0.3),
+                    speed: preset.speed,
+                    hue: preset.hue,
+                    intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
+                    rot4dXW: preset.rot4dXW * layerMultiplier,
+                    rot4dYW: preset.rot4dYW * layerMultiplier,
+                    rot4dZW: preset.rot4dZW * layerMultiplier,
+                    duration: 2,
+                    ease: 'power2.inOut'
+                });
+            });
+        }
+
+        // ========== EPIC INTRO SEQUENCE ==========
+        function initEpicIntro() {
+            const quantumLayers = document.getElementById('quantum-layers');
+            const introTitle = document.getElementById('intro-title');
+            const formationCard = document.getElementById('formation-card');
+            const introHero = document.getElementById('intro-hero');
+
+            // Start with intro class
+            quantumLayers.classList.add('intro');
+
+            // Create intro timeline
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: introHero,
+                    start: 'top top',
+                    end: 'bottom center',
+                    scrub: 1,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
+
+                        // Phase 1: Lock title in center (0-0.3)
+                        if (progress < 0.3) {
+                            // Title stays centered
+                        }
+
+                        // Phase 2: Card forms around title (0.3-0.6)
+                        else if (progress >= 0.3 && progress < 0.6) {
+                            const cardProgress = (progress - 0.3) / 0.3;
+                            formationCard.classList.add('forming');
+
+                            // Condense visualizer
+                            quantumLayers.classList.remove('intro');
+                            quantumLayers.classList.add('condensing');
+                        }
+
+                        // Phase 3: Visualizer ejects rapidly (0.6-0.85)
+                        else if (progress >= 0.6 && progress < 0.85) {
+                            quantumLayers.classList.remove('condensing');
+                            quantumLayers.classList.add('ejecting');
+
+                            // Trigger holographic float-off
+                            if (progress > 0.7) {
+                                introTitle.classList.add('floating');
+                            }
+                        }
+
+                        // Phase 4: Return to normal scrolling (0.85+)
+                        else {
+                            quantumLayers.classList.remove('ejecting');
+                            quantumLayers.classList.add('scrolling');
+                        }
+                    }
+                }
+            });
+
+            console.log('🎭 Epic intro sequence initialized');
+        }
+
+        // ========== INTERACTIVE STATE MANAGEMENT ==========
+        function initInteractiveStates() {
+            // Add click/touch states to cards
+            document.querySelectorAll('.morph-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking expanded content
+                    if (this.classList.contains('expanded')) return;
+
+                    // Toggle active state
+                    this.classList.toggle('active');
+
+                    // Remove active from others
+                    document.querySelectorAll('.morph-card').forEach(other => {
+                        if (other !== this && !other.classList.contains('expanded')) {
+                            other.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // Add hover states to headlines
+            document.querySelectorAll('h1, h2, h3').forEach(headline => {
+                headline.addEventListener('mouseenter', function() {
+                    this.classList.add('active');
+                });
+
+                headline.addEventListener('mouseleave', function() {
+                    this.classList.remove('active');
+                });
+
+                // Click to keep active
+                headline.addEventListener('click', function() {
+                    const isActive = this.classList.contains('active');
+                    // Remove active from all headlines
+                    document.querySelectorAll('h1, h2, h3').forEach(h => h.classList.remove('active'));
+                    // Toggle this one
+                    if (!isActive) {
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Interactive accent text
+            document.querySelectorAll('.accent, .highlight, .glow').forEach(accent => {
+                accent.addEventListener('mouseenter', function() {
+                    gsap.to(this, {
+                        scale: 1.1,
+                        textShadow: `0 0 20px currentColor, 0 0 40px currentColor`,
+                        duration: 0.3
+                    });
+                });
+
+                accent.addEventListener('mouseleave', function() {
+                    gsap.to(this, {
+                        scale: 1,
+                        textShadow: `0 0 0px currentColor`,
+                        duration: 0.3
+                    });
+                });
+            });
+
+            console.log('🎮 Interactive states enabled');
+        }
+
+        // ========== SECTION-AWARE VISUALIZER ==========
+        function initSectionAwareVisualizer() {
+            document.querySelectorAll('.section[data-theme]').forEach(section => {
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: 'top center',
+                    end: 'bottom center',
+                    onEnter: () => {
+                        const theme = section.dataset.theme;
+                        applyVisualizerPreset(theme);
+                        console.log(`🎨 Switched to ${theme} theme`);
+                    },
+                    onEnterBack: () => {
+                        const theme = section.dataset.theme;
+                        applyVisualizerPreset(theme);
+                    }
+                });
+            });
+
+            console.log('🌈 Section-aware visualizer active');
+        }
+
         // ========== GSAP SCROLL ANIMATIONS ==========
         function initScrollAnimations() {
             gsap.registerPlugin(ScrollTrigger);
@@ -1630,15 +2153,21 @@ timer = client.timers.create(
             }
             renderLoop();
 
-            // Initialize GSAP animations
+            // Initialize all animation systems
+            initEpicIntro();
             initScrollAnimations();
             initExpandableCards();
             initScrollProgress();
+            initInteractiveStates();
+            initSectionAwareVisualizer();
 
             console.log('🚀 MINOOTS VIB3+ Experience Ready');
+            console.log('🎭 Epic intro sequence loaded');
             console.log('🎨 Fluid morphing scroll activated');
             console.log('📦 Expandable cards enabled');
             console.log('✨ GSAP choreography online');
+            console.log('🎮 Interactive states enabled');
+            console.log('🌈 Section-aware visualizer active');
         });
     </script>
 </body>
