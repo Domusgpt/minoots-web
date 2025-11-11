@@ -17,7 +17,7 @@
         }
 
         :root {
-            /* Natural earthy palette from Simone branch */
+            /* Natural earthy palette */
             --bg-primary: #F5F3EF;
             --bg-secondary: #E8E5DD;
             --text-primary: #2E4E4B;
@@ -27,12 +27,14 @@
             --accent-terracotta: #C97064;
             --accent-ochre: #E8B86D;
             --accent-moss: #4A6741;
+            --accent-teal: #3D9294;
+            --accent-coral: #FF8A80;
 
             --font-display: 'Space Grotesk', sans-serif;
             --font-body: 'Poppins', sans-serif;
         }
 
-        /* Holographic animation keyframes */
+        /* Enhanced Animations */
         @keyframes shimmer {
             0% { background-position: -1000px 0; }
             100% { background-position: 1000px 0; }
@@ -41,6 +43,48 @@
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(143, 188, 143, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(143, 188, 143, 0.6);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes rotate-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes line-draw {
+            from {
+                stroke-dashoffset: 1000;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
         }
 
         html {
@@ -61,30 +105,52 @@
             overflow-y: scroll;
         }
 
-        /* Background texture */
-        body::before {
-            content: '';
+        /* Enhanced Background System */
+        .background-layers {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: url('data:image/svg+xml,%3Csvg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%232E4E4B" fill-opacity="0.02" fill-rule="evenodd"%3E%3Cpath d="M5 0h1L0 6V5zM6 5v1H5z"/%3E%3C/g%3E%3C/svg%3E');
+            inset: 0;
             z-index: 0;
             pointer-events: none;
         }
 
-        /* SMOOTH SCROLLER WRAPPER */
-        #smooth-wrapper {
-            overflow: visible;
+        /* Subtle texture */
+        .texture-layer {
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml,%3Csvg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%232E4E4B" fill-opacity="0.02" fill-rule="evenodd"%3E%3Cpath d="M5 0h1L0 6V5zM6 5v1H5z"/%3E%3C/g%3E%3C/svg%3E');
         }
 
-        #smooth-content {
-            overflow: visible;
+        /* Grid overlay */
+        .grid-layer {
+            position: absolute;
+            inset: 0;
+            background-size: 50px 50px;
+            background-image:
+                linear-gradient(to right, rgba(143, 188, 143, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(143, 188, 143, 0.03) 1px, transparent 1px);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .grid-layer.active {
+            opacity: 1;
+        }
+
+        /* Radial gradient cursor follower */
+        .cursor-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212, 252, 121, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease;
+            opacity: 0;
             will-change: transform;
         }
 
-        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND */
+        /* VIB3+ Quantum Visualizer */
         .quantum-layers {
             position: fixed;
             inset: 0;
@@ -92,7 +158,7 @@
             pointer-events: none;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             will-change: transform, opacity, filter;
-            opacity: 0.15;
+            opacity: 0.2;
         }
 
         .quantum-canvas {
@@ -107,6 +173,123 @@
         #quantum-content { opacity: 0.5; z-index: 3; }
         #quantum-highlight { opacity: 0.35; z-index: 4; }
         #quantum-accent { opacity: 0.25; z-index: 5; }
+
+        /* Floating Particles System */
+        .particles-container {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-sage);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particle-float 15s infinite;
+            will-change: transform, opacity;
+        }
+
+        /* Section Dividers */
+        .section-divider {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--accent-sage) 50%,
+                transparent 100%);
+            opacity: 0.3;
+            bottom: 0;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-sage);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .section-divider::before { left: 50px; }
+        .section-divider::after { right: 50px; }
+
+        /* Corner Accents */
+        .corner-accent {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+        }
+
+        .corner-accent::before,
+        .corner-accent::after {
+            content: '';
+            position: absolute;
+            background: currentColor;
+        }
+
+        .corner-accent::before {
+            width: 100%;
+            height: 2px;
+            left: 0;
+            top: 0;
+        }
+
+        .corner-accent::after {
+            width: 2px;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+
+        .corner-accent.top-left {
+            top: 0;
+            left: 0;
+            color: var(--accent-sage);
+        }
+
+        .corner-accent.top-right {
+            top: 0;
+            right: 0;
+            color: var(--accent-lime);
+            transform: scaleX(-1);
+        }
+
+        .corner-accent.bottom-left {
+            bottom: 0;
+            left: 0;
+            color: var(--accent-terracotta);
+            transform: scaleY(-1);
+        }
+
+        .corner-accent.bottom-right {
+            bottom: 0;
+            right: 0;
+            color: var(--accent-ochre);
+            transform: scale(-1);
+        }
+
+        /* Content Wrapper */
+        #smooth-wrapper {
+            position: relative;
+            z-index: 10;
+            overflow: visible;
+        }
+
+        #smooth-content {
+            overflow: visible;
+            will-change: transform;
+        }
 
         /* INTRO HERO */
         #intro-hero {
@@ -136,6 +319,24 @@
             will-change: transform, opacity;
             letter-spacing: -3px;
             line-height: 0.9;
+            position: relative;
+        }
+
+        .intro-title::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-sage), transparent);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .intro-title.active::after {
+            opacity: 1;
         }
 
         .intro-subtitle {
@@ -146,7 +347,7 @@
             opacity: 0;
         }
 
-        /* Formation card - appears around title */
+        /* Formation card */
         .formation-card {
             position: absolute;
             inset: -80px -150px;
@@ -159,6 +360,23 @@
             pointer-events: none;
             z-index: -1;
             will-change: all;
+            overflow: hidden;
+        }
+
+        .formation-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(212, 252, 121, 0.1) 0%,
+                rgba(143, 188, 143, 0.1) 50%,
+                rgba(74, 103, 65, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .formation-card.active::before {
+            opacity: 1;
         }
 
         /* SECTION SYSTEM */
@@ -210,11 +428,46 @@
             --theme-accent: var(--accent-lime);
         }
 
+        .section[data-theme="teal"] {
+            --theme-primary: var(--accent-teal);
+            --theme-secondary: var(--accent-sage);
+            --theme-accent: var(--accent-lime);
+        }
+
+        /* Enhanced Section Headers */
+        .section-header {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 60px;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            left: -60px;
+            top: 50%;
+            width: 40px;
+            height: 2px;
+            background: var(--theme-primary);
+            transform: translateY(-50%);
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            width: 40px;
+            height: 2px;
+            background: var(--theme-primary);
+            transform: translateY(-50%);
+        }
+
         /* MORPH CARDS */
         .morph-card {
             position: relative;
             padding: 60px 50px;
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             border: 2px solid var(--theme-primary, var(--accent-sage));
             border-radius: 30px;
@@ -229,6 +482,7 @@
             margin: 40px 0;
         }
 
+        /* Shimmer effect */
         .morph-card::after {
             content: '';
             position: absolute;
@@ -247,12 +501,23 @@
             transition: opacity 0.5s ease;
         }
 
+        /* Corner decorations on cards */
+        .morph-card .corner-accent {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .morph-card:hover .corner-accent {
+            opacity: 0.6;
+        }
+
         .morph-card:hover {
             transform: translateY(-8px) scale(1.01);
             border-color: var(--theme-primary, var(--accent-sage));
             box-shadow:
                 0 20px 60px rgba(46, 78, 75, 0.25),
-                inset 0 1px 0 rgba(255, 255, 255, 1);
+                inset 0 1px 0 rgba(255, 255, 255, 1),
+                0 0 40px rgba(143, 188, 143, 0.2);
         }
 
         .morph-card:hover::after {
@@ -292,6 +557,7 @@
             color: var(--text-primary);
             letter-spacing: -2px;
             transition: all 0.5s ease;
+            position: relative;
         }
 
         h1.gradient {
@@ -303,6 +569,8 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            background-size: 200% 200%;
+            animation: shimmer 6s ease infinite;
         }
 
         h2 {
@@ -345,22 +613,41 @@
 
         /* ACCENT TEXT */
         .accent {
-            color: var(--accent-lime);
+            color: var(--text-primary);
             font-weight: 600;
             background: var(--accent-lime);
-            color: var(--text-primary);
             padding: 2px 8px;
             border-radius: 4px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .accent:hover {
+            background: var(--accent-sage);
+            transform: translateY(-1px);
         }
 
         .highlight {
             color: var(--accent-terracotta);
             font-weight: 600;
+            position: relative;
+        }
+
+        .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: currentColor;
+            opacity: 0.3;
         }
 
         .glow {
             color: var(--accent-sage);
             font-weight: 600;
+            text-shadow: 0 0 10px rgba(143, 188, 143, 0.3);
         }
 
         /* STATS GRID */
@@ -373,16 +660,33 @@
 
         .stat-card {
             padding: 40px 30px;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.6);
             border: 2px solid var(--accent-sage);
             border-radius: 24px;
             text-align: center;
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 252, 121, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
         }
 
         .stat-card:hover {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.85);
             border-color: var(--accent-moss);
             transform: translateY(-8px) scale(1.03);
             box-shadow: 0 15px 45px rgba(46, 78, 75, 0.2);
@@ -417,14 +721,32 @@
             align-items: flex-start;
             gap: 25px;
             padding: 35px;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.5);
             border-radius: 20px;
-            border: 1px solid rgba(46, 78, 75, 0.1);
+            border: 1px solid rgba(46, 78, 75, 0.15);
             transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--theme-primary, var(--accent-sage));
+            border-radius: 20px 0 0 20px;
+            transform: scaleY(0);
+            transition: transform 0.4s ease;
+        }
+
+        .feature-item:hover::before {
+            transform: scaleY(1);
         }
 
         .feature-item:hover {
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.75);
             border-color: var(--accent-sage);
             transform: translateX(10px);
         }
@@ -438,6 +760,12 @@
             background: var(--accent-lime);
             border-radius: 14px;
             font-size: 1.8rem;
+            transition: all 0.4s ease;
+        }
+
+        .feature-item:hover .feature-icon {
+            transform: rotate(5deg) scale(1.1);
+            box-shadow: 0 5px 15px rgba(212, 252, 121, 0.4);
         }
 
         .feature-content h3 {
@@ -458,6 +786,26 @@
             box-shadow: 0 8px 30px rgba(74, 103, 65, 0.3);
             cursor: pointer;
             border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn:hover {
@@ -489,15 +837,33 @@
 
         .scroll-progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-sage), var(--accent-lime));
+            background: linear-gradient(90deg, var(--accent-sage), var(--accent-lime), var(--accent-teal));
             width: 0%;
             transition: width 0.2s ease;
+            box-shadow: 0 0 10px rgba(143, 188, 143, 0.6);
         }
 
         /* REVEAL ANIMATIONS */
         .reveal {
             opacity: 0;
             transform: translateY(50px);
+        }
+
+        /* Decorative Elements */
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid var(--accent-sage);
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .deco-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-sage), transparent);
+            opacity: 0.2;
+            pointer-events: none;
         }
 
         /* MOBILE RESPONSIVENESS */
@@ -509,16 +875,28 @@
             .morph-card {
                 padding: 40px 25px;
             }
+
+            .section-header::before,
+            .section-header::after {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Background Layers -->
+    <div class="background-layers">
+        <div class="texture-layer"></div>
+        <div class="grid-layer" id="grid-layer"></div>
+        <div class="cursor-glow" id="cursor-glow"></div>
+    </div>
+
     <!-- Scroll Progress -->
     <div class="scroll-progress">
         <div class="scroll-progress-bar" id="scroll-progress"></div>
     </div>
 
-    <!-- VIB3+ Quantum Visualizer - Fixed Background -->
+    <!-- VIB3+ Quantum Visualizer -->
     <div class="quantum-layers" id="quantum-layers">
         <canvas id="quantum-background" class="quantum-canvas"></canvas>
         <canvas id="quantum-shadow" class="quantum-canvas"></canvas>
@@ -527,6 +905,9 @@
         <canvas id="quantum-accent" class="quantum-canvas"></canvas>
     </div>
 
+    <!-- Floating Particles -->
+    <div class="particles-container" id="particles-container"></div>
+
     <!-- Main Content -->
     <div id="smooth-wrapper">
         <div id="smooth-content">
@@ -534,7 +915,12 @@
             <!-- INTRO HERO -->
             <section id="intro-hero">
                 <div id="intro-hero-content">
-                    <div class="formation-card" id="formation-card"></div>
+                    <div class="formation-card" id="formation-card">
+                        <div class="corner-accent top-left"></div>
+                        <div class="corner-accent top-right"></div>
+                        <div class="corner-accent bottom-left"></div>
+                        <div class="corner-accent bottom-right"></div>
+                    </div>
                     <h1 class="intro-title" id="intro-title">VIB3 SCRIB3</h1>
                     <p class="intro-subtitle" id="intro-subtitle">Transcribe Reality • Amplify Vibrations</p>
                 </div>
@@ -542,8 +928,9 @@
 
             <!-- HERO SECTION -->
             <section class="section" id="hero" data-theme="sage">
+                <div class="section-divider"></div>
                 <div class="section-content">
-                    <h1 class="reveal gradient">Reality Transcription Platform</h1>
+                    <h1 class="reveal gradient section-header">Reality Transcription Platform</h1>
                     <div class="subtitle reveal">
                         Transform vibrations into <span class="accent">meaningful signals</span>
                     </div>
@@ -557,8 +944,14 @@
 
             <!-- OVERVIEW SECTION -->
             <section class="section" id="overview" data-theme="lime">
+                <div class="section-divider"></div>
                 <div class="section-content">
                     <div class="morph-card reveal">
+                        <div class="corner-accent top-left"></div>
+                        <div class="corner-accent top-right"></div>
+                        <div class="corner-accent bottom-left"></div>
+                        <div class="corner-accent bottom-right"></div>
+
                         <h2>Harmonic Reality Mapping</h2>
                         <p class="body-text">
                             VIB3 SCRIB3 isn't just another transcription tool. It's a <span class="accent">reality decoder</span>
@@ -598,8 +991,9 @@
 
             <!-- STATS SECTION -->
             <section class="section" id="stats" data-theme="terracotta">
+                <div class="section-divider"></div>
                 <div class="section-content">
-                    <h2 class="reveal">Precision Metrics</h2>
+                    <h2 class="reveal section-header">Precision Metrics</h2>
                     <div class="stats-grid">
                         <div class="stat-card reveal">
                             <div class="stat-number">432Hz</div>
@@ -623,9 +1017,16 @@
 
             <!-- ARCHITECTURE SECTION -->
             <section class="section" id="architecture" data-theme="ochre">
+                <div class="section-divider"></div>
                 <div class="section-content">
+                    <h2 class="reveal section-header">Quantum Architecture</h2>
                     <div class="card-grid two-col">
                         <div class="morph-card reveal">
+                            <div class="corner-accent top-left"></div>
+                            <div class="corner-accent top-right"></div>
+                            <div class="corner-accent bottom-left"></div>
+                            <div class="corner-accent bottom-right"></div>
+
                             <h2>Hypercube Processing</h2>
                             <p class="body-text">
                                 Multi-dimensional signal processing using <span class="highlight">4D hypercube topology</span>
@@ -656,6 +1057,11 @@
                         </div>
 
                         <div class="morph-card reveal">
+                            <div class="corner-accent top-left"></div>
+                            <div class="corner-accent top-right"></div>
+                            <div class="corner-accent bottom-left"></div>
+                            <div class="corner-accent bottom-right"></div>
+
                             <h2>Tetrahedron Lattice</h2>
                             <p class="body-text">
                                 Fundamental <span class="accent">tetrahedral geometry</span> creates the most
@@ -688,8 +1094,9 @@
 
             <!-- USE CASES SECTION -->
             <section class="section" id="use-cases" data-theme="moss">
+                <div class="section-divider"></div>
                 <div class="section-content">
-                    <h2 class="reveal">Reality Applications</h2>
+                    <h2 class="reveal section-header">Reality Applications</h2>
                     <p class="body-text large reveal">
                         From sound healing to quantum research, VIB3 SCRIB3 bridges
                         <span class="highlight">science and consciousness</span>.
@@ -697,6 +1104,8 @@
 
                     <div class="card-grid three-col">
                         <div class="morph-card reveal">
+                            <div class="corner-accent top-left"></div>
+                            <div class="corner-accent bottom-right"></div>
                             <h3>🎼 Sound Healing</h3>
                             <p class="body-text">
                                 Map binaural beats, solfeggio frequencies, and harmonic resonances
@@ -705,6 +1114,8 @@
                         </div>
 
                         <div class="morph-card reveal">
+                            <div class="corner-accent top-left"></div>
+                            <div class="corner-accent bottom-right"></div>
                             <h3>🧬 Biofield Mapping</h3>
                             <p class="body-text">
                                 Detect and visualize electromagnetic field patterns around
@@ -713,6 +1124,8 @@
                         </div>
 
                         <div class="morph-card reveal">
+                            <div class="corner-accent top-left"></div>
+                            <div class="corner-accent bottom-right"></div>
                             <h3>🌍 Earth Resonance</h3>
                             <p class="body-text">
                                 Track Schumann resonances and planetary vibrations for
@@ -724,9 +1137,15 @@
             </section>
 
             <!-- CTA SECTION -->
-            <section class="section" id="cta" data-theme="sage">
+            <section class="section" id="cta" data-theme="teal">
+                <div class="section-divider"></div>
                 <div class="section-content">
                     <div class="morph-card reveal">
+                        <div class="corner-accent top-left"></div>
+                        <div class="corner-accent top-right"></div>
+                        <div class="corner-accent bottom-left"></div>
+                        <div class="corner-accent bottom-right"></div>
+
                         <h1 style="text-align: center;">Tune Into <span class="accent">Reality</span></h1>
                         <p class="body-text large" style="text-align: center; margin-bottom: 40px;">
                             Join the vibration revolution. Transcribe what others can't perceive.
@@ -743,7 +1162,7 @@
     </div>
 
     <script type="module">
-        // ========== VIB3+ QUANTUM VISUALIZER (Hypercube + Tetrahedron) ==========
+        // ========== VIB3+ QUANTUM VISUALIZER (Enhanced) ==========
         class QuantumVisualizer {
             constructor(canvasId, role, reactivity) {
                 this.canvas = document.getElementById(canvasId);
@@ -751,7 +1170,10 @@
                 this.reactivity = reactivity;
 
                 this.gl = this.canvas.getContext('webgl2') || this.canvas.getContext('webgl');
-                if (!this.gl) return;
+                if (!this.gl) {
+                    console.warn(`WebGL not supported for ${canvasId}`);
+                    return;
+                }
 
                 this.startTime = Date.now();
                 this.scrollProgress = 0;
@@ -762,7 +1184,7 @@
                     chaos: 0.15,
                     speed: 0.9,
                     hue: 0.3,
-                    intensity: 0.4,
+                    intensity: 0.5,
                     saturation: 0.6,
                     dimension: 3.5,
                     rot4dXW: 0.0,
@@ -776,6 +1198,7 @@
 
             init() {
                 this.initShaders();
+                if (!this.program) return;
                 this.initBuffers();
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
@@ -845,7 +1268,6 @@
                         return project4Dto3D(p4d);
                     }
 
-                    // HYPERCUBE LATTICE
                     float hypercubeLattice(vec3 p, float gridSize) {
                         vec3 grid = fract(p * gridSize);
                         vec3 edges = min(grid, 1.0 - grid);
@@ -853,11 +1275,8 @@
                         return 1.0 - smoothstep(0.0, 0.04, minEdge);
                     }
 
-                    // TETRAHEDRON LATTICE
                     float tetrahedronLattice(vec3 p, float gridSize) {
                         vec3 cell = fract(p * gridSize) - 0.5;
-
-                        // Four vertices of tetrahedron
                         vec3 v1 = vec3(0.0, 0.5, 0.0);
                         vec3 v2 = vec3(0.5, -0.5, 0.5);
                         vec3 v3 = vec3(-0.5, -0.5, 0.5);
@@ -872,17 +1291,14 @@
                         return 1.0 - smoothstep(0.1, 0.25, minDist);
                     }
 
-                    // Mixed geometry function
                     float geometryFunction(vec4 p) {
                         vec3 p3d = project4Dto3D(p);
                         vec3 warped = warpHypersphere(p3d);
 
-                        // Vary density based on layer
                         float baseDensity = u_gridDensity * 0.08;
                         float highDensity = baseDensity * 1.8;
                         float lowDensity = baseDensity * 0.5;
 
-                        // Mix hypercube and tetrahedron based on scroll and geometry param
                         float geomMix = sin(u_geometry + u_scrollProgress * 0.2) * 0.5 + 0.5;
 
                         float hypercube = hypercubeLattice(warped, mix(lowDensity, highDensity, geomMix));
@@ -916,16 +1332,16 @@
                         geometryIntensity = pow(geometryIntensity, 2.0);
                         float finalIntensity = geometryIntensity * u_intensity * (1.0 + u_scrollProgress * 0.15);
 
-                        // Natural earthy colors
                         vec3 color = hsv2rgb(vec3(u_hue, 0.4, 0.6));
                         vec3 finalColor = color * finalIntensity;
 
                         float layerAlpha = u_roleIntensity;
-                        gl_FragColor = vec4(finalColor, finalIntensity * layerAlpha * 0.6);
+                        gl_FragColor = vec4(finalColor, finalIntensity * layerAlpha * 0.7);
                     }
                 `;
 
                 this.program = this.createProgram(vertexShader, fragmentShader);
+                if (!this.program) return;
 
                 this.uniforms = {
                     resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
@@ -949,12 +1365,17 @@
                 const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
                 const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
 
+                if (!vertexShader || !fragmentShader) return null;
+
                 const program = this.gl.createProgram();
                 this.gl.attachShader(program, vertexShader);
                 this.gl.attachShader(program, fragmentShader);
                 this.gl.linkProgram(program);
 
-                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) return null;
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program link error:', this.gl.getProgramInfoLog(program));
+                    return null;
+                }
                 return program;
             }
 
@@ -963,7 +1384,10 @@
                 this.gl.shaderSource(shader, source);
                 this.gl.compileShader(shader);
 
-                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) return null;
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
                 return shader;
             }
 
@@ -997,6 +1421,8 @@
                 if (!this.program) return;
 
                 this.gl.useProgram(this.program);
+                this.gl.enable(this.gl.BLEND);
+                this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
                 this.gl.clearColor(0, 0, 0, 0);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
@@ -1029,63 +1455,14 @@
             }
         }
 
-        // ========== SECTION-BASED VISUALIZER PRESETS ==========
+        // ========== SECTION VISUALIZER PRESETS ==========
         const SECTION_VIZ_PRESETS = {
-            'sage': {
-                geometry: 1,
-                gridDensity: 32,
-                chaos: 0.15,
-                speed: 0.8,
-                hue: 0.35, // Sage green
-                intensity: 0.5,
-                rot4dXW: 0.4,
-                rot4dYW: 0.3,
-                rot4dZW: 0.2
-            },
-            'terracotta': {
-                geometry: 2.5,
-                gridDensity: 28,
-                chaos: 0.2,
-                speed: 1.0,
-                hue: 0.05, // Terracotta orange
-                intensity: 0.6,
-                rot4dXW: 0.6,
-                rot4dYW: 0.5,
-                rot4dZW: 0.4
-            },
-            'lime': {
-                geometry: 3,
-                gridDensity: 42,
-                chaos: 0.1,
-                speed: 1.2,
-                hue: 0.25, // Lime yellow-green
-                intensity: 0.55,
-                rot4dXW: 0.8,
-                rot4dYW: 0.6,
-                rot4dZW: 0.5
-            },
-            'ochre': {
-                geometry: 4,
-                gridDensity: 36,
-                chaos: 0.18,
-                speed: 0.9,
-                hue: 0.12, // Ochre yellow
-                intensity: 0.58,
-                rot4dXW: 0.5,
-                rot4dYW: 0.7,
-                rot4dZW: 0.6
-            },
-            'moss': {
-                geometry: 5,
-                gridDensity: 30,
-                chaos: 0.12,
-                speed: 0.85,
-                hue: 0.32, // Moss green
-                intensity: 0.52,
-                rot4dXW: 0.7,
-                rot4dYW: 0.4,
-                rot4dZW: 0.8
-            }
+            'sage': { geometry: 1, gridDensity: 32, chaos: 0.15, speed: 0.8, hue: 0.35, intensity: 0.5, rot4dXW: 0.4, rot4dYW: 0.3, rot4dZW: 0.2 },
+            'terracotta': { geometry: 2.5, gridDensity: 28, chaos: 0.2, speed: 1.0, hue: 0.05, intensity: 0.6, rot4dXW: 0.6, rot4dYW: 0.5, rot4dZW: 0.4 },
+            'lime': { geometry: 3, gridDensity: 42, chaos: 0.1, speed: 1.2, hue: 0.25, intensity: 0.55, rot4dXW: 0.8, rot4dYW: 0.6, rot4dZW: 0.5 },
+            'ochre': { geometry: 4, gridDensity: 36, chaos: 0.18, speed: 0.9, hue: 0.12, intensity: 0.58, rot4dXW: 0.5, rot4dYW: 0.7, rot4dZW: 0.6 },
+            'moss': { geometry: 5, gridDensity: 30, chaos: 0.12, speed: 0.85, hue: 0.32, intensity: 0.52, rot4dXW: 0.7, rot4dYW: 0.4, rot4dZW: 0.8 },
+            'teal': { geometry: 3.5, gridDensity: 34, chaos: 0.16, speed: 0.95, hue: 0.48, intensity: 0.56, rot4dXW: 0.6, rot4dYW: 0.5, rot4dZW: 0.7 }
         };
 
         function applyVisualizerPreset(theme) {
@@ -1094,24 +1471,95 @@
 
             window.quantumVisualizers.forEach((viz, i) => {
                 const layerMultiplier = (i + 1) * 0.18;
-                gsap.to(viz.params, {
-                    geometry: preset.geometry + (i * 0.3),
-                    gridDensity: preset.gridDensity * (0.85 + layerMultiplier * 0.3),
-                    chaos: preset.chaos * (1 + layerMultiplier * 0.25),
-                    speed: preset.speed,
-                    hue: preset.hue + (i * 0.02),
-                    intensity: preset.intensity * (0.75 + layerMultiplier * 0.25),
-                    rot4dXW: preset.rot4dXW * layerMultiplier,
-                    rot4dYW: preset.rot4dYW * layerMultiplier,
-                    rot4dZW: preset.rot4dZW * layerMultiplier,
-                    duration: 1.8,
-                    ease: 'power2.inOut'
-                });
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(viz.params, {
+                        geometry: preset.geometry + (i * 0.3),
+                        gridDensity: preset.gridDensity * (0.85 + layerMultiplier * 0.3),
+                        chaos: preset.chaos * (1 + layerMultiplier * 0.25),
+                        speed: preset.speed,
+                        hue: preset.hue + (i * 0.02),
+                        intensity: preset.intensity * (0.75 + layerMultiplier * 0.25),
+                        rot4dXW: preset.rot4dXW * layerMultiplier,
+                        rot4dYW: preset.rot4dYW * layerMultiplier,
+                        rot4dZW: preset.rot4dZW * layerMultiplier,
+                        duration: 1.8,
+                        ease: 'power2.inOut'
+                    });
+                }
+            });
+        }
+
+        // ========== PARTICLES SYSTEM ==========
+        function initParticles() {
+            const container = document.getElementById('particles-container');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const startX = Math.random() * window.innerWidth;
+                const startY = window.innerHeight + 20;
+                const endX = startX + (Math.random() - 0.5) * 200;
+                const endY = -20;
+
+                particle.style.left = `${startX}px`;
+                particle.style.top = `${startY}px`;
+                particle.style.setProperty('--tx', `${endX - startX}px`);
+                particle.style.setProperty('--ty', `${endY - startY}px`);
+                particle.style.animationDelay = `${Math.random() * 15}s`;
+
+                container.appendChild(particle);
+            }
+        }
+
+        // ========== CURSOR GLOW ==========
+        function initCursorGlow() {
+            const glow = document.getElementById('cursor-glow');
+            let mouseX = 0, mouseY = 0;
+            let glowX = 0, glowY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                glow.style.opacity = '1';
+            });
+
+            document.addEventListener('mouseleave', () => {
+                glow.style.opacity = '0';
+            });
+
+            function updateGlow() {
+                glowX += (mouseX - glowX) * 0.1;
+                glowY += (mouseY - glowY) * 0.1;
+                glow.style.left = `${glowX}px`;
+                glow.style.top = `${glowY}px`;
+                requestAnimationFrame(updateGlow);
+            }
+            updateGlow();
+        }
+
+        // ========== GRID TOGGLE ==========
+        function initGridToggle() {
+            const grid = document.getElementById('grid-layer');
+            let isGridVisible = false;
+
+            window.addEventListener('scroll', () => {
+                const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+                if (scrollPercent > 0.1 && !isGridVisible) {
+                    grid.classList.add('active');
+                    isGridVisible = true;
+                } else if (scrollPercent <= 0.1 && isGridVisible) {
+                    grid.classList.remove('active');
+                    isGridVisible = false;
+                }
             });
         }
 
         // ========== INTRO SEQUENCE ==========
         function initIntroSequence() {
+            if (typeof ScrollTrigger === 'undefined') return;
+
             const introTitle = document.getElementById('intro-title');
             const introSubtitle = document.getElementById('intro-subtitle');
             const formationCard = document.getElementById('formation-card');
@@ -1127,20 +1575,22 @@
                 onUpdate: (self) => {
                     const progress = self.progress;
 
-                    if (progress < 0.3) {
-                        introSubtitle.style.opacity = progress / 0.3;
-                    } else if (progress >= 0.3 && progress < 0.6) {
-                        const contractProgress = (progress - 0.3) / 0.3;
+                    if (progress < 0.2) {
+                        introSubtitle.style.opacity = progress / 0.2;
+                        introTitle.classList.add('active');
+                    } else if (progress >= 0.2 && progress < 0.5) {
+                        const contractProgress = (progress - 0.2) / 0.3;
                         formationCard.style.opacity = contractProgress;
-                        formationCard.style.background = `rgba(255, 255, 255, ${0.7 * contractProgress})`;
+                        formationCard.style.background = `rgba(255, 255, 255, ${0.75 * contractProgress})`;
                         formationCard.style.backdropFilter = `blur(${25 * contractProgress}px)`;
-                        formationCard.style.border = `2px solid rgba(143, 188, 143, ${0.5 * contractProgress})`;
+                        formationCard.style.border = `2px solid rgba(143, 188, 143, ${0.6 * contractProgress})`;
                         formationCard.style.borderRadius = `${30 * contractProgress}px`;
-                        formationCard.style.boxShadow = `0 10px ${40 * contractProgress}px rgba(74, 103, 65, ${0.2 * contractProgress})`;
-                    } else if (progress >= 0.6) {
-                        const exitProgress = (progress - 0.6) / 0.4;
-                        introHeroContent.style.opacity = 1 - exitProgress;
-                        introHeroContent.style.transform = `translateY(${-exitProgress * 50}vh)`;
+                        formationCard.style.boxShadow = `0 10px ${40 * contractProgress}px rgba(74, 103, 65, ${0.25 * contractProgress})`;
+                        if (contractProgress > 0.5) formationCard.classList.add('active');
+                    } else if (progress >= 0.5) {
+                        const exitProgress = (progress - 0.5) / 0.5;
+                        introHeroContent.style.opacity = 1 - (exitProgress * 0.8);
+                        introHeroContent.style.transform = `translateY(${-exitProgress * 30}vh)`;
                     }
                 }
             });
@@ -1148,6 +1598,8 @@
 
         // ========== SCROLL ANIMATIONS ==========
         function initScrollAnimations() {
+            if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
             gsap.registerPlugin(ScrollTrigger);
 
             // Reveal animations
@@ -1174,18 +1626,12 @@
                     trigger: section,
                     start: 'top center',
                     end: 'bottom center',
-                    onEnter: () => {
-                        const theme = section.dataset.theme;
-                        applyVisualizerPreset(theme);
-                    },
-                    onEnterBack: () => {
-                        const theme = section.dataset.theme;
-                        applyVisualizerPreset(theme);
-                    }
+                    onEnter: () => applyVisualizerPreset(section.dataset.theme),
+                    onEnterBack: () => applyVisualizerPreset(section.dataset.theme)
                 });
             });
 
-            // Card hover 3D tilt effect
+            // Card 3D tilt
             document.querySelectorAll('.morph-card').forEach(card => {
                 card.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
@@ -1228,7 +1674,6 @@
 
                 progressBar.style.width = `${scrollPercent}%`;
 
-                // Update visualizers with scroll progress
                 const normalizedProgress = scrollTop / (documentHeight - windowHeight);
                 window.quantumVisualizers?.forEach((viz, i) => {
                     viz.updateScrollProgress(normalizedProgress);
@@ -1256,25 +1701,30 @@
                 { id: 'quantum-accent', role: 'accent', reactivity: 0.35 }
             ];
 
-            window.quantumVisualizers = layers.map(layer => {
-                const viz = new QuantumVisualizer(layer.id, layer.role, layer.reactivity);
-                return viz;
-            }).filter(viz => viz.gl);
+            window.quantumVisualizers = layers.map(layer =>
+                new QuantumVisualizer(layer.id, layer.role, layer.reactivity)
+            ).filter(viz => viz && viz.gl);
 
-            function renderLoop() {
-                window.quantumVisualizers.forEach(viz => viz.render());
-                requestAnimationFrame(renderLoop);
+            if (window.quantumVisualizers.length > 0) {
+                function renderLoop() {
+                    window.quantumVisualizers.forEach(viz => viz.render());
+                    requestAnimationFrame(renderLoop);
+                }
+                renderLoop();
             }
-            renderLoop();
 
-            // Initialize all animation systems
+            // Initialize all systems
+            initParticles();
+            initCursorGlow();
+            initGridToggle();
             initIntroSequence();
             initScrollAnimations();
             initScrollProgress();
 
-            console.log('🌀 VIB3 SCRIB3 Experience Ready');
+            console.log('🌀 VIB3 SCRIB3 Enhanced Experience Ready');
             console.log('🔮 Hypercube + Tetrahedron geometries active');
-            console.log('🎨 Natural color palette applied');
+            console.log('🎨 Natural color palette with complementary systems');
+            console.log('✨ Particles, cursor glow, and grid overlay active');
             console.log('📡 Mixed high/low density lattices rendering');
         });
     </script>
@@ -1283,6 +1733,7 @@
 
 <!--
 🌟 VIB3 SCRIB3 - Reality Transcription Platform
+Enhanced with complementary accent systems
 Remixed from MINOOTS by Domusgpt
 © 2025
 -->
