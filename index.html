@@ -175,10 +175,10 @@
         #quantum-highlight { opacity: 0.4; z-index: 4; }
         #quantum-accent { opacity: 0.25; z-index: 5; }
 
-        /* INTRO HERO */
+        /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
             position: relative;
-            height: 200vh;
+            height: 300vh; /* Extended for smooth transitions */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -186,16 +186,18 @@
         }
 
         #intro-hero-content {
-            position: sticky;
-            top: 50%;
-            transform: translateY(-50%);
+            position: relative;
             text-align: center;
             z-index: 15;
+            width: 100%;
+            max-width: 800px;
         }
 
         .intro-title {
+            font-size: clamp(4rem, 10vw, 8rem);
             opacity: 1;
             will-change: transform, opacity;
+            animation: holographic-glow 3s ease-in-out infinite;
         }
 
         /* Formation card - appears around title */
@@ -209,44 +211,28 @@
             box-shadow: none;
             opacity: 0;
             pointer-events: none;
-            transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: -1;
+            will-change: all;
         }
 
-        .formation-card.forming {
-            background: rgba(10, 10, 20, 0.85);
-            backdrop-filter: blur(30px);
-            border: 2px solid rgba(0, 255, 255, 0.6);
-            border-radius: 40px;
-            box-shadow:
-                0 0 80px rgba(0, 255, 255, 0.4),
-                inset 0 0 60px rgba(0, 255, 255, 0.1);
-            opacity: 1;
-            animation: card-form 1.5s ease-out;
-        }
-
-        /* Holographic text that floats off */
-        .holographic-text {
-            animation: holographic-glow 3s ease-in-out infinite;
-            will-change: text-shadow, transform;
-            transition: all 0.8s ease;
-        }
-
-        .holographic-text.floating {
-            animation: holographic-glow 3s ease-in-out infinite,
-                       float-particles 4s ease-out forwards;
-        }
-
-        /* SECTION SYSTEM */
+        /* SECTION SYSTEM - CENTER LOCK */
         .section {
             position: relative;
-            min-height: 100vh;
+            min-height: 200vh; /* Extended for center-lock effect */
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 100px 40px;
             z-index: 10;
-            transition: all 0.8s ease;
+        }
+
+        /* Pin wrapper for center-locking */
+        .section-pin-wrapper {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Section-specific color themes */
@@ -1710,62 +1696,151 @@ timer = client.timers.create(
             });
         }
 
+        // ========== SCROLL CHOREOGRAPHY MAP ==========
+        /*
+         * INTRO SEQUENCE (300vh):
+         * Tick 0-33%:   Title centered, visualizer full screen
+         * Tick 33-66%:  Visualizer contracts from edges into card around title
+         * Tick 66-85%:  Card formed, begins scrolling up
+         * Tick 85-100%: Card exits top, visualizer to background
+         *
+         * SECTION CHOREOGRAPHY (200vh each):
+         * Tick 0-20%:   Element enters from bottom
+         * Tick 20-80%:  Element locked in center, background animates
+         * Tick 80-100%: Element exits to top
+         */
+
         // ========== EPIC INTRO SEQUENCE ==========
         function initEpicIntro() {
             const quantumLayers = document.getElementById('quantum-layers');
             const introTitle = document.getElementById('intro-title');
             const formationCard = document.getElementById('formation-card');
             const introHero = document.getElementById('intro-hero');
+            const introHeroContent = document.getElementById('intro-hero-content');
 
-            // Start with intro class
-            quantumLayers.classList.add('intro');
+            // Pin the intro content in center
+            ScrollTrigger.create({
+                trigger: introHero,
+                start: 'top top',
+                end: 'bottom bottom',
+                pin: introHeroContent,
+                pinSpacing: false,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    console.log(`Intro progress: ${(progress * 100).toFixed(1)}%`);
 
-            // Create intro timeline
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: introHero,
-                    start: 'top top',
-                    end: 'bottom center',
-                    scrub: 1,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
+                    // Phase 1: Title centered, visualizer full (0-33%)
+                    if (progress < 0.33) {
+                        // Title is visible and centered from start
+                        // Visualizer at full opacity
+                    }
 
-                        // Phase 1: Lock title in center (0-0.3)
-                        if (progress < 0.3) {
-                            // Title stays centered
-                        }
+                    // Phase 2: Visualizer contracts into card (33-66%)
+                    else if (progress >= 0.33 && progress < 0.66) {
+                        const contractProgress = (progress - 0.33) / 0.33;
 
-                        // Phase 2: Card forms around title (0.3-0.6)
-                        else if (progress >= 0.3 && progress < 0.6) {
-                            const cardProgress = (progress - 0.3) / 0.3;
-                            formationCard.classList.add('forming');
+                        // Contract visualizer using scale
+                        const scale = 1 - (contractProgress * 0.5); // Scale from 1 to 0.5
+                        quantumLayers.style.transform = `scale(${scale})`;
+                        quantumLayers.style.opacity = 1 - (contractProgress * 0.3);
 
-                            // Condense visualizer
-                            quantumLayers.classList.remove('intro');
-                            quantumLayers.classList.add('condensing');
-                        }
+                        // Form card around title
+                        formationCard.style.opacity = contractProgress;
+                        formationCard.style.background = `rgba(10, 10, 20, ${0.85 * contractProgress})`;
+                        formationCard.style.backdropFilter = `blur(${30 * contractProgress}px)`;
+                        formationCard.style.border = `2px solid rgba(0, 255, 255, ${0.6 * contractProgress})`;
+                        formationCard.style.borderRadius = `${40 * contractProgress}px`;
+                        formationCard.style.boxShadow = `
+                            0 0 ${80 * contractProgress}px rgba(0, 255, 255, ${0.4 * contractProgress}),
+                            inset 0 0 ${60 * contractProgress}px rgba(0, 255, 255, ${0.1 * contractProgress})
+                        `;
+                    }
 
-                        // Phase 3: Visualizer ejects rapidly (0.6-0.85)
-                        else if (progress >= 0.6 && progress < 0.85) {
-                            quantumLayers.classList.remove('condensing');
-                            quantumLayers.classList.add('ejecting');
+                    // Phase 3: Card scrolls up (66-85%)
+                    else if (progress >= 0.66 && progress < 0.85) {
+                        const scrollProgress = (progress - 0.66) / 0.19;
 
-                            // Trigger holographic float-off
-                            if (progress > 0.7) {
-                                introTitle.classList.add('floating');
-                            }
-                        }
+                        // Move card up
+                        const translateY = -100 * scrollProgress; // Move up
+                        introHeroContent.style.transform = `translateY(${translateY}vh)`;
 
-                        // Phase 4: Return to normal scrolling (0.85+)
-                        else {
-                            quantumLayers.classList.remove('ejecting');
-                            quantumLayers.classList.add('scrolling');
-                        }
+                        // Push visualizer further back
+                        quantumLayers.style.transform = `scale(0.3)`;
+                        quantumLayers.style.opacity = 0.5 * (1 - scrollProgress);
+                    }
+
+                    // Phase 4: Return to normal (85-100%)
+                    else {
+                        const exitProgress = (progress - 0.85) / 0.15;
+
+                        // Card off screen
+                        introHeroContent.style.opacity = 1 - exitProgress;
+
+                        // Visualizer returns to normal
+                        quantumLayers.style.transform = 'scale(1)';
+                        quantumLayers.style.opacity = 1;
                     }
                 }
             });
 
-            console.log('🎭 Epic intro sequence initialized');
+            console.log('🎭 Intro sequence: Title visible from start, visualizer contracts on scroll');
+        }
+
+        // ========== CENTER-LOCK CHOREOGRAPHY ==========
+        function initCenterLockChoreography() {
+            // Apply center-lock to all sections
+            document.querySelectorAll('.section').forEach((section, index) => {
+                const sectionContent = section.querySelector('.section-content');
+                if (!sectionContent) return;
+
+                // Pin each section's content in center
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    pin: sectionContent,
+                    pinSpacing: false,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
+                        console.log(`Section ${index} progress: ${(progress * 100).toFixed(1)}%`);
+
+                        // Entrance (0-20%)
+                        if (progress < 0.2) {
+                            const entranceProgress = progress / 0.2;
+                            sectionContent.style.opacity = entranceProgress;
+                            sectionContent.style.transform = `translateY(${(1 - entranceProgress) * 100}px) scale(${0.8 + (entranceProgress * 0.2)})`;
+                        }
+
+                        // Center-lock (20-80%) - Element stays centered, animations continue
+                        else if (progress >= 0.2 && progress < 0.8) {
+                            const focusProgress = (progress - 0.2) / 0.6;
+                            sectionContent.style.opacity = 1;
+                            sectionContent.style.transform = 'translateY(0) scale(1)';
+
+                            // Subtle breathing animation during focus
+                            const breathe = Math.sin(focusProgress * Math.PI * 4) * 0.02;
+                            sectionContent.style.transform = `translateY(0) scale(${1 + breathe})`;
+                        }
+
+                        // Exit (80-100%)
+                        else {
+                            const exitProgress = (progress - 0.8) / 0.2;
+                            sectionContent.style.opacity = 1 - exitProgress;
+                            sectionContent.style.transform = `translateY(${-exitProgress * 100}px) scale(${1 - (exitProgress * 0.2)})`;
+                        }
+                    },
+                    onEnter: () => {
+                        // Apply theme when section enters
+                        const theme = section.dataset.theme;
+                        if (theme) {
+                            applyVisualizerPreset(theme);
+                            console.log(`📍 Section ${index} (${theme}) locked in center`);
+                        }
+                    }
+                });
+            });
+
+            console.log('🎯 Center-lock choreography applied to all sections');
         }
 
         // ========== INTERACTIVE STATE MANAGEMENT ==========
@@ -1888,55 +1963,7 @@ timer = client.timers.create(
                 });
             });
 
-            // Reveal left/right
-            gsap.utils.toArray('.reveal-left').forEach((elem) => {
-                gsap.fromTo(elem,
-                    { opacity: 0, x: -100 },
-                    {
-                        opacity: 1,
-                        x: 0,
-                        duration: 1.2,
-                        scrollTrigger: {
-                            trigger: elem,
-                            start: 'top 85%',
-                            toggleActions: 'play none none none'
-                        }
-                    }
-                );
-            });
-
-            gsap.utils.toArray('.reveal-right').forEach((elem) => {
-                gsap.fromTo(elem,
-                    { opacity: 0, x: 100 },
-                    {
-                        opacity: 1,
-                        x: 0,
-                        duration: 1.2,
-                        scrollTrigger: {
-                            trigger: elem,
-                            start: 'top 85%',
-                            toggleActions: 'play none none none'
-                        }
-                    }
-                );
-            });
-
-            // Parallax effect on sections
-            gsap.utils.toArray('.section').forEach((section, i) => {
-                const isEven = i % 2 === 0;
-                gsap.to(section, {
-                    y: isEven ? -50 : 50,
-                    ease: 'none',
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top bottom',
-                        end: 'bottom top',
-                        scrub: 1
-                    }
-                });
-            });
-
-            // Card hover 3D tilt effect
+            // Card hover 3D tilt effect (kept from original)
             document.querySelectorAll('.morph-card').forEach(card => {
                 card.addEventListener('mousemove', (e) => {
                     if (card.classList.contains('expanded')) return;
@@ -2155,19 +2182,19 @@ timer = client.timers.create(
 
             // Initialize all animation systems
             initEpicIntro();
-            initScrollAnimations();
+            initCenterLockChoreography();
+            initScrollAnimations(); // Card hover effects
             initExpandableCards();
             initScrollProgress();
             initInteractiveStates();
-            initSectionAwareVisualizer();
 
             console.log('🚀 MINOOTS VIB3+ Experience Ready');
-            console.log('🎭 Epic intro sequence loaded');
-            console.log('🎨 Fluid morphing scroll activated');
+            console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
+            console.log('🎯 Center-lock choreography: All sections lock in focus');
             console.log('📦 Expandable cards enabled');
-            console.log('✨ GSAP choreography online');
+            console.log('📊 Scroll progress tracking active');
             console.log('🎮 Interactive states enabled');
-            console.log('🌈 Section-aware visualizer active');
+            console.log('🌈 Background animates continuously');
         });
     </script>
 </body>
