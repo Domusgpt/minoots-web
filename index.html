@@ -318,6 +318,9 @@
             width: 100%;
             position: relative;
             z-index: 2;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         /* PARALLAX LAYERS */
@@ -342,7 +345,9 @@
                 0 30px 90px rgba(0, 0, 0, 0.5);
             transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
-            will-change: transform;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
             cursor: pointer;
             overflow: hidden;
             margin: 40px 0;
@@ -2192,6 +2197,76 @@ timer = client.timers.create(
          * Tick 80-100%: Element exits to top
          */
 
+        // ========== VISUALIZER PARALLAX SYSTEM ==========
+        function initVisualizerParallax() {
+            const quantumLayers = document.getElementById('quantum-layers');
+
+            // Create parallax effect for visualizer - moves slower than content (0.5x speed)
+            gsap.to(quantumLayers, {
+                y: '50%',
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: 'body',
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    scrub: 1.5, // Smooth scrubbing with 1.5s delay for butter-smooth effect
+                    invalidateOnRefresh: true
+                }
+            });
+
+            // Add different parallax speeds to individual visualizer canvases
+            const canvases = [
+                { id: 'quantum-background', speed: 0.3 },
+                { id: 'quantum-shadow', speed: 0.4 },
+                { id: 'quantum-content', speed: 0.5 },
+                { id: 'quantum-highlight', speed: 0.6 },
+                { id: 'quantum-accent', speed: 0.7 }
+            ];
+
+            canvases.forEach(canvas => {
+                const element = document.getElementById(canvas.id);
+                if (element) {
+                    gsap.to(element, {
+                        y: `${canvas.speed * 100}%`,
+                        ease: 'none',
+                        scrollTrigger: {
+                            trigger: 'body',
+                            start: 'top top',
+                            end: 'bottom bottom',
+                            scrub: 1.5,
+                            invalidateOnRefresh: true
+                        }
+                    });
+                }
+            });
+
+            console.log('🎨 Visualizer parallax initialized - Background moves at 0.5x speed');
+        }
+
+        // ========== PERFORMANCE OPTIMIZATION ==========
+        function initPerformanceOptimizations() {
+            // Enable smooth scrolling
+            ScrollTrigger.config({
+                autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
+                ignoreMobileResize: true
+            });
+
+            // Refresh ScrollTrigger on window resize with debounce
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    ScrollTrigger.refresh();
+                    console.log('🔄 ScrollTrigger refreshed after resize');
+                }, 250);
+            });
+
+            // Add requestAnimationFrame optimization
+            gsap.ticker.lagSmoothing(0);
+
+            console.log('⚡ Performance optimizations applied');
+        }
+
         // ========== EPIC INTRO SEQUENCE ==========
         function initEpicIntro() {
             const quantumLayers = document.getElementById('quantum-layers');
@@ -2270,107 +2345,132 @@ timer = client.timers.create(
 
         // ========== CENTER-LOCK CHOREOGRAPHY WITH GASP TRIGGERS ==========
         function initCenterLockChoreography() {
-            let lastMilestone = -1;
-
             // Apply center-lock to all sections
             document.querySelectorAll('.section').forEach((section, index) => {
                 const sectionContent = section.querySelector('.section-content');
                 if (!sectionContent) return;
 
-                // Pin each section's content in center
+                // Set initial state
+                gsap.set(sectionContent, {
+                    opacity: 0,
+                    y: 100,
+                    scale: 0.9,
+                    willChange: 'transform, opacity'
+                });
+
+                // Create main timeline for this section
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top bottom', // Start when section enters viewport from bottom
+                        end: 'bottom top', // End when section leaves viewport from top
+                        scrub: 1, // Smooth scrubbing with 1s delay
+                        onEnter: () => {
+                            // Apply theme when section enters
+                            const theme = section.dataset.theme;
+                            if (theme) {
+                                applyVisualizerPreset(theme);
+                                console.log(`📍 Section ${index} (${theme}) entering focus`);
+
+                                // Trigger unity moment on section transitions
+                                if (index % 2 === 0) {
+                                    window.unityManager.triggerUnityMoment(2000);
+                                }
+                            }
+                        },
+                        onEnterBack: () => {
+                            // Re-apply theme when scrolling back
+                            const theme = section.dataset.theme;
+                            if (theme) {
+                                applyVisualizerPreset(theme);
+                            }
+                        }
+                    }
+                });
+
+                // Entrance animation (20% of scroll range)
+                tl.to(sectionContent, {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.2,
+                    ease: 'power2.out'
+                })
+                // Center-lock focus phase (60% of scroll range)
+                .to(sectionContent, {
+                    scale: 1.05, // Slight scale up when in focus
+                    duration: 0.3,
+                    ease: 'power1.inOut'
+                })
+                .to(sectionContent, {
+                    scale: 1.05, // Hold the scale
+                    duration: 0.3,
+                    ease: 'none'
+                })
+                .to(sectionContent, {
+                    scale: 1, // Scale back to normal
+                    duration: 0.2,
+                    ease: 'power1.inOut'
+                })
+                // Exit animation (20% of scroll range)
+                .to(sectionContent, {
+                    opacity: 0,
+                    y: -100,
+                    scale: 0.9,
+                    duration: 0.2,
+                    ease: 'power2.in'
+                });
+
+                // Add breathing animation during center phase
+                const breathingTl = gsap.timeline({
+                    repeat: -1,
+                    yoyo: true,
+                    paused: true
+                });
+
+                breathingTl.to(sectionContent, {
+                    scale: 1.08,
+                    duration: 2,
+                    ease: 'sine.inOut'
+                });
+
+                // Control breathing animation based on scroll position
                 ScrollTrigger.create({
                     trigger: section,
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    pin: sectionContent,
-                    pinSpacing: false,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
-                        const milestone = Math.floor(progress * 10);
+                    start: 'top center',
+                    end: 'bottom center',
+                    onEnter: () => breathingTl.play(),
+                    onLeave: () => breathingTl.pause(),
+                    onEnterBack: () => breathingTl.play(),
+                    onLeaveBack: () => breathingTl.pause()
+                });
 
-                        // GASP TRIGGER: Detect milestone changes (every 10%)
-                        if (milestone !== lastMilestone && milestone > 0) {
-                            lastMilestone = milestone;
-                            triggerGaspMoment(progress, sectionContent);
-                        }
-
-                        // Entrance (0-20%) - GASP: Sudden expansion
-                        if (progress < 0.2) {
-                            const entranceProgress = progress / 0.2;
-                            // Rapid intake of breath effect
-                            const intakeScale = entranceProgress < 0.1 ?
-                                0.6 + (entranceProgress * 4) : // Rapid expansion 0.6 -> 1.0
-                                0.8 + (entranceProgress * 0.2); // Normal scaling
-                            sectionContent.style.opacity = entranceProgress;
-                            sectionContent.style.transform = `translateY(${(1 - entranceProgress) * 100}px) scale(${intakeScale})`;
-
-                            // Trigger shockwave at section entrance
-                            if (progress > 0.05 && progress < 0.06) {
-                                window.unityManager.triggerShockwave(0, 0, 2.0);
-                            }
-                        }
-
-                        // Center-lock (20-80%) - Enhanced breathing with gasp moments
-                        else if (progress >= 0.2 && progress < 0.8) {
-                            const focusProgress = (progress - 0.2) / 0.6;
-                            sectionContent.style.opacity = 1;
-
-                            // Enhanced breathing animation with periodic gasps
-                            const breathCycle = focusProgress * Math.PI * 4;
-                            const normalBreathing = Math.sin(breathCycle) * 0.02;
-
-                            // GASP moments: sharp intake every 25% through focus period
-                            const gaspPhase = (focusProgress % 0.25) / 0.25;
-                            const gaspEffect = gaspPhase < 0.1 ?
-                                Math.pow(1 - gaspPhase / 0.1, 2) * 0.05 : 0;
-
-                            const totalScale = 1 + normalBreathing + gaspEffect;
-                            sectionContent.style.transform = `translateY(0) scale(${totalScale})`;
-
-                            // Update unity manager pulse
-                            window.unityManager.pulsePhase = breathCycle;
-                        }
-
-                        // Exit (80-100%) - GASP: Rapid contraction
-                        else {
-                            const exitProgress = (progress - 0.8) / 0.2;
-                            // Exhale effect - rapid contraction at start
-                            const exhaleScale = exitProgress < 0.2 ?
-                                1 - (exitProgress * 2.5) : // Rapid contraction
-                                1 - (exitProgress * 0.2);  // Normal shrinking
-
-                            sectionContent.style.opacity = 1 - exitProgress;
-                            sectionContent.style.transform = `translateY(${-exitProgress * 100}px) scale(${Math.max(0.5, exhaleScale)})`;
-
-                            // Trigger shockwave at section exit
-                            if (progress > 0.85 && progress < 0.86) {
-                                window.unityManager.triggerShockwave(0, 0.5, 1.5);
-                            }
-                        }
-                    },
+                // Pin section when it's in center of viewport
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: 'center center',
+                    end: '+=100%',
+                    pin: true,
+                    pinSpacing: true,
+                    anticipatePin: 1,
                     onEnter: () => {
-                        // Apply theme when section enters
-                        const theme = section.dataset.theme;
-                        if (theme) {
-                            applyVisualizerPreset(theme);
-                            console.log(`📍 Section ${index} (${theme}) locked in center`);
-
-                            // Trigger unity moment on major section transitions
-                            if (index % 2 === 0) {
-                                window.unityManager.triggerUnityMoment(2000);
-                            }
-                        }
+                        // Shockwave effect when section locks to center
+                        window.unityManager.triggerShockwave(0, 0, 1.5);
+                        sectionContent.style.filter = 'brightness(1.2)';
                     },
                     onLeave: () => {
-                        lastMilestone = -1; // Reset for next section
+                        sectionContent.style.filter = 'brightness(1)';
                     },
                     onEnterBack: () => {
-                        lastMilestone = -1; // Reset when scrolling back
+                        sectionContent.style.filter = 'brightness(1.2)';
+                    },
+                    onLeaveBack: () => {
+                        sectionContent.style.filter = 'brightness(1)';
                     }
                 });
             });
 
-            console.log('🎯 Center-lock choreography with GASP triggers applied');
+            console.log('🎯 Center-lock choreography initialized with proper pinning');
         }
 
         // GASP moment: Shockwave + brief expansion/contraction
@@ -2561,15 +2661,54 @@ timer = client.timers.create(
 
         // ========== GSAP SCROLL ANIMATIONS ==========
         function initScrollAnimations() {
-            gsap.registerPlugin(ScrollTrigger);
+            // Note: ScrollTrigger is already registered in main initialization
 
-            // Reveal animations
-            gsap.utils.toArray('.reveal').forEach((elem) => {
+            // Add card parallax with varying speeds for depth
+            document.querySelectorAll('.morph-card').forEach((card, index) => {
+                // Alternate between faster (1.2x) and slower (0.8x) parallax for depth variety
+                const parallaxSpeed = index % 2 === 0 ? 0.8 : 1.2;
+                const moveDistance = parallaxSpeed * 100;
+
+                gsap.to(card, {
+                    y: moveDistance,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 1.5, // Butter-smooth scrubbing
+                        invalidateOnRefresh: true
+                    }
+                });
+
+                // Add initial scale animation
+                gsap.set(card, {
+                    opacity: 0,
+                    scale: 0.9,
+                    y: 50
+                });
+
+                gsap.to(card, {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    }
+                });
+            });
+
+            // Reveal animations with stagger
+            gsap.utils.toArray('.reveal').forEach((elem, index) => {
                 const animType = elem.dataset.animate || 'fade-up';
                 const delay = parseFloat(elem.dataset.delay || 0);
 
                 let fromVars = { opacity: 0 };
-                let toVars = { opacity: 1, duration: 1.2, delay };
+                let toVars = { opacity: 1, duration: 1.2, delay, ease: 'power3.out' };
 
                 switch (animType) {
                     case 'fade-up':
@@ -2592,6 +2731,27 @@ timer = client.timers.create(
                     }
                 });
             });
+
+            // Stagger animations for stat cards
+            const statCards = gsap.utils.toArray('.stat-card');
+            if (statCards.length > 0) {
+                gsap.set(statCards, { opacity: 0, y: 50, scale: 0.9 });
+
+                ScrollTrigger.create({
+                    trigger: '.stats-grid',
+                    start: 'top 80%',
+                    onEnter: () => {
+                        gsap.to(statCards, {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            duration: 0.8,
+                            stagger: 0.1,
+                            ease: 'back.out(1.2)'
+                        });
+                    }
+                });
+            }
 
             // Card hover 3D tilt effect (kept from original)
             document.querySelectorAll('.morph-card').forEach(card => {
@@ -2812,6 +2972,10 @@ timer = client.timers.create(
 
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', () => {
+            // CRITICAL: Register GSAP ScrollTrigger FIRST before any ScrollTrigger.create() calls
+            gsap.registerPlugin(ScrollTrigger);
+            console.log('✅ GSAP ScrollTrigger registered');
+
             // Initialize Quantum Visualizers
             const layers = [
                 { id: 'quantum-background', role: 'background', reactivity: 0.4 },
@@ -2847,14 +3011,29 @@ timer = client.timers.create(
             renderLoop();
 
             // Initialize all animation systems
+            initPerformanceOptimizations(); // FIRST: Set up performance configs
+            initVisualizerParallax(); // Parallax for visualizer layers
             initEpicIntro();
             initCenterLockChoreography();
-            initScrollAnimations(); // Card hover effects
+            initScrollAnimations(); // Card hover effects + parallax
             initExpandableCards();
             initScrollProgress();
             initInteractiveStates();
 
+            console.log('');
             console.log('🚀 MINOOTS VIB3+ EMERGENT UNITY Experience Ready');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('');
+            console.log('🎯 SCROLL EXPERIENCE ENHANCEMENTS:');
+            console.log('  ├─ ⚡ GSAP ScrollTrigger properly initialized');
+            console.log('  ├─ 🎨 Multi-layer parallax (0.3x-0.7x speeds)');
+            console.log('  ├─ 🎭 Center-lock pinning with proper spacing');
+            console.log('  ├─ 📦 Card parallax (0.8x and 1.2x alternating)');
+            console.log('  ├─ ✨ Smooth enter/exit animations');
+            console.log('  ├─ 🌈 Visualizer responds to active sections');
+            console.log('  ├─ 💫 Breathing animations during focus');
+            console.log('  ├─ 🎪 Stagger effects on stat cards');
+            console.log('  └─ ⚙️  Performance optimizations (will-change, GPU acceleration)');
             console.log('');
             console.log('✨ EMERGENT UNITY SYSTEMS:');
             console.log('  ├─ Cross-layer particle communication active');
@@ -2868,27 +3047,23 @@ timer = client.timers.create(
             console.log('  ├─ Heat-distortion warping from scroll velocity');
             console.log('  └─ Dissolve-and-reform animations');
             console.log('');
-            console.log('💨 GASP TRIGGER ANIMATIONS:');
-            console.log('  ├─ Sudden expansion/contraction on scroll milestones');
+            console.log('💨 INTERACTION EFFECTS:');
             console.log('  ├─ Shockwave ripples from interaction points');
-            console.log('  ├─ Breathing/pulsing effects on hover');
+            console.log('  ├─ Breathing/pulsing effects on section focus');
+            console.log('  ├─ Brightness boost when sections lock to center');
             console.log('  └─ "Intake of breath" moments at section transitions');
             console.log('');
-            console.log('🎨 ENHANCED VISUALIZER INTEGRATION:');
+            console.log('🎨 VISUALIZER INTEGRATION:');
+            console.log('  ├─ 5-layer depth system with individual parallax');
             console.log('  ├─ Scroll velocity influences rotation speed');
             console.log('  ├─ Mouse cursor warps quantum field');
             console.log('  ├─ Audio-reactive capabilities (if mic available)');
             console.log('  └─ Dramatic melting transitions between sections');
             console.log('');
-            console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
-            console.log('🎯 Center-lock choreography: All sections lock in focus');
-            console.log('📦 Expandable cards with shockwave effects');
-            console.log('📊 Velocity-tracked scroll progress');
-            console.log('🎮 Interactive states with unity moments');
-            console.log('🌈 5-layer emergent visualizer system');
-            console.log('');
+            console.log('═══════════════════════════════════════════════════');
             console.log('🎵 Tip: Allow microphone access for audio reactivity!');
             console.log('💫 Tip: Click headlines to trigger unity moments!');
+            console.log('🖱️  Tip: Hover over cards for 3D tilt effects!');
         });
     </script>
 </body>
