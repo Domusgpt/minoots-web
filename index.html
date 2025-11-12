@@ -175,6 +175,27 @@
         #quantum-highlight { opacity: 0.4; z-index: 4; }
         #quantum-accent { opacity: 0.25; z-index: 5; }
 
+        /* CHROMATIC VISUALIZER - Colorful companion layer */
+        .chromatic-layers {
+            position: fixed;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            opacity: 1.0;  /* Full opacity on container, control via individual canvases */
+            transition: opacity 0.6s ease;
+        }
+
+        .chromatic-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            mix-blend-mode: screen;
+        }
+
+        #chromatic-primary { opacity: 0.5; z-index: 1; }
+        #chromatic-secondary { opacity: 0.4; z-index: 2; }
+        #chromatic-tertiary { opacity: 0.3; z-index: 3; }
+
         /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
             position: relative;
@@ -792,6 +813,13 @@
         <canvas id="quantum-content" class="quantum-canvas"></canvas>
         <canvas id="quantum-highlight" class="quantum-canvas"></canvas>
         <canvas id="quantum-accent" class="quantum-canvas"></canvas>
+    </div>
+
+    <!-- Chromatic Visualizer - Colorful Companion -->
+    <div class="chromatic-layers" id="chromatic-layers">
+        <canvas id="chromatic-primary" class="chromatic-canvas"></canvas>
+        <canvas id="chromatic-secondary" class="chromatic-canvas"></canvas>
+        <canvas id="chromatic-tertiary" class="chromatic-canvas"></canvas>
     </div>
 
     <!-- Overlay for Expanded Cards -->
@@ -1615,6 +1643,235 @@ timer = client.timers.create(
             }
         }
 
+        // ========== CHROMATIC VISUALIZER (Colorful Companion) ==========
+        class ChromaticVisualizer {
+            constructor(canvasId, role, phase) {
+                this.canvas = document.getElementById(canvasId);
+                this.role = role;
+                this.phase = phase; // Phase offset for complementary animation
+
+                this.gl = this.canvas.getContext('webgl2') || this.canvas.getContext('webgl');
+                if (!this.gl) return;
+
+                this.startTime = Date.now();
+                this.scrollProgress = 0;
+                this.params = {
+                    colorShift: phase * 0.333, // Offset colors by phase
+                    speed: 2.0 + (phase * 0.5), // Faster than quantum
+                    intensity: 1.5,  // Increased for better visibility
+                    scale: 0.6 + (phase * 0.15),
+                    morphSpeed: 3.0,
+                    hueSpeed: 1.0,
+                    saturation: 1.0,
+                    brightness: 1.5  // Increased for better visibility
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.initShaders();
+                this.initBuffers();
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            initShaders() {
+                const vertexShader = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+
+                const fragmentShader = `
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform float u_colorShift;
+                    uniform float u_speed;
+                    uniform float u_intensity;
+                    uniform float u_scale;
+                    uniform float u_morphSpeed;
+                    uniform float u_hueSpeed;
+                    uniform float u_saturation;
+                    uniform float u_brightness;
+                    uniform float u_scrollProgress;
+
+                    // HSV to RGB conversion
+                    vec3 hsv2rgb(vec3 c) {
+                        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                    }
+
+                    // Colorful plasma effect
+                    float plasma(vec2 uv, float time) {
+                        float v = 0.0;
+                        v += sin((uv.x + time) * u_morphSpeed);
+                        v += sin((uv.y + time) * u_morphSpeed * 0.8);
+                        v += sin((uv.x + uv.y + time) * u_morphSpeed * 0.7);
+                        v += cos(sqrt(uv.x * uv.x + uv.y * uv.y + time) * u_morphSpeed * 1.2);
+                        return v * 0.25;
+                    }
+
+                    // Flowing particles
+                    float particles(vec2 uv, float time) {
+                        vec2 pos = uv * 8.0;
+                        float f = 0.0;
+
+                        for(float i = 0.0; i < 5.0; i++) {
+                            vec2 offset = vec2(
+                                sin(time * u_speed * 0.5 + i * 1.3) * 2.0,
+                                cos(time * u_speed * 0.7 + i * 1.7) * 2.0
+                            );
+                            float d = length(pos - offset);
+                            f += 0.02 / (d + 0.1);
+                        }
+
+                        return f;
+                    }
+
+                    // Chromatic waves
+                    float chromaticWaves(vec2 uv, float time, float hueOffset) {
+                        float wave = sin(uv.x * 5.0 + time * u_speed + hueOffset * 6.28) *
+                                    cos(uv.y * 5.0 + time * u_speed * 0.8 + hueOffset * 6.28);
+                        return wave * 0.5 + 0.5;
+                    }
+
+                    void main() {
+                        vec2 uv = (gl_FragCoord.xy - u_resolution.xy * 0.5) / min(u_resolution.x, u_resolution.y);
+                        uv *= u_scale;
+
+                        float time = u_time * 0.001 * u_speed;
+
+                        // Combine effects
+                        float plasmaValue = plasma(uv, time);
+                        float particleValue = particles(uv, time);
+
+                        // Dynamic hue that cycles through rainbow
+                        float baseHue = mod(u_colorShift + time * u_hueSpeed * 0.1 + u_scrollProgress * 0.5, 1.0);
+
+                        // Create multiple color layers
+                        vec3 color1 = hsv2rgb(vec3(baseHue, u_saturation, u_brightness));
+                        vec3 color2 = hsv2rgb(vec3(mod(baseHue + 0.333, 1.0), u_saturation * 0.9, u_brightness * 0.8));
+                        vec3 color3 = hsv2rgb(vec3(mod(baseHue + 0.666, 1.0), u_saturation * 0.8, u_brightness * 0.9));
+
+                        // Mix colors based on plasma and particles
+                        vec3 finalColor = color1 * plasmaValue * 0.5 +
+                                        color2 * particleValue * 0.3 +
+                                        color3 * chromaticWaves(uv, time, baseHue) * 0.4;
+
+                        // Calculate intensity with pulsing
+                        float pulse = sin(time * 2.0 + u_colorShift * 6.28) * 0.2 + 0.8;
+                        float finalIntensity = (plasmaValue + particleValue * 0.5) * u_intensity * pulse;
+
+                        // Add glow effect
+                        float glow = 1.0 - length(uv) * 0.3;
+                        finalColor *= glow;
+
+                        gl_FragColor = vec4(finalColor, finalIntensity);
+                    }
+                `;
+
+                this.program = this.createProgram(vertexShader, fragmentShader);
+
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    colorShift: this.gl.getUniformLocation(this.program, 'u_colorShift'),
+                    speed: this.gl.getUniformLocation(this.program, 'u_speed'),
+                    intensity: this.gl.getUniformLocation(this.program, 'u_intensity'),
+                    scale: this.gl.getUniformLocation(this.program, 'u_scale'),
+                    morphSpeed: this.gl.getUniformLocation(this.program, 'u_morphSpeed'),
+                    hueSpeed: this.gl.getUniformLocation(this.program, 'u_hueSpeed'),
+                    saturation: this.gl.getUniformLocation(this.program, 'u_saturation'),
+                    brightness: this.gl.getUniformLocation(this.program, 'u_brightness'),
+                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress')
+                };
+            }
+
+            createProgram(vertexSource, fragmentSource) {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
+
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) return null;
+                return program;
+            }
+
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) return null;
+                return shader;
+            }
+
+            initBuffers() {
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+
+            resize() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                this.canvas.width = this.canvas.clientWidth * dpr;
+                this.canvas.height = this.canvas.clientHeight * dpr;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            updateParameters(params) {
+                Object.assign(this.params, params);
+            }
+
+            updateScrollProgress(progress) {
+                this.scrollProgress = progress;
+            }
+
+            render() {
+                if (!this.program) return;
+
+                this.gl.useProgram(this.program);
+                this.gl.clearColor(0, 0, 0, 0);
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+                const time = Date.now() - this.startTime;
+
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, time);
+                this.gl.uniform1f(this.uniforms.colorShift, this.params.colorShift);
+                this.gl.uniform1f(this.uniforms.speed, this.params.speed);
+                this.gl.uniform1f(this.uniforms.intensity, this.params.intensity);
+                this.gl.uniform1f(this.uniforms.scale, this.params.scale);
+                this.gl.uniform1f(this.uniforms.morphSpeed, this.params.morphSpeed);
+                this.gl.uniform1f(this.uniforms.hueSpeed, this.params.hueSpeed);
+                this.gl.uniform1f(this.uniforms.saturation, this.params.saturation);
+                this.gl.uniform1f(this.uniforms.brightness, this.params.brightness);
+                this.gl.uniform1f(this.uniforms.scrollProgress, this.scrollProgress);
+
+                this.gl.enable(this.gl.BLEND);
+                this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
         // ========== SECTION-BASED VISUALIZER PRESETS ==========
         const SECTION_VIZ_PRESETS = {
             'cyan': {
@@ -1674,26 +1931,98 @@ timer = client.timers.create(
             }
         };
 
+        // Chromatic visualizer presets - complementary to quantum presets
+        const CHROMATIC_VIZ_PRESETS = {
+            'cyan': {
+                colorShift: 0.5,      // Orange/warm (opposite of cyan)
+                speed: 2.5,
+                intensity: 1.2,  // Increased
+                morphSpeed: 3.0,
+                hueSpeed: 1.2,
+                saturation: 1.0,
+                brightness: 1.6  // Increased
+            },
+            'magenta': {
+                colorShift: 0.33,     // Green (opposite of magenta)
+                speed: 3.0,
+                intensity: 1.4,  // Increased
+                morphSpeed: 3.5,
+                hueSpeed: 1.5,
+                saturation: 1.0,
+                brightness: 1.7  // Increased
+            },
+            'green': {
+                colorShift: 0.83,     // Magenta/pink (opposite of green)
+                speed: 2.2,
+                intensity: 1.1,  // Increased
+                morphSpeed: 2.8,
+                hueSpeed: 1.0,
+                saturation: 1.0,
+                brightness: 1.5  // Increased
+            },
+            'purple': {
+                colorShift: 0.17,     // Yellow (opposite of purple)
+                speed: 3.2,
+                intensity: 1.5,  // Increased
+                morphSpeed: 4.0,
+                hueSpeed: 1.8,
+                saturation: 1.0,
+                brightness: 1.8  // Increased
+            },
+            'orange': {
+                colorShift: 0.58,     // Blue (opposite of orange)
+                speed: 2.8,
+                intensity: 1.3,  // Increased
+                morphSpeed: 3.2,
+                hueSpeed: 1.3,
+                saturation: 1.0,
+                brightness: 1.65  // Increased
+            }
+        };
+
         function applyVisualizerPreset(theme) {
             const preset = SECTION_VIZ_PRESETS[theme];
-            if (!preset || !window.quantumVisualizers) return;
+            const chromaticPreset = CHROMATIC_VIZ_PRESETS[theme];
 
-            window.quantumVisualizers.forEach((viz, i) => {
-                const layerMultiplier = (i + 1) * 0.2;
-                gsap.to(viz.params, {
-                    geometry: preset.geometry,
-                    gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
-                    chaos: preset.chaos * (1 + layerMultiplier * 0.3),
-                    speed: preset.speed,
-                    hue: preset.hue,
-                    intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
-                    rot4dXW: preset.rot4dXW * layerMultiplier,
-                    rot4dYW: preset.rot4dYW * layerMultiplier,
-                    rot4dZW: preset.rot4dZW * layerMultiplier,
-                    duration: 2,
-                    ease: 'power2.inOut'
+            if (!preset) return;
+
+            // Update quantum visualizers (subtle, majority presence)
+            if (window.quantumVisualizers) {
+                window.quantumVisualizers.forEach((viz, i) => {
+                    const layerMultiplier = (i + 1) * 0.2;
+                    gsap.to(viz.params, {
+                        geometry: preset.geometry,
+                        gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
+                        chaos: preset.chaos * (1 + layerMultiplier * 0.3),
+                        speed: preset.speed,
+                        hue: preset.hue,
+                        intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
+                        rot4dXW: preset.rot4dXW * layerMultiplier,
+                        rot4dYW: preset.rot4dYW * layerMultiplier,
+                        rot4dZW: preset.rot4dZW * layerMultiplier,
+                        duration: 2,
+                        ease: 'power2.inOut'
+                    });
                 });
-            });
+            }
+
+            // Update chromatic visualizers (colorful, complementary)
+            if (window.chromaticVisualizers && chromaticPreset) {
+                window.chromaticVisualizers.forEach((viz, i) => {
+                    const phaseOffset = i * 0.1;
+                    gsap.to(viz.params, {
+                        colorShift: chromaticPreset.colorShift + phaseOffset,
+                        speed: chromaticPreset.speed * (1 + phaseOffset),
+                        intensity: chromaticPreset.intensity,
+                        morphSpeed: chromaticPreset.morphSpeed,
+                        hueSpeed: chromaticPreset.hueSpeed,
+                        saturation: chromaticPreset.saturation,
+                        brightness: chromaticPreset.brightness,
+                        duration: 2.5,
+                        ease: 'power2.inOut'
+                    });
+                });
+            }
         }
 
         // ========== SCROLL CHOREOGRAPHY MAP ==========
@@ -2080,10 +2409,18 @@ timer = client.timers.create(
                     }
                 });
 
-                // Dim visualizer
+                // Dim both visualizers
                 window.quantumVisualizers?.forEach(viz => {
                     gsap.to(viz.params, {
                         intensity: viz.params.intensity * 0.3,
+                        duration: 0.6
+                    });
+                });
+
+                window.chromaticVisualizers?.forEach(viz => {
+                    gsap.to(viz.params, {
+                        intensity: viz.params.intensity * 0.3,
+                        brightness: viz.params.brightness * 0.5,
                         duration: 0.6
                     });
                 });
@@ -2117,10 +2454,18 @@ timer = client.timers.create(
                     }
                 });
 
-                // Restore visualizer
+                // Restore both visualizers
                 window.quantumVisualizers?.forEach(viz => {
                     gsap.to(viz.params, {
                         intensity: viz.params.intensity / 0.3,
+                        duration: 0.6
+                    });
+                });
+
+                window.chromaticVisualizers?.forEach(viz => {
+                    gsap.to(viz.params, {
+                        intensity: viz.params.intensity / 0.3,
+                        brightness: viz.params.brightness / 0.5,
                         duration: 0.6
                     });
                 });
@@ -2141,6 +2486,8 @@ timer = client.timers.create(
 
                 // Update visualizers with scroll progress
                 const normalizedProgress = scrollTop / (documentHeight - windowHeight);
+
+                // Update Quantum visualizers (subtle, gradual changes)
                 window.quantumVisualizers?.forEach((viz, i) => {
                     viz.updateScrollProgress(normalizedProgress);
 
@@ -2154,13 +2501,29 @@ timer = client.timers.create(
                         geometry: 1 + Math.floor(normalizedProgress * 3)
                     });
                 });
+
+                // Update Chromatic visualizers (inverse phase, more dramatic)
+                window.chromaticVisualizers?.forEach((viz, i) => {
+                    viz.updateScrollProgress(normalizedProgress);
+
+                    // Inverse phase relative to quantum - they complement each other
+                    const inverseProgress = 1 - normalizedProgress;
+                    const phaseMultiplier = (i + 1) * 0.15;
+
+                    viz.updateParameters({
+                        intensity: 0.4 + (Math.sin(normalizedProgress * Math.PI * 2) * 0.3),
+                        morphSpeed: 2.0 + (normalizedProgress * 2.0),
+                        hueSpeed: 0.8 + (normalizedProgress * 1.5),
+                        scale: 0.4 + (inverseProgress * 0.4) + phaseMultiplier
+                    });
+                });
             });
         }
 
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Quantum Visualizers
-            const layers = [
+            // Initialize Quantum Visualizers (Primary - Subtle)
+            const quantumLayers = [
                 { id: 'quantum-background', role: 'background', reactivity: 0.4 },
                 { id: 'quantum-shadow', role: 'shadow', reactivity: 0.6 },
                 { id: 'quantum-content', role: 'content', reactivity: 1.0 },
@@ -2168,14 +2531,29 @@ timer = client.timers.create(
                 { id: 'quantum-accent', role: 'accent', reactivity: 1.6 }
             ];
 
-            window.quantumVisualizers = layers.map(layer => {
+            window.quantumVisualizers = quantumLayers.map(layer => {
                 const viz = new QuantumVisualizer(layer.id, layer.role, layer.reactivity);
-                console.log(`✅ ${layer.role} visualizer created`);
+                console.log(`✅ Quantum ${layer.role} visualizer created`);
                 return viz;
             }).filter(viz => viz.gl);
 
+            // Initialize Chromatic Visualizers (Secondary - Colorful)
+            const chromaticLayers = [
+                { id: 'chromatic-primary', role: 'primary', phase: 0 },
+                { id: 'chromatic-secondary', role: 'secondary', phase: 1 },
+                { id: 'chromatic-tertiary', role: 'tertiary', phase: 2 }
+            ];
+
+            window.chromaticVisualizers = chromaticLayers.map(layer => {
+                const viz = new ChromaticVisualizer(layer.id, layer.role, layer.phase);
+                console.log(`✅ Chromatic ${layer.role} visualizer created`);
+                return viz;
+            }).filter(viz => viz.gl);
+
+            // Unified render loop for all visualizers
             function renderLoop() {
                 window.quantumVisualizers.forEach(viz => viz.render());
+                window.chromaticVisualizers.forEach(viz => viz.render());
                 requestAnimationFrame(renderLoop);
             }
             renderLoop();
@@ -2194,7 +2572,10 @@ timer = client.timers.create(
             console.log('📦 Expandable cards enabled');
             console.log('📊 Scroll progress tracking active');
             console.log('🎮 Interactive states enabled');
-            console.log('🌈 Background animates continuously');
+            console.log('🌈 Dual Visualizer System Active:');
+            console.log(`  ├─ Quantum (${window.quantumVisualizers.length} layers): Subtle, structural, 70% presence`);
+            console.log(`  └─ Chromatic (${window.chromaticVisualizers.length} layers): Colorful, dynamic, 30% presence`);
+            console.log('✨ Phase-complementary morphing enabled');
         });
     </script>
 </body>
