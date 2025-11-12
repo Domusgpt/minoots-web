@@ -181,8 +181,7 @@
             inset: 0;
             z-index: 6;
             pointer-events: none;
-            mix-blend-mode: screen;
-            opacity: 0.4;
+            opacity: 1.0;  /* Full opacity on container, control via individual canvases */
             transition: opacity 0.6s ease;
         }
 
@@ -193,9 +192,9 @@
             mix-blend-mode: screen;
         }
 
-        #chromatic-primary { opacity: 0.8; z-index: 1; }
-        #chromatic-secondary { opacity: 0.6; z-index: 2; }
-        #chromatic-tertiary { opacity: 0.4; z-index: 3; }
+        #chromatic-primary { opacity: 0.5; z-index: 1; }
+        #chromatic-secondary { opacity: 0.4; z-index: 2; }
+        #chromatic-tertiary { opacity: 0.3; z-index: 3; }
 
         /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
@@ -1659,12 +1658,12 @@ timer = client.timers.create(
                 this.params = {
                     colorShift: phase * 0.333, // Offset colors by phase
                     speed: 2.0 + (phase * 0.5), // Faster than quantum
-                    intensity: 0.8,
-                    scale: 0.5 + (phase * 0.2),
+                    intensity: 1.5,  // Increased for better visibility
+                    scale: 0.6 + (phase * 0.15),
                     morphSpeed: 3.0,
                     hueSpeed: 1.0,
                     saturation: 1.0,
-                    brightness: 1.2
+                    brightness: 1.5  // Increased for better visibility
                 };
 
                 this.init();
@@ -1937,47 +1936,47 @@ timer = client.timers.create(
             'cyan': {
                 colorShift: 0.5,      // Orange/warm (opposite of cyan)
                 speed: 2.5,
-                intensity: 0.6,
+                intensity: 1.2,  // Increased
                 morphSpeed: 3.0,
                 hueSpeed: 1.2,
-                saturation: 0.95,
-                brightness: 1.3
+                saturation: 1.0,
+                brightness: 1.6  // Increased
             },
             'magenta': {
                 colorShift: 0.33,     // Green (opposite of magenta)
                 speed: 3.0,
-                intensity: 0.75,
+                intensity: 1.4,  // Increased
                 morphSpeed: 3.5,
                 hueSpeed: 1.5,
                 saturation: 1.0,
-                brightness: 1.4
+                brightness: 1.7  // Increased
             },
             'green': {
                 colorShift: 0.83,     // Magenta/pink (opposite of green)
                 speed: 2.2,
-                intensity: 0.65,
+                intensity: 1.1,  // Increased
                 morphSpeed: 2.8,
                 hueSpeed: 1.0,
-                saturation: 0.9,
-                brightness: 1.2
+                saturation: 1.0,
+                brightness: 1.5  // Increased
             },
             'purple': {
                 colorShift: 0.17,     // Yellow (opposite of purple)
                 speed: 3.2,
-                intensity: 0.8,
+                intensity: 1.5,  // Increased
                 morphSpeed: 4.0,
                 hueSpeed: 1.8,
                 saturation: 1.0,
-                brightness: 1.5
+                brightness: 1.8  // Increased
             },
             'orange': {
                 colorShift: 0.58,     // Blue (opposite of orange)
                 speed: 2.8,
-                intensity: 0.7,
+                intensity: 1.3,  // Increased
                 morphSpeed: 3.2,
                 hueSpeed: 1.3,
-                saturation: 0.95,
-                brightness: 1.35
+                saturation: 1.0,
+                brightness: 1.65  // Increased
             }
         };
 
