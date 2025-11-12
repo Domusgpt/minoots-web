@@ -99,6 +99,50 @@
             }
         }
 
+        @keyframes gasp-expand {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes melting-drip {
+            0% {
+                transform: translateY(0) scaleY(1);
+            }
+            50% {
+                transform: translateY(10px) scaleY(1.1);
+            }
+            100% {
+                transform: translateY(0) scaleY(1);
+            }
+        }
+
+        @keyframes shockwave-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        @keyframes unity-glow {
+            0%, 100% {
+                filter: brightness(1) saturate(1);
+            }
+            50% {
+                filter: brightness(1.5) saturate(1.5);
+            }
+        }
+
         html {
             scroll-behavior: smooth;
         }
@@ -792,6 +836,8 @@
         <canvas id="quantum-content" class="quantum-canvas"></canvas>
         <canvas id="quantum-highlight" class="quantum-canvas"></canvas>
         <canvas id="quantum-accent" class="quantum-canvas"></canvas>
+        <!-- Cross-layer particle communication overlay -->
+        <canvas id="particle-flow" class="quantum-canvas" style="opacity: 0.4; z-index: 6; mix-blend-mode: screen;"></canvas>
     </div>
 
     <!-- Overlay for Expanded Cards -->
@@ -1325,7 +1371,125 @@ timer = client.timers.create(
 
 
     <script type="module">
-        // ========== VIB3+ QUANTUM VISUALIZER (Enhanced) ==========
+        // ========== EMERGENT UNITY STATE MANAGER ==========
+        class EmergentUnityManager {
+            constructor() {
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.scrollVelocity = 0;
+                this.lastScrollY = 0;
+                this.lastScrollTime = Date.now();
+                this.pulsePhase = 0;
+                this.unityMoments = [];
+                this.audioContext = null;
+                this.audioAnalyser = null;
+                this.audioFrequency = 0;
+
+                // Field-based attraction points
+                this.attractionPoints = [];
+                this.shockwaves = [];
+
+                this.initMouseTracking();
+                this.initScrollVelocityTracking();
+                this.initAudioContext();
+            }
+
+            initMouseTracking() {
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                    this.mouseY = -((e.clientY / window.innerHeight) * 2 - 1);
+                });
+            }
+
+            initScrollVelocityTracking() {
+                let rafId;
+                const updateVelocity = () => {
+                    const now = Date.now();
+                    const deltaTime = (now - this.lastScrollTime) / 1000;
+                    const deltaScroll = window.scrollY - this.lastScrollY;
+
+                    this.scrollVelocity = Math.abs(deltaScroll / deltaTime) / 1000;
+                    this.lastScrollY = window.scrollY;
+                    this.lastScrollTime = now;
+
+                    rafId = requestAnimationFrame(updateVelocity);
+                };
+                updateVelocity();
+            }
+
+            initAudioContext() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.audioAnalyser = this.audioContext.createAnalyser();
+                    this.audioAnalyser.fftSize = 256;
+
+                    // Try to get microphone input
+                    navigator.mediaDevices?.getUserMedia({ audio: true })
+                        .then(stream => {
+                            const source = this.audioContext.createMediaStreamSource(stream);
+                            source.connect(this.audioAnalyser);
+                            console.log('🎵 Audio reactivity enabled');
+                        })
+                        .catch(() => {
+                            console.log('🎵 Audio input not available, using passive mode');
+                        });
+                } catch (e) {
+                    console.log('🎵 Audio context not available');
+                }
+            }
+
+            getAudioFrequency() {
+                if (!this.audioAnalyser) return 0;
+
+                const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
+                this.audioAnalyser.getByteFrequencyData(dataArray);
+
+                const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                return average / 255;
+            }
+
+            triggerShockwave(x, y, intensity = 1.0) {
+                this.shockwaves.push({
+                    x, y,
+                    intensity,
+                    startTime: Date.now(),
+                    duration: 2000
+                });
+            }
+
+            triggerUnityMoment(duration = 3000) {
+                this.unityMoments.push({
+                    startTime: Date.now(),
+                    duration
+                });
+                console.log('✨ UNITY MOMENT triggered');
+            }
+
+            getActiveShockwaves() {
+                const now = Date.now();
+                this.shockwaves = this.shockwaves.filter(sw => now - sw.startTime < sw.duration);
+                return this.shockwaves.map(sw => ({
+                    ...sw,
+                    progress: (now - sw.startTime) / sw.duration
+                }));
+            }
+
+            isUnityMoment() {
+                const now = Date.now();
+                this.unityMoments = this.unityMoments.filter(um => now - um.startTime < um.duration);
+                return this.unityMoments.length > 0;
+            }
+
+            update() {
+                this.pulsePhase += 0.02;
+                this.audioFrequency = this.getAudioFrequency();
+            }
+        }
+
+        // Global unity manager
+        window.unityManager = new EmergentUnityManager();
+
+        // ========== VIB3+ QUANTUM VISUALIZER (Enhanced with Emergent Unity) ==========
         class QuantumVisualizer {
             constructor(canvasId, role, reactivity) {
                 this.canvas = document.getElementById(canvasId);
@@ -1350,7 +1514,17 @@ timer = client.timers.create(
                     rot4dXW: 0.0,
                     rot4dYW: 0.0,
                     rot4dZW: 0.0,
-                    offsetY: 0.0
+                    offsetY: 0.0,
+                    // New emergent unity parameters
+                    mouseInfluence: 0.0,
+                    scrollVelocity: 0.0,
+                    pulseIntensity: 0.0,
+                    meltFactor: 0.0,
+                    shockwaveX: 0.0,
+                    shockwaveY: 0.0,
+                    shockwaveIntensity: 0.0,
+                    unityFactor: 0.0,
+                    audioReactivity: 0.0
                 };
 
                 this.init();
@@ -1392,6 +1566,15 @@ timer = client.timers.create(
                     uniform float u_roleIntensity;
                     uniform float u_offsetY;
                     uniform float u_scrollProgress;
+                    // New emergent unity uniforms
+                    uniform vec2 u_mouse;
+                    uniform float u_scrollVelocity;
+                    uniform float u_pulseIntensity;
+                    uniform float u_meltFactor;
+                    uniform vec2 u_shockwave;
+                    uniform float u_shockwaveIntensity;
+                    uniform float u_unityFactor;
+                    uniform float u_audioReactivity;
 
                     mat4 rotateXW(float theta) {
                         float c = cos(theta);
@@ -1475,24 +1658,122 @@ timer = client.timers.create(
                         else return vec3(1.0, 0.0, 1.0);
                     }
 
+                    // ========== EMERGENT UNITY EFFECTS ==========
+
+                    // Liquid melting displacement
+                    vec2 applyMelting(vec2 uv, float melt) {
+                        float time = u_time * 0.001;
+                        float drip = sin(uv.x * 3.0 + time) * melt * 0.5;
+                        float flow = sin(uv.y * 2.0 + time * 1.3) * melt * 0.3;
+                        return uv + vec2(flow, -drip * (1.0 + uv.y));
+                    }
+
+                    // Heat distortion warping
+                    vec2 applyHeatDistortion(vec2 uv, float intensity) {
+                        float time = u_time * 0.002;
+                        vec2 warp = vec2(
+                            sin(uv.y * 10.0 + time * 3.0) * intensity * 0.02,
+                            sin(uv.x * 8.0 + time * 2.5) * intensity * 0.02
+                        );
+                        return uv + warp;
+                    }
+
+                    // Shockwave ripple effect
+                    float getShockwaveEffect(vec2 uv, vec2 center, float intensity) {
+                        float dist = length(uv - center);
+                        float ripple = sin(dist * 20.0 - u_time * 0.01) * 0.5 + 0.5;
+                        float falloff = 1.0 - smoothstep(0.0, 2.0, dist);
+                        return ripple * falloff * intensity;
+                    }
+
+                    // Mouse cursor influence on field
+                    vec2 applyMouseInfluence(vec2 uv, vec2 mouse, float strength) {
+                        vec2 toMouse = mouse - uv;
+                        float dist = length(toMouse);
+                        float influence = exp(-dist * 2.0) * strength;
+                        return uv + toMouse * influence * 0.3;
+                    }
+
+                    // Breathing pulse effect
+                    float getBreathingPulse(float phase, float intensity) {
+                        return sin(phase) * 0.5 + 0.5 * intensity;
+                    }
+
+                    // Unity convergence - layers harmonize
+                    float getUnityHarmonization(vec3 p, float unityFactor) {
+                        float convergence = sin(p.x * 5.0 + unityFactor * 10.0) *
+                                          sin(p.y * 5.0 + unityFactor * 10.0) *
+                                          sin(p.z * 5.0 + unityFactor * 10.0);
+                        return convergence * unityFactor;
+                    }
+
+                    // Dissolve and reform animation
+                    float getDissolvePattern(vec3 p, float progress) {
+                        float noise = fract(sin(dot(p, vec3(12.9898, 78.233, 45.543))) * 43758.5453);
+                        return smoothstep(progress - 0.1, progress + 0.1, noise);
+                    }
+
                     void main() {
                         vec2 uv = (gl_FragCoord.xy - u_resolution.xy * 0.5) / min(u_resolution.x, u_resolution.y);
                         uv.y += u_offsetY;
 
-                        float timeSpeed = u_time * 0.0001 * u_speed;
-                        vec4 pos = vec4(uv * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
+                        // Apply emergent unity effects to UV coordinates
+                        vec2 modifiedUV = uv;
 
-                        pos = rotateXW(u_rot4dXW) * pos;
-                        pos = rotateYW(u_rot4dYW) * pos;
-                        pos = rotateZW(u_rot4dZW) * pos;
+                        // Mouse cursor influence on quantum field
+                        modifiedUV = applyMouseInfluence(modifiedUV, u_mouse, u_roleIntensity * 0.2);
+
+                        // Liquid melting during theme transitions
+                        modifiedUV = applyMelting(modifiedUV, u_meltFactor);
+
+                        // Heat distortion from scroll velocity
+                        float heatIntensity = u_scrollVelocity * 2.0 + u_audioReactivity * 0.5;
+                        modifiedUV = applyHeatDistortion(modifiedUV, heatIntensity);
+
+                        // Breathing pulse effect
+                        float breathScale = 1.0 + getBreathingPulse(u_time * 0.003, u_pulseIntensity) * 0.05;
+                        modifiedUV *= breathScale;
+
+                        float timeSpeed = u_time * 0.0001 * u_speed;
+                        vec4 pos = vec4(modifiedUV * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
+
+                        // Enhanced 4D rotations with scroll velocity influence
+                        float velocityBoost = 1.0 + u_scrollVelocity * 0.5;
+                        pos = rotateXW(u_rot4dXW * velocityBoost) * pos;
+                        pos = rotateYW(u_rot4dYW * velocityBoost) * pos;
+                        pos = rotateZW(u_rot4dZW * velocityBoost) * pos;
 
                         float value = geometryFunction(pos);
+
+                        // Unity harmonization - layers converge
+                        vec3 pos3d = project4Dto3D(pos);
+                        float unityEffect = getUnityHarmonization(pos3d, u_unityFactor);
+                        value += unityEffect * 0.3;
+
+                        // Enhanced chaos with audio reactivity
                         float noise = sin(pos.x * 7.0) * cos(pos.y * 11.0);
-                        value += noise * u_chaos;
+                        value += noise * (u_chaos + u_audioReactivity * 0.2);
+
+                        // Shockwave ripples
+                        float shockwave = getShockwaveEffect(uv, u_shockwave, u_shockwaveIntensity);
+                        value += shockwave * 0.5;
+
+                        // Dissolve and reform based on unity factor
+                        float dissolve = getDissolvePattern(pos3d, fract(u_time * 0.0001));
+                        value *= mix(1.0, dissolve, u_unityFactor * 0.3);
 
                         float geometryIntensity = 1.0 - clamp(abs(value * 0.8), 0.0, 1.0);
                         geometryIntensity = pow(geometryIntensity, 1.5);
-                        float finalIntensity = geometryIntensity * u_intensity * (1.0 + u_scrollProgress * 0.2);
+
+                        // Enhanced intensity with all reactive factors
+                        float reactiveBoost = 1.0 +
+                                            u_scrollProgress * 0.2 +
+                                            u_scrollVelocity * 0.3 +
+                                            u_pulseIntensity * 0.4 +
+                                            u_audioReactivity * 0.5 +
+                                            u_unityFactor * 0.6;
+
+                        float finalIntensity = geometryIntensity * u_intensity * reactiveBoost;
 
                         int layerIndex = u_roleIntensity == 0.4 ? 0 :
                                        u_roleIntensity == 0.6 ? 1 :
@@ -1500,7 +1781,15 @@ timer = client.timers.create(
                                        u_roleIntensity == 1.3 ? 3 : 4;
 
                         vec3 layerColor = getLayerColor(layerIndex, u_hue);
+
+                        // Unity moments - all layers blend toward cyan-magenta spectrum
+                        vec3 unityColor = mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 0.0, 1.0), u_hue);
+                        layerColor = mix(layerColor, unityColor, u_unityFactor * 0.5);
+
                         vec3 finalColor = layerColor * finalIntensity;
+
+                        // Enhanced shockwave brightening
+                        finalColor += vec3(shockwave * 0.3);
 
                         float layerAlpha = u_roleIntensity == 1.0 ? 1.0 :
                                          u_roleIntensity == 1.3 ? 0.8 :
@@ -1527,7 +1816,16 @@ timer = client.timers.create(
                     rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
                     roleIntensity: this.gl.getUniformLocation(this.program, 'u_roleIntensity'),
                     offsetY: this.gl.getUniformLocation(this.program, 'u_offsetY'),
-                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress')
+                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress'),
+                    // New emergent unity uniforms
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    scrollVelocity: this.gl.getUniformLocation(this.program, 'u_scrollVelocity'),
+                    pulseIntensity: this.gl.getUniformLocation(this.program, 'u_pulseIntensity'),
+                    meltFactor: this.gl.getUniformLocation(this.program, 'u_meltFactor'),
+                    shockwave: this.gl.getUniformLocation(this.program, 'u_shockwave'),
+                    shockwaveIntensity: this.gl.getUniformLocation(this.program, 'u_shockwaveIntensity'),
+                    unityFactor: this.gl.getUniformLocation(this.program, 'u_unityFactor'),
+                    audioReactivity: this.gl.getUniformLocation(this.program, 'u_audioReactivity')
                 };
             }
 
@@ -1595,7 +1893,16 @@ timer = client.timers.create(
                 };
 
                 const time = Date.now() - this.startTime;
+                const unity = window.unityManager;
 
+                // Get active shockwaves
+                const shockwaves = unity.getActiveShockwaves();
+                const activeShockwave = shockwaves[0];
+                const shockwaveX = activeShockwave ? activeShockwave.x : 0;
+                const shockwaveY = activeShockwave ? activeShockwave.y : 0;
+                const shockwaveIntensity = activeShockwave ? (1 - activeShockwave.progress) * activeShockwave.intensity : 0;
+
+                // Standard uniforms
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform1f(this.uniforms.time, time);
                 this.gl.uniform1f(this.uniforms.geometry, this.params.geometry);
@@ -1611,7 +1918,155 @@ timer = client.timers.create(
                 this.gl.uniform1f(this.uniforms.offsetY, this.params.offsetY);
                 this.gl.uniform1f(this.uniforms.scrollProgress, this.scrollProgress);
 
+                // New emergent unity uniforms
+                this.gl.uniform2f(this.uniforms.mouse, unity.mouseX, unity.mouseY);
+                this.gl.uniform1f(this.uniforms.scrollVelocity, unity.scrollVelocity * this.reactivity);
+                this.gl.uniform1f(this.uniforms.pulseIntensity, Math.sin(unity.pulsePhase) * this.reactivity);
+                this.gl.uniform1f(this.uniforms.meltFactor, this.params.meltFactor);
+                this.gl.uniform2f(this.uniforms.shockwave, shockwaveX, shockwaveY);
+                this.gl.uniform1f(this.uniforms.shockwaveIntensity, shockwaveIntensity * this.reactivity);
+                this.gl.uniform1f(this.uniforms.unityFactor, unity.isUnityMoment() ? 1.0 : 0.0);
+                this.gl.uniform1f(this.uniforms.audioReactivity, unity.audioFrequency * this.reactivity);
+
                 this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        // ========== CROSS-LAYER PARTICLE FLOW SYSTEM ==========
+        class ParticleFlowSystem {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.maxParticles = 100;
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                this.canvas.width = this.canvas.clientWidth * dpr;
+                this.canvas.height = this.canvas.clientHeight * dpr;
+                this.ctx.scale(dpr, dpr);
+            }
+
+            createParticle() {
+                return {
+                    x: Math.random() * this.canvas.clientWidth,
+                    y: Math.random() * this.canvas.clientHeight,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: Math.random() * 3 + 1,
+                    life: 1.0,
+                    decay: Math.random() * 0.01 + 0.005,
+                    layer: Math.floor(Math.random() * 5),
+                    color: this.getLayerColor(Math.floor(Math.random() * 5))
+                };
+            }
+
+            getLayerColor(layer) {
+                const colors = [
+                    'rgba(100, 0, 200, ',    // background - purple
+                    'rgba(0, 150, 150, ',    // shadow - teal
+                    'rgba(0, 255, 255, ',    // content - cyan
+                    'rgba(100, 200, 255, ',  // highlight - light blue
+                    'rgba(255, 0, 255, '     // accent - magenta
+                ];
+                return colors[layer] || colors[2];
+            }
+
+            update() {
+                const unity = window.unityManager;
+
+                // Create new particles
+                if (this.particles.length < this.maxParticles && Math.random() < 0.3) {
+                    this.particles.push(this.createParticle());
+                }
+
+                // Update existing particles
+                this.particles = this.particles.filter(p => {
+                    // Mouse attraction
+                    const mouseX = (unity.mouseX * 0.5 + 0.5) * this.canvas.clientWidth;
+                    const mouseY = (-unity.mouseY * 0.5 + 0.5) * this.canvas.clientHeight;
+                    const dx = mouseX - p.x;
+                    const dy = mouseY - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 200) {
+                        const force = (200 - dist) / 200 * 0.5;
+                        p.vx += (dx / dist) * force;
+                        p.vy += (dy / dist) * force;
+                    }
+
+                    // Scroll velocity influence
+                    p.vy += unity.scrollVelocity * 0.5;
+
+                    // Update position
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Decay
+                    p.life -= p.decay;
+
+                    // Wrap around edges
+                    if (p.x < 0) p.x = this.canvas.clientWidth;
+                    if (p.x > this.canvas.clientWidth) p.x = 0;
+                    if (p.y < 0) p.y = this.canvas.clientHeight;
+                    if (p.y > this.canvas.clientHeight) p.y = 0;
+
+                    // Damping
+                    p.vx *= 0.99;
+                    p.vy *= 0.99;
+
+                    return p.life > 0;
+                });
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                const unity = window.unityManager;
+                const unityBoost = unity.isUnityMoment() ? 2.0 : 1.0;
+
+                // Draw connections between nearby particles
+                for (let i = 0; i < this.particles.length; i++) {
+                    for (let j = i + 1; j < this.particles.length; j++) {
+                        const p1 = this.particles[i];
+                        const p2 = this.particles[j];
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 100) {
+                            const opacity = (1 - dist / 100) * p1.life * p2.life * 0.3 * unityBoost;
+                            this.ctx.strokeStyle = p1.color + opacity + ')';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p1.x, p1.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw particles
+                this.particles.forEach(p => {
+                    const opacity = p.life * unityBoost;
+                    this.ctx.fillStyle = p.color + opacity + ')';
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Glow effect
+                    const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+                    gradient.addColorStop(0, p.color + (opacity * 0.5) + ')');
+                    gradient.addColorStop(1, p.color + '0)');
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
             }
         }
 
@@ -1678,22 +2133,46 @@ timer = client.timers.create(
             const preset = SECTION_VIZ_PRESETS[theme];
             if (!preset || !window.quantumVisualizers) return;
 
+            // Trigger melting transition
             window.quantumVisualizers.forEach((viz, i) => {
                 const layerMultiplier = (i + 1) * 0.2;
+
+                // First: Melt the current state
                 gsap.to(viz.params, {
-                    geometry: preset.geometry,
-                    gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
-                    chaos: preset.chaos * (1 + layerMultiplier * 0.3),
-                    speed: preset.speed,
-                    hue: preset.hue,
-                    intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
-                    rot4dXW: preset.rot4dXW * layerMultiplier,
-                    rot4dYW: preset.rot4dYW * layerMultiplier,
-                    rot4dZW: preset.rot4dZW * layerMultiplier,
-                    duration: 2,
-                    ease: 'power2.inOut'
+                    meltFactor: 1.0,
+                    duration: 0.8,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        // Then: Transition to new preset while melted
+                        gsap.to(viz.params, {
+                            geometry: preset.geometry,
+                            gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
+                            chaos: preset.chaos * (1 + layerMultiplier * 0.3),
+                            speed: preset.speed,
+                            hue: preset.hue,
+                            intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
+                            rot4dXW: preset.rot4dXW * layerMultiplier,
+                            rot4dYW: preset.rot4dYW * layerMultiplier,
+                            rot4dZW: preset.rot4dZW * layerMultiplier,
+                            duration: 0.6,
+                            ease: 'power2.inOut'
+                        });
+
+                        // Finally: Reform from melted state
+                        gsap.to(viz.params, {
+                            meltFactor: 0.0,
+                            duration: 1.2,
+                            delay: 0.3,
+                            ease: 'power2.out'
+                        });
+                    }
                 });
             });
+
+            // Trigger a unity moment for dramatic effect
+            setTimeout(() => {
+                window.unityManager.triggerUnityMoment(1500);
+            }, 800);
         }
 
         // ========== SCROLL CHOREOGRAPHY MAP ==========
@@ -1786,8 +2265,10 @@ timer = client.timers.create(
             console.log('🎭 Intro sequence: Title visible from start, visualizer contracts on scroll');
         }
 
-        // ========== CENTER-LOCK CHOREOGRAPHY ==========
+        // ========== CENTER-LOCK CHOREOGRAPHY WITH GASP TRIGGERS ==========
         function initCenterLockChoreography() {
+            let lastMilestone = -1;
+
             // Apply center-lock to all sections
             document.querySelectorAll('.section').forEach((section, index) => {
                 const sectionContent = section.querySelector('.section-content');
@@ -1802,31 +2283,66 @@ timer = client.timers.create(
                     pinSpacing: false,
                     onUpdate: (self) => {
                         const progress = self.progress;
-                        console.log(`Section ${index} progress: ${(progress * 100).toFixed(1)}%`);
+                        const milestone = Math.floor(progress * 10);
 
-                        // Entrance (0-20%)
-                        if (progress < 0.2) {
-                            const entranceProgress = progress / 0.2;
-                            sectionContent.style.opacity = entranceProgress;
-                            sectionContent.style.transform = `translateY(${(1 - entranceProgress) * 100}px) scale(${0.8 + (entranceProgress * 0.2)})`;
+                        // GASP TRIGGER: Detect milestone changes (every 10%)
+                        if (milestone !== lastMilestone && milestone > 0) {
+                            lastMilestone = milestone;
+                            triggerGaspMoment(progress, sectionContent);
                         }
 
-                        // Center-lock (20-80%) - Element stays centered, animations continue
+                        // Entrance (0-20%) - GASP: Sudden expansion
+                        if (progress < 0.2) {
+                            const entranceProgress = progress / 0.2;
+                            // Rapid intake of breath effect
+                            const intakeScale = entranceProgress < 0.1 ?
+                                0.6 + (entranceProgress * 4) : // Rapid expansion 0.6 -> 1.0
+                                0.8 + (entranceProgress * 0.2); // Normal scaling
+                            sectionContent.style.opacity = entranceProgress;
+                            sectionContent.style.transform = `translateY(${(1 - entranceProgress) * 100}px) scale(${intakeScale})`;
+
+                            // Trigger shockwave at section entrance
+                            if (progress > 0.05 && progress < 0.06) {
+                                window.unityManager.triggerShockwave(0, 0, 2.0);
+                            }
+                        }
+
+                        // Center-lock (20-80%) - Enhanced breathing with gasp moments
                         else if (progress >= 0.2 && progress < 0.8) {
                             const focusProgress = (progress - 0.2) / 0.6;
                             sectionContent.style.opacity = 1;
-                            sectionContent.style.transform = 'translateY(0) scale(1)';
 
-                            // Subtle breathing animation during focus
-                            const breathe = Math.sin(focusProgress * Math.PI * 4) * 0.02;
-                            sectionContent.style.transform = `translateY(0) scale(${1 + breathe})`;
+                            // Enhanced breathing animation with periodic gasps
+                            const breathCycle = focusProgress * Math.PI * 4;
+                            const normalBreathing = Math.sin(breathCycle) * 0.02;
+
+                            // GASP moments: sharp intake every 25% through focus period
+                            const gaspPhase = (focusProgress % 0.25) / 0.25;
+                            const gaspEffect = gaspPhase < 0.1 ?
+                                Math.pow(1 - gaspPhase / 0.1, 2) * 0.05 : 0;
+
+                            const totalScale = 1 + normalBreathing + gaspEffect;
+                            sectionContent.style.transform = `translateY(0) scale(${totalScale})`;
+
+                            // Update unity manager pulse
+                            window.unityManager.pulsePhase = breathCycle;
                         }
 
-                        // Exit (80-100%)
+                        // Exit (80-100%) - GASP: Rapid contraction
                         else {
                             const exitProgress = (progress - 0.8) / 0.2;
+                            // Exhale effect - rapid contraction at start
+                            const exhaleScale = exitProgress < 0.2 ?
+                                1 - (exitProgress * 2.5) : // Rapid contraction
+                                1 - (exitProgress * 0.2);  // Normal shrinking
+
                             sectionContent.style.opacity = 1 - exitProgress;
-                            sectionContent.style.transform = `translateY(${-exitProgress * 100}px) scale(${1 - (exitProgress * 0.2)})`;
+                            sectionContent.style.transform = `translateY(${-exitProgress * 100}px) scale(${Math.max(0.5, exhaleScale)})`;
+
+                            // Trigger shockwave at section exit
+                            if (progress > 0.85 && progress < 0.86) {
+                                window.unityManager.triggerShockwave(0, 0.5, 1.5);
+                            }
                         }
                     },
                     onEnter: () => {
@@ -1835,24 +2351,80 @@ timer = client.timers.create(
                         if (theme) {
                             applyVisualizerPreset(theme);
                             console.log(`📍 Section ${index} (${theme}) locked in center`);
+
+                            // Trigger unity moment on major section transitions
+                            if (index % 2 === 0) {
+                                window.unityManager.triggerUnityMoment(2000);
+                            }
                         }
+                    },
+                    onLeave: () => {
+                        lastMilestone = -1; // Reset for next section
+                    },
+                    onEnterBack: () => {
+                        lastMilestone = -1; // Reset when scrolling back
                     }
                 });
             });
 
-            console.log('🎯 Center-lock choreography applied to all sections');
+            console.log('🎯 Center-lock choreography with GASP triggers applied');
         }
 
-        // ========== INTERACTIVE STATE MANAGEMENT ==========
+        // GASP moment: Shockwave + brief expansion/contraction
+        function triggerGaspMoment(progress, element) {
+            // Trigger shockwave at element center
+            const rect = element.getBoundingClientRect();
+            const x = ((rect.left + rect.width / 2) / window.innerWidth) * 2 - 1;
+            const y = -((rect.top + rect.height / 2) / window.innerHeight) * 2 + 1;
+            window.unityManager.triggerShockwave(x, y, 0.8);
+
+            // Brief flash animation
+            gsap.timeline()
+                .to(element, {
+                    scale: 1.03,
+                    duration: 0.1,
+                    ease: 'power2.out'
+                })
+                .to(element, {
+                    scale: 1.0,
+                    duration: 0.3,
+                    ease: 'elastic.out(1, 0.5)'
+                });
+
+            console.log(`💨 GASP triggered at ${(progress * 100).toFixed(0)}%`);
+        }
+
+        // ========== ENHANCED INTERACTIVE STATE MANAGEMENT ==========
         function initInteractiveStates() {
-            // Add click/touch states to cards
+            // Add click/touch states to cards with shockwave effects
             document.querySelectorAll('.morph-card').forEach(card => {
                 card.addEventListener('click', function(e) {
                     // Don't trigger if clicking expanded content
                     if (this.classList.contains('expanded')) return;
 
+                    // Calculate click position in normalized coordinates
+                    const rect = this.getBoundingClientRect();
+                    const clickX = ((e.clientX - rect.left) / window.innerWidth) * 2 - 1;
+                    const clickY = -((e.clientY - rect.top) / window.innerHeight) * 2 + 1;
+
+                    // Trigger shockwave at click position
+                    window.unityManager.triggerShockwave(clickX, clickY, 1.5);
+
                     // Toggle active state
                     this.classList.toggle('active');
+
+                    // Pulse effect on card
+                    gsap.timeline()
+                        .to(this, {
+                            scale: 0.98,
+                            duration: 0.1,
+                            ease: 'power2.in'
+                        })
+                        .to(this, {
+                            scale: 1.0,
+                            duration: 0.4,
+                            ease: 'elastic.out(1, 0.4)'
+                        });
 
                     // Remove active from others
                     document.querySelectorAll('.morph-card').forEach(other => {
@@ -1861,23 +2433,78 @@ timer = client.timers.create(
                         }
                     });
                 });
+
+                // Hover triggers subtle breathing pulse
+                card.addEventListener('mouseenter', function() {
+                    gsap.to(window.quantumVisualizers, {
+                        duration: 0.6,
+                        onUpdate: function() {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.params.pulseIntensity = 0.3;
+                            });
+                        }
+                    });
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    gsap.to(window.quantumVisualizers, {
+                        duration: 0.6,
+                        onUpdate: function() {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.params.pulseIntensity = 0;
+                            });
+                        }
+                    });
+                });
             });
 
-            // Add hover states to headlines
+            // Enhanced hover states for headlines with unity effects
             document.querySelectorAll('h1, h2, h3').forEach(headline => {
                 headline.addEventListener('mouseenter', function() {
                     this.classList.add('active');
+
+                    // Trigger subtle unity pulse
+                    window.quantumVisualizers?.forEach(viz => {
+                        gsap.to(viz.params, {
+                            intensity: viz.params.intensity * 1.2,
+                            duration: 0.4,
+                            ease: 'power2.out'
+                        });
+                    });
                 });
 
                 headline.addEventListener('mouseleave', function() {
                     this.classList.remove('active');
+
+                    // Return to normal intensity
+                    window.quantumVisualizers?.forEach((viz, i) => {
+                        const baseIntensity = 0.5 + (i * 0.1);
+                        gsap.to(viz.params, {
+                            intensity: baseIntensity,
+                            duration: 0.6,
+                            ease: 'power2.inOut'
+                        });
+                    });
                 });
 
-                // Click to keep active
-                headline.addEventListener('click', function() {
+                // Click triggers unity moment
+                headline.addEventListener('click', function(e) {
                     const isActive = this.classList.contains('active');
+
+                    // Calculate click position
+                    const rect = this.getBoundingClientRect();
+                    const clickX = ((rect.left + rect.width / 2) / window.innerWidth) * 2 - 1;
+                    const clickY = -((rect.top + rect.height / 2) / window.innerHeight) * 2 + 1;
+
+                    // Trigger shockwave
+                    window.unityManager.triggerShockwave(clickX, clickY, 2.0);
+
+                    // Trigger unity moment
+                    window.unityManager.triggerUnityMoment(2500);
+
                     // Remove active from all headlines
                     document.querySelectorAll('h1, h2, h3').forEach(h => h.classList.remove('active'));
+
                     // Toggle this one
                     if (!isActive) {
                         this.classList.add('active');
@@ -2127,9 +2754,10 @@ timer = client.timers.create(
             }
         }
 
-        // ========== SCROLL PROGRESS ==========
+        // ========== ENHANCED SCROLL PROGRESS WITH VELOCITY TRACKING ==========
         function initScrollProgress() {
             const progressBar = document.getElementById('scroll-progress');
+            let lastVelocityTrigger = 0;
 
             window.addEventListener('scroll', () => {
                 const windowHeight = window.innerHeight;
@@ -2141,19 +2769,41 @@ timer = client.timers.create(
 
                 // Update visualizers with scroll progress
                 const normalizedProgress = scrollTop / (documentHeight - windowHeight);
+                const unity = window.unityManager;
+
+                // VELOCITY-BASED EFFECTS
+                const velocity = unity.scrollVelocity;
+
+                // Trigger shockwaves on rapid scrolling
+                const now = Date.now();
+                if (velocity > 2.0 && now - lastVelocityTrigger > 500) {
+                    const centerX = 0;
+                    const centerY = 0;
+                    unity.triggerShockwave(centerX, centerY, velocity * 0.5);
+                    lastVelocityTrigger = now;
+                    console.log(`⚡ Velocity shockwave: ${velocity.toFixed(2)}`);
+                }
+
                 window.quantumVisualizers?.forEach((viz, i) => {
                     viz.updateScrollProgress(normalizedProgress);
 
-                    // Adjust parameters based on scroll
+                    // Enhanced parameters with velocity influence
                     const layerMultiplier = (i + 1) * 0.2;
+                    const velocityBoost = 1 + (velocity * 0.3);
+
                     viz.updateParameters({
-                        rot4dXW: normalizedProgress * layerMultiplier,
-                        rot4dYW: normalizedProgress * layerMultiplier * 0.7,
-                        rot4dZW: normalizedProgress * layerMultiplier * 0.5,
-                        chaos: 0.2 + (normalizedProgress * 0.3),
-                        geometry: 1 + Math.floor(normalizedProgress * 3)
+                        rot4dXW: normalizedProgress * layerMultiplier * velocityBoost,
+                        rot4dYW: normalizedProgress * layerMultiplier * 0.7 * velocityBoost,
+                        rot4dZW: normalizedProgress * layerMultiplier * 0.5 * velocityBoost,
+                        chaos: 0.2 + (normalizedProgress * 0.3) + (velocity * 0.1),
+                        geometry: 1 + Math.floor(normalizedProgress * 3),
+                        speed: 1.0 + (velocity * 0.5) // Speed increases with scroll velocity
                     });
                 });
+
+                // Color shift based on scroll velocity in progress bar
+                const velocityHue = Math.min(velocity * 30, 60);
+                progressBar.style.filter = `hue-rotate(${velocityHue}deg) brightness(${1 + velocity * 0.2})`;
             });
         }
 
@@ -2174,8 +2824,21 @@ timer = client.timers.create(
                 return viz;
             }).filter(viz => viz.gl);
 
+            // Initialize particle flow system
+            window.particleFlow = new ParticleFlowSystem('particle-flow');
+            console.log('✅ Cross-layer particle flow system created');
+
             function renderLoop() {
+                // Update unity manager state
+                window.unityManager.update();
+
+                // Update and render particle flow
+                window.particleFlow.update();
+                window.particleFlow.render();
+
+                // Render all visualizers
                 window.quantumVisualizers.forEach(viz => viz.render());
+
                 requestAnimationFrame(renderLoop);
             }
             renderLoop();
@@ -2188,13 +2851,41 @@ timer = client.timers.create(
             initScrollProgress();
             initInteractiveStates();
 
-            console.log('🚀 MINOOTS VIB3+ Experience Ready');
+            console.log('🚀 MINOOTS VIB3+ EMERGENT UNITY Experience Ready');
+            console.log('');
+            console.log('✨ EMERGENT UNITY SYSTEMS:');
+            console.log('  ├─ Cross-layer particle communication active');
+            console.log('  ├─ Field-based mouse attraction enabled');
+            console.log('  ├─ Synchronized pulse effects across all layers');
+            console.log('  └─ Unity moments trigger harmonized patterns');
+            console.log('');
+            console.log('💧 MELTING EFFECTS:');
+            console.log('  ├─ Liquid morphing transitions between themes');
+            console.log('  ├─ Dripping/flowing particle effects');
+            console.log('  ├─ Heat-distortion warping from scroll velocity');
+            console.log('  └─ Dissolve-and-reform animations');
+            console.log('');
+            console.log('💨 GASP TRIGGER ANIMATIONS:');
+            console.log('  ├─ Sudden expansion/contraction on scroll milestones');
+            console.log('  ├─ Shockwave ripples from interaction points');
+            console.log('  ├─ Breathing/pulsing effects on hover');
+            console.log('  └─ "Intake of breath" moments at section transitions');
+            console.log('');
+            console.log('🎨 ENHANCED VISUALIZER INTEGRATION:');
+            console.log('  ├─ Scroll velocity influences rotation speed');
+            console.log('  ├─ Mouse cursor warps quantum field');
+            console.log('  ├─ Audio-reactive capabilities (if mic available)');
+            console.log('  └─ Dramatic melting transitions between sections');
+            console.log('');
             console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
             console.log('🎯 Center-lock choreography: All sections lock in focus');
-            console.log('📦 Expandable cards enabled');
-            console.log('📊 Scroll progress tracking active');
-            console.log('🎮 Interactive states enabled');
-            console.log('🌈 Background animates continuously');
+            console.log('📦 Expandable cards with shockwave effects');
+            console.log('📊 Velocity-tracked scroll progress');
+            console.log('🎮 Interactive states with unity moments');
+            console.log('🌈 5-layer emergent visualizer system');
+            console.log('');
+            console.log('🎵 Tip: Allow microphone access for audio reactivity!');
+            console.log('💫 Tip: Click headlines to trigger unity moments!');
         });
     </script>
 </body>
