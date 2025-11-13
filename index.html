@@ -363,7 +363,7 @@
         /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
             position: relative;
-            height: 300vh; /* Extended for smooth transitions */
+            height: 100vh; /* FIXED: Was 300vh, made scrolling impossible */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -403,7 +403,7 @@
         /* SECTION SYSTEM - CENTER LOCK */
         .section {
             position: relative;
-            min-height: 200vh; /* Extended for center-lock effect */
+            min-height: 100vh; /* FIXED: Was 200vh, made content unreachable */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -969,24 +969,28 @@
             transition: width 0.2s ease;
         }
 
-        /* REVEAL ANIMATIONS */
+        /* REVEAL ANIMATIONS - CONTENT ALWAYS VISIBLE */
         .reveal {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: translateY(60px);
         }
 
         .reveal-left {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: translateX(-60px);
         }
 
         .reveal-right {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: translateX(60px);
         }
 
         .reveal-scale {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: scale(0.8);
         }
 
@@ -2494,42 +2498,44 @@ timer = client.timers.create(
                 onUpdate: (self) => {
                     const progress = self.progress; // 0-1
 
-                    // Smooth global changes based on scroll progress
+                    // EXTREME global changes based on scroll progress - 10X MORE DRAMATIC!
                     if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                         window.quantumVisualizers.forEach((viz, i) => {
                             // Store base values for smooth transitions
                             if (!viz.baseParams) {
                                 viz.baseParams = {
-                                    baseChaos: 0.2 + (progress * 0.8),
-                                    baseIntensity: 0.5 + (progress * 0.5),
-                                    baseSpeed: 1.0 + (progress * 1.0),
-                                    baseMorphFactor: 0.5 + (progress * 1.5),
-                                    baseDensity: 40 + (progress * 40) // 40 → 80
+                                    baseChaos: 0.0 + (progress * 2.0),      // 0 → 2.0 (WAY beyond normal!)
+                                    baseIntensity: 0.1 + (progress * 1.5),  // 0.1 → 1.6 (over max!)
+                                    baseSpeed: 0.5 + (progress * 4.0),      // 0.5 → 4.5 (super fast!)
+                                    baseMorphFactor: 0.0 + (progress * 3.0), // 0 → 3.0 (extreme morph!)
+                                    baseDensity: 10 + (progress * 90)       // 10 → 100 (massive change!)
                                 };
                             }
 
-                            // Update base parameters
-                            viz.baseParams.baseChaos = 0.2 + (progress * 0.8);
-                            viz.baseParams.baseIntensity = 0.5 + (progress * 0.5);
-                            viz.baseParams.baseSpeed = 1.0 + (progress * 1.0);
-                            viz.baseParams.baseMorphFactor = 0.5 + (progress * 1.5);
-                            viz.baseParams.baseDensity = 40 + (progress * 40);
+                            // Update base parameters - EXTREME RANGES!
+                            viz.baseParams.baseChaos = 0.0 + (progress * 2.0);      // 0 → 2.0
+                            viz.baseParams.baseIntensity = 0.1 + (progress * 1.5);  // 0.1 → 1.6
+                            viz.baseParams.baseSpeed = 0.5 + (progress * 4.0);      // 0.5 → 4.5
+                            viz.baseParams.baseMorphFactor = 0.0 + (progress * 3.0); // 0 → 3.0
+                            viz.baseParams.baseDensity = 10 + (progress * 90);      // 10 → 100
+
+                            console.log(`📊 SCROLL ${(progress*100).toFixed(0)}%: chaos=${viz.baseParams.baseChaos.toFixed(2)}, density=${viz.baseParams.baseDensity.toFixed(0)}, speed=${viz.baseParams.baseSpeed.toFixed(2)}`);
 
                             // Apply if not overridden by card center dynamics
                             if (!viz.centerOverride) {
                                 viz.params.gridDensity = viz.baseParams.baseDensity;
                             }
 
-                            // 4D rotation based on scroll
-                            viz.params.rot4dXW = progress * Math.PI * 4;
-                            viz.params.rot4dYW = progress * Math.PI * 3;
-                            viz.params.rot4dZW = progress * Math.PI * 2;
+                            // 4D rotation based on scroll - EXTREME ROTATION!
+                            viz.params.rot4dXW = progress * Math.PI * 8;  // 8π rotation!
+                            viz.params.rot4dYW = progress * Math.PI * 6;  // 6π rotation!
+                            viz.params.rot4dZW = progress * Math.PI * 4;  // 4π rotation!
                         });
                     }
                 }
             });
 
-            // ========== CARD ENTER: SNAP DENSITY TO OPPOSITE ==========
+            // ========== CARD ENTER: SNAP DENSITY TO OPPOSITE - EXTREME! ==========
             gsap.utils.toArray('.morph-card').forEach(card => {
                 ScrollTrigger.create({
                     trigger: card,
@@ -2539,20 +2545,20 @@ timer = client.timers.create(
                             window.quantumVisualizers.forEach(viz => {
                                 // Get current density
                                 const current = viz.params.gridDensity || 60;
-                                // Calculate opposite (if current > 50, go low; else go high)
-                                const opposite = current > 50 ? 20 : 100;
+                                // Calculate opposite - EXTREME RANGE 5 to 120!
+                                const opposite = current > 50 ? 5 : 120;
 
-                                // SNAP immediately
+                                // SNAP immediately - NO TWEEN!
                                 viz.params.gridDensity = opposite;
 
-                                console.log(`⚡ SNAP! Density ${current.toFixed(0)} → ${opposite}`);
+                                console.log(`💥 EXTREME SNAP! Density ${current.toFixed(0)} → ${opposite} (${current > 50 ? 'SPARSE' : 'ULTRA DENSE'})`);
                             });
                         }
                     }
                 });
             });
 
-            // ========== CARD CENTER DYNAMICS: CHAOS/MORPH UP, SPEED → 0, DENSITY PEAKS ==========
+            // ========== CARD CENTER DYNAMICS: EXTREME EFFECTS AT CENTER! ==========
             gsap.utils.toArray('.morph-card').forEach(card => {
                 ScrollTrigger.create({
                     trigger: card,
@@ -2568,26 +2574,26 @@ timer = client.timers.create(
                                 // Flag that we're overriding base parameters
                                 viz.centerOverride = centerAmount > 0.1;
 
-                                // Chaos increases at center: 0.2 → 1.0
-                                viz.params.chaos = 0.2 + (centerAmount * 0.8);
+                                // Chaos EXTREME at center: 0.0 → 2.0
+                                viz.params.chaos = 0.0 + (centerAmount * 2.0);
 
-                                // MorphFactor increases at center: 0.5 → 2.0
-                                viz.params.morphFactor = 0.5 + (centerAmount * 1.5);
+                                // MorphFactor EXTREME at center: 0.0 → 3.0
+                                viz.params.morphFactor = 0.0 + (centerAmount * 3.0);
 
-                                // Density PEAKS at center: base + peak amount
+                                // Density PEAKS at center: 100 at center!
                                 const baseDensity = viz.baseParams?.baseDensity || 60;
-                                viz.params.gridDensity = baseDensity + (centerAmount * 40);
+                                viz.params.gridDensity = baseDensity + (centerAmount * 100);
 
-                                // Speed goes to ZERO at center: 2.0 → 0
-                                viz.params.speed = 2.0 - (centerAmount * 2.0);
+                                // Speed goes to ACTUAL ZERO at center: 4.5 → 0.0
+                                viz.params.speed = 4.5 * (1 - centerAmount);  // 0.0 at center!
 
-                                // Intensity also peaks
-                                viz.params.intensity = 0.5 + (centerAmount * 0.5);
+                                // Intensity EXTREME at center: 0.5 → 2.0
+                                viz.params.intensity = 0.5 + (centerAmount * 1.5);
                             });
 
                             // Log when at exact center
                             if (centerAmount > 0.95) {
-                                console.log('🎯 CARD AT CENTER - Speed → 0, Chaos → 1.0, Density PEAK!');
+                                console.log('🎯🔥 CARD AT CENTER - Speed = 0.0, Chaos = 2.0, Morph = 3.0, Density = 100+, Intensity = 2.0!');
                             }
                         }
                     },
@@ -2618,22 +2624,22 @@ timer = client.timers.create(
                 });
             });
 
-            console.log('🎨 COMPLEX VISUALIZER DYNAMICS initialized - HIGHLY REACTIVE!');
-            console.log('  ├─ Smooth density changes: 40 → 80');
-            console.log('  ├─ Card enter: SNAP density to opposite');
-            console.log('  ├─ Card center: Chaos/Morph UP, Speed → 0, Density PEAKS');
-            console.log('  └─ 4D rotations: Dramatic changes');
+            console.log('🎨💥 EXTREME VISUALIZER DYNAMICS initialized - 10X MORE DRAMATIC!');
+            console.log('  ├─ Scroll changes: chaos(0→2.0), density(10→100), intensity(0.1→1.6), speed(0.5→4.5), morph(0→3.0)');
+            console.log('  ├─ Card enter: SNAP density 5→120 (extreme range!)');
+            console.log('  ├─ Card center: Chaos→2.0, Morph→3.0, Speed→0.0, Density→100+, Intensity→2.0');
+            console.log('  └─ 4D rotations: 8π/6π/4π - EXTREME ranges!');
         }
 
-        // ========== DRAMATIC SECTION CHANGES: COLOR + GEOMETRY + INTENSITY ==========
+        // ========== EXTREME INSTANT SECTION CHANGES - NO TWEENS! ==========
         function initSectionThemeTransitions() {
-            // DRAMATIC section configurations with geometry changes
+            // WILDLY DIFFERENT section configurations - EXTREME RANGES!
             const sectionConfigs = {
-                cyan: { hue: 180, geometry: 0, intensity: 0.6 }, // Hypercube
-                magenta: { hue: 300, geometry: 2, intensity: 0.8 }, // Torus
-                green: { hue: 120, geometry: 3, intensity: 0.5 }, // Wave
-                purple: { hue: 270, geometry: 1, intensity: 0.7 }, // Sphere
-                orange: { hue: 30, geometry: 4, intensity: 0.9 } // Crystal
+                cyan:    { hue: 180, geometry: 0, intensity: 0.3, chaos: 0.5, density: 20, speed: 1.0 },   // Calm Hypercube
+                magenta: { hue: 300, geometry: 2, intensity: 1.5, chaos: 2.0, density: 90, speed: 4.0 },   // INTENSE Torus
+                green:   { hue: 120, geometry: 3, intensity: 0.8, chaos: 0.3, density: 40, speed: 0.8 },   // Medium Wave
+                purple:  { hue: 270, geometry: 1, intensity: 1.2, chaos: 1.5, density: 70, speed: 3.0 },   // Fast Sphere
+                orange:  { hue: 30,  geometry: 4, intensity: 1.8, chaos: 1.8, density: 100, speed: 5.0 }   // EXPLOSIVE Crystal
             };
 
             gsap.utils.toArray('.section').forEach(section => {
@@ -2648,27 +2654,23 @@ timer = client.timers.create(
                     start: 'top 50%',
                     end: 'bottom 50%',
                     onEnter: () => {
-                        // DRAMATIC changes when entering section
+                        // INSTANT SNAP - NO TWEENS! ALL PARAMETERS CHANGE IMMEDIATELY!
                         if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                             window.quantumVisualizers.forEach(viz => {
-                                // SNAP color immediately
-                                viz.params.hue = config.hue / 360;
-
-                                // CHANGE geometry type (dramatic visual change!)
-                                viz.params.geometry = config.geometry;
-
-                                // Different intensity per section
-                                gsap.to(viz.params, {
-                                    intensity: config.intensity,
-                                    duration: 1.5,
-                                    ease: 'power2.out'
-                                });
+                                // INSTANT SNAPS - NO ANIMATION!
+                                viz.params.hue = config.hue / 360;              // INSTANT color change!
+                                viz.params.geometry = config.geometry;          // INSTANT geometry change!
+                                viz.params.intensity = config.intensity;        // INSTANT intensity!
+                                viz.params.chaos = config.chaos || 1.0;         // INSTANT chaos!
+                                viz.params.gridDensity = config.density || 60;  // INSTANT density!
+                                viz.params.speed = config.speed || 2.0;         // INSTANT speed!
                             });
 
-                            console.log(`🎨 DRAMATIC SECTION CHANGE: ${theme.toUpperCase()}`);
-                            console.log(`  ├─ Hue: ${config.hue}°`);
-                            console.log(`  ├─ Geometry: ${['Hypercube', 'Sphere', 'Torus', 'Wave', 'Crystal'][config.geometry]}`);
-                            console.log(`  └─ Intensity: ${config.intensity}`);
+                            const geomNames = ['Hypercube', 'Sphere', 'Torus', 'Wave', 'Crystal'];
+                            console.log(`🌈💥 INSTANT SECTION SNAP: ${theme.toUpperCase()}`);
+                            console.log(`  ├─ Hue: ${config.hue}° | Geometry: ${geomNames[config.geometry]}`);
+                            console.log(`  ├─ Intensity: ${config.intensity} | Chaos: ${config.chaos}`);
+                            console.log(`  └─ Density: ${config.density} | Speed: ${config.speed}`);
                         }
 
                         // Also apply preset for other parameters
@@ -2677,20 +2679,18 @@ timer = client.timers.create(
                         }
                     },
                     onEnterBack: () => {
-                        // Re-apply theme when scrolling back
+                        // Re-apply theme when scrolling back - INSTANT!
                         if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                             window.quantumVisualizers.forEach(viz => {
                                 viz.params.hue = config.hue / 360;
                                 viz.params.geometry = config.geometry;
-
-                                gsap.to(viz.params, {
-                                    intensity: config.intensity,
-                                    duration: 1.5,
-                                    ease: 'power2.out'
-                                });
+                                viz.params.intensity = config.intensity;
+                                viz.params.chaos = config.chaos || 1.0;
+                                viz.params.gridDensity = config.density || 60;
+                                viz.params.speed = config.speed || 2.0;
                             });
 
-                            console.log(`🔙 SECTION BACK: ${theme.toUpperCase()}`);
+                            console.log(`🔙💥 INSTANT SECTION BACK: ${theme.toUpperCase()}`);
                         }
 
                         if (window.applyVisualizerPreset) {
@@ -2700,12 +2700,12 @@ timer = client.timers.create(
                 });
             });
 
-            console.log('🌈 DRAMATIC section transitions initialized');
-            console.log('  ├─ Cyan: Hypercube, 180° hue, 0.6 intensity');
-            console.log('  ├─ Magenta: Torus, 300° hue, 0.8 intensity');
-            console.log('  ├─ Green: Wave, 120° hue, 0.5 intensity');
-            console.log('  ├─ Purple: Sphere, 270° hue, 0.7 intensity');
-            console.log('  └─ Orange: Crystal, 30° hue, 0.9 intensity');
+            console.log('🌈💥 EXTREME INSTANT section transitions initialized - NO TWEENS!');
+            console.log('  ├─ Cyan: Hypercube, 180° hue, 0.3 intensity, 0.5 chaos, 20 density, 1.0 speed');
+            console.log('  ├─ Magenta: Torus, 300° hue, 1.5 intensity, 2.0 chaos, 90 density, 4.0 speed');
+            console.log('  ├─ Green: Wave, 120° hue, 0.8 intensity, 0.3 chaos, 40 density, 0.8 speed');
+            console.log('  ├─ Purple: Sphere, 270° hue, 1.2 intensity, 1.5 chaos, 70 density, 3.0 speed');
+            console.log('  └─ Orange: Crystal, 30° hue, 1.8 intensity, 1.8 chaos, 100 density, 5.0 speed');
         }
 
         // ========== LENIS SMOOTH SCROLL INITIALIZATION ==========
@@ -2795,35 +2795,50 @@ timer = client.timers.create(
                 }
             });
 
-            // ========== MOUSE MOVEMENT FEEDBACK ==========
+            // ========== EXPLOSIVE MOUSE MOVEMENT FEEDBACK - 4π ROTATION! ==========
             window.addEventListener('mousemove', (e) => {
                 const x = e.clientX / window.innerWidth; // 0-1
                 const y = e.clientY / window.innerHeight; // 0-1
 
                 if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                     window.quantumVisualizers.forEach(viz => {
-                        // Rotate 4D space based on mouse position
-                        viz.params.rot4dXW = x * Math.PI * 2;
-                        viz.params.rot4dYW = y * Math.PI * 2;
+                        // FULL 4π rotation range - DRAMATIC movement!
+                        viz.params.rot4dXW = (x - 0.5) * Math.PI * 4;  // -2π to +2π
+                        viz.params.rot4dYW = (y - 0.5) * Math.PI * 4;  // -2π to +2π
+                        viz.params.rot4dZW = (x * y) * Math.PI * 2;    // Combined effect
+
+                        // Mouse X affects chaos: 0.5 → 2.0
+                        viz.params.chaos = 0.5 + (x * 1.5);
+
+                        // Mouse Y affects morph: 0.5 → 2.5
+                        viz.params.morphFactor = 0.5 + (y * 2.0);
                     });
                 }
             });
 
-            // ========== GLOBAL CLICK FEEDBACK ==========
+            // ========== EXPLOSIVE GLOBAL CLICK FEEDBACK! ==========
             document.addEventListener('click', (e) => {
-                // Flash effect on any click
+                // EXPLOSIVE effect on any click!
                 if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                     window.quantumVisualizers.forEach(viz => {
                         const originalIntensity = viz.params.intensity;
+                        const originalChaos = viz.params.chaos;
+                        const originalSpeed = viz.params.speed;
 
-                        // Flash to high intensity
-                        viz.params.intensity = 1.5;
+                        // EXPLOSION! Way over max values!
+                        viz.params.intensity = 3.0;  // Way over normal!
+                        viz.params.chaos = 3.0;      // Maximum chaos!
+                        viz.params.speed = 10.0;     // Super fast burst!
 
-                        // Fade back to original
+                        console.log('💥 CLICK EXPLOSION! Intensity=3.0, Chaos=3.0, Speed=10.0');
+
+                        // Decay back to original over 500ms
                         setTimeout(() => {
                             gsap.to(viz.params, {
                                 intensity: originalIntensity,
-                                duration: 0.3,
+                                chaos: originalChaos,
+                                speed: originalSpeed,
+                                duration: 0.5,
                                 ease: 'power2.out'
                             });
                         }, 100);
@@ -2831,20 +2846,23 @@ timer = client.timers.create(
                 }
             });
 
-            // ========== CARD HOVER FEEDBACK ==========
+            // ========== EXTREME CARD HOVER FEEDBACK! ==========
             document.querySelectorAll('.morph-card').forEach(card => {
                 card.addEventListener('mouseenter', function() {
-                    // DRAMATIC visualizer response to card hover
+                    // EXTREME visualizer response to card hover!
                     if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                         window.quantumVisualizers.forEach(viz => {
                             gsap.to(viz.params, {
-                                chaos: 0.8,
-                                speed: 3.0,
-                                intensity: 1.2,
+                                chaos: 2.5,          // Extreme chaos!
+                                speed: 6.0,          // Very fast!
+                                intensity: 2.0,      // Over normal max!
+                                morphFactor: 3.0,    // Extreme morph!
+                                gridDensity: 100,    // Maximum density!
                                 duration: 0.4,
                                 ease: 'power2.out'
                             });
                         });
+                        console.log('🔥 CARD HOVER! chaos=2.5, speed=6.0, intensity=2.0, morph=3.0, density=100');
                     }
                 });
 
@@ -2853,13 +2871,16 @@ timer = client.timers.create(
                     if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                         window.quantumVisualizers.forEach(viz => {
                             gsap.to(viz.params, {
-                                chaos: 0.2,
-                                speed: 1.0,
-                                intensity: 0.5,
+                                chaos: 0.5,
+                                speed: 1.5,
+                                intensity: 0.8,
+                                morphFactor: 1.0,
+                                gridDensity: 50,
                                 duration: 0.6,
                                 ease: 'power2.inOut'
                             });
                         });
+                        console.log('↩️ Card hover end - returning to normal');
                     }
                 });
 
@@ -3016,11 +3037,11 @@ timer = client.timers.create(
                 });
             });
 
-            console.log('🎮 COMPLETE VISUAL FEEDBACK SYSTEM initialized');
-            console.log('  ├─ Scroll velocity → chaos + speed');
-            console.log('  ├─ Mouse movement → 4D rotation');
-            console.log('  ├─ Clicks → intensity flash');
-            console.log('  ├─ Card hovers → chaos/speed/intensity UP');
+            console.log('🎮💥 EXTREME VISUAL FEEDBACK SYSTEM initialized!');
+            console.log('  ├─ Scroll velocity → chaos + speed boost');
+            console.log('  ├─ Mouse movement → 4π rotation + chaos (0.5→2.0) + morph (0.5→2.5)');
+            console.log('  ├─ Clicks → EXPLOSION! (intensity=3.0, chaos=3.0, speed=10.0)');
+            console.log('  ├─ Card hovers → EXTREME! (chaos=2.5, speed=6.0, intensity=2.0, morph=3.0, density=100)');
             console.log('  ├─ Button hovers → intensity/morph UP');
             console.log('  ├─ Headline hovers → intensity pulse');
             console.log('  └─ Accent text hovers → chaos boost');
