@@ -11,6 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollSmoother.min.js"></script>
     <script src="https://unpkg.com/split-type"></script>
+
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -144,7 +147,8 @@
         }
 
         html {
-            scroll-behavior: smooth;
+            /* Disabled native smooth scroll - using Lenis instead */
+            /* scroll-behavior: smooth; */
         }
 
         html, body {
@@ -174,39 +178,14 @@
             will-change: transform;
         }
 
-        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND */
+        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND (NO TRANSFORMS) */
         .quantum-layers {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform, opacity, filter;
-        }
-
-        /* Intro state - visualizer fills screen */
-        .quantum-layers.intro {
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        /* Condensing state - shrinking into card */
-        .quantum-layers.condensing {
-            transform: scale(0.5);
-            opacity: 0.8;
-        }
-
-        /* Ejecting state - rapidly leaving */
-        .quantum-layers.ejecting {
-            transform: scale(3) translate(0, -100vh);
-            opacity: 0;
-            transition: all 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        /* Normal scroll state */
-        .quantum-layers.scrolling {
-            transform: scale(1);
-            opacity: 1;
+            /* NO transforms - visualizer stays completely fixed */
+            /* Only shader parameters change, not position/scale/rotation */
         }
 
         .quantum-canvas {
@@ -2411,250 +2390,7 @@ timer = client.timers.create(
          * Tick 80-100%: Element exits to top
          */
 
-        // ========== VISUALIZER TRANSFORM SYSTEM ==========
-        // Fixed position visualizer with rotation, scale, and filter transforms
-        function initVisualizerTransforms() {
-            const quantumLayers = document.getElementById('quantum-layers');
 
-            // Transform in place: rotation, scale, blur based on scroll
-            gsap.to(quantumLayers, {
-                rotation: 15,
-                scale: 1.1,
-                filter: 'blur(0px) brightness(1.2)',
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: 'body',
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    scrub: 1.5,
-                    invalidateOnRefresh: true
-                }
-            });
-
-            // Individual canvas layers transform differently for depth
-            const canvases = [
-                { id: 'quantum-background', rotation: 10, scale: 1.05 },
-                { id: 'quantum-shadow', rotation: -8, scale: 1.08 },
-                { id: 'quantum-content', rotation: 12, scale: 1.12 },
-                { id: 'quantum-highlight', rotation: -15, scale: 1.15 },
-                { id: 'quantum-accent', rotation: 20, scale: 1.2 }
-            ];
-
-            canvases.forEach(canvas => {
-                const element = document.getElementById(canvas.id);
-                if (element) {
-                    gsap.to(element, {
-                        rotation: canvas.rotation,
-                        scale: canvas.scale,
-                        ease: 'none',
-                        scrollTrigger: {
-                            trigger: 'body',
-                            start: 'top top',
-                            end: 'bottom bottom',
-                            scrub: 1.5,
-                            invalidateOnRefresh: true
-                        }
-                    });
-                }
-            });
-
-            console.log('🎨 Visualizer transforms initialized - Fixed position with rotation/scale');
-        }
-
-        // ========== VISUALIZER ELEMENT BINDING SYSTEM ==========
-        // Syncs UI elements with visualizer state for integrated design
-        function initVisualizerIntegration() {
-            const cards = document.querySelectorAll('.morph-card');
-            const buttons = document.querySelectorAll('.btn');
-            const headers = document.querySelectorAll('h1, h2');
-
-            // Add visualizer classes to elements
-            cards.forEach((card, index) => {
-                // Add flowing border to cards
-                card.classList.add('visualizer-border');
-
-                // Add shimmer effect on alternating cards
-                if (index % 2 === 0) {
-                    card.classList.add('visualizer-shimmer');
-                }
-
-                // Sync card glow with visualizer on scroll
-                ScrollTrigger.create({
-                    trigger: card,
-                    start: 'top center+=100',
-                    end: 'bottom center-=100',
-                    onEnter: () => {
-                        gsap.to(card, {
-                            boxShadow: `
-                                0 0 140px var(--section-primary),
-                                inset 0 0 100px var(--section-secondary),
-                                0 40px 140px rgba(0, 0, 0, 0.6)
-                            `,
-                            duration: 0.8,
-                            ease: 'power2.out'
-                        });
-
-                        // Pulse the main visualizer
-                        window.quantumVisualizers.forEach(viz => {
-                            viz.params.pulseIntensity = 0.4;
-                        });
-                    },
-                    onLeave: () => {
-                        gsap.to(card, {
-                            boxShadow: `
-                                0 0 80px rgba(0, 255, 255, 0.2),
-                                inset 0 0 60px rgba(0, 255, 255, 0.05),
-                                0 30px 90px rgba(0, 0, 0, 0.5)
-                            `,
-                            duration: 0.8
-                        });
-                    },
-                    onEnterBack: () => {
-                        gsap.to(card, {
-                            boxShadow: `
-                                0 0 140px var(--section-primary),
-                                inset 0 0 100px var(--section-secondary),
-                                0 40px 140px rgba(0, 0, 0, 0.6)
-                            `,
-                            duration: 0.8
-                        });
-                    },
-                    onLeaveBack: () => {
-                        gsap.to(card, {
-                            boxShadow: `
-                                0 0 80px rgba(0, 255, 255, 0.2),
-                                inset 0 0 60px rgba(0, 255, 255, 0.05),
-                                0 30px 90px rgba(0, 0, 0, 0.5)
-                            `,
-                            duration: 0.8
-                        });
-                    }
-                });
-            });
-
-            // Add flowing gradient to buttons
-            buttons.forEach(btn => {
-                // Wrap text in span for z-index control
-                if (!btn.querySelector('span')) {
-                    btn.innerHTML = `<span>${btn.innerHTML}</span>`;
-                }
-
-                // Pulse button on hover with visualizer sync
-                btn.addEventListener('mouseenter', () => {
-                    window.quantumVisualizers.forEach(viz => {
-                        viz.params.pulseIntensity = 0.5;
-                    });
-                });
-            });
-
-            // Add visualizer text effect to headers
-            headers.forEach(header => {
-                // Only add to headers that aren't already styled
-                if (!header.classList.contains('intro-title')) {
-                    header.classList.add('visualizer-text');
-                }
-            });
-
-            // Sync visualizer intensity with scroll velocity
-            let lastScrollY = window.scrollY;
-            let scrollVelocity = 0;
-
-            window.addEventListener('scroll', () => {
-                const currentScrollY = window.scrollY;
-                scrollVelocity = Math.abs(currentScrollY - lastScrollY);
-                lastScrollY = currentScrollY;
-
-                // Intensify visualizer during fast scrolling
-                const velocityFactor = Math.min(scrollVelocity / 20, 1);
-                window.quantumVisualizers.forEach(viz => {
-                    viz.params.chaos = 0.2 + (velocityFactor * 0.5);
-                    viz.params.speed = 1.0 + (velocityFactor * 0.8);
-                });
-            });
-
-            console.log('🎨 Visualizer element binding initialized - UI elements synced with visualizer');
-        }
-
-        // ========== SCROLL-BASED VISUALIZER FLOW ==========
-        // Visualizer flows MORE into sections that are in focus
-        function initVisualizerFlow() {
-            const sections = document.querySelectorAll('.section');
-
-            sections.forEach((section, index) => {
-                const theme = section.getAttribute('data-theme') || 'cyan';
-
-                ScrollTrigger.create({
-                    trigger: section,
-                    start: 'top center',
-                    end: 'bottom center',
-                    onEnter: () => {
-                        // Intensify visualizer for this section's theme
-                        animateVisualizerFlow(theme, 'enter');
-                    },
-                    onLeave: () => {
-                        // Reduce visualizer intensity
-                        animateVisualizerFlow(theme, 'leave');
-                    },
-                    onEnterBack: () => {
-                        // Intensify again when scrolling back
-                        animateVisualizerFlow(theme, 'enter');
-                    },
-                    onLeaveBack: () => {
-                        // Reduce when leaving backwards
-                        animateVisualizerFlow(theme, 'leave');
-                    }
-                });
-            });
-
-            function animateVisualizerFlow(theme, state) {
-                const isEntering = state === 'enter';
-
-                // Adjust visualizer parameters based on theme
-                const themeParams = {
-                    cyan: { hue: 180, saturation: 1.0 },
-                    magenta: { hue: 300, saturation: 1.2 },
-                    green: { hue: 120, saturation: 0.9 },
-                    orange: { hue: 30, saturation: 1.1 },
-                    purple: { hue: 270, saturation: 1.0 }
-                };
-
-                const params = themeParams[theme] || themeParams.cyan;
-
-                window.quantumVisualizers.forEach((viz, index) => {
-                    // Different layers respond differently
-                    const layerMultiplier = 1 + (index * 0.2);
-
-                    gsap.to(viz.params, {
-                        pulseIntensity: isEntering ? 0.6 * layerMultiplier : 0.3,
-                        chaos: isEntering ? 0.5 * layerMultiplier : 0.2,
-                        duration: 1.2,
-                        ease: 'power2.out'
-                    });
-
-                    // Rotate visualizer slightly based on theme
-                    if (isEntering) {
-                        gsap.to(viz.params, {
-                            rot4dXY: Math.sin(Date.now() * 0.001) * 0.3 * layerMultiplier,
-                            rot4dZW: Math.cos(Date.now() * 0.001) * 0.3 * layerMultiplier,
-                            duration: 2,
-                            ease: 'sine.inOut'
-                        });
-                    }
-                });
-
-                // Adjust main quantum layers opacity based on focus
-                const quantumLayers = document.getElementById('quantum-layers');
-                gsap.to(quantumLayers, {
-                    opacity: isEntering ? 1 : 0.8,
-                    scale: isEntering ? 1.05 : 1,
-                    filter: isEntering ? 'brightness(1.2) saturate(1.3)' : 'brightness(1) saturate(1)',
-                    duration: 1.2,
-                    ease: 'power2.out'
-                });
-            }
-
-            console.log('🎨 Visualizer flow transitions initialized - Flows into focused sections');
-        }
 
         // ========== PERFORMANCE OPTIMIZATION ==========
         function initPerformanceOptimizations() {
@@ -2680,210 +2416,189 @@ timer = client.timers.create(
             console.log('⚡ Performance optimizations applied');
         }
 
-        // ========== EPIC INTRO SEQUENCE ==========
-        function initEpicIntro() {
-            const quantumLayers = document.getElementById('quantum-layers');
-            const introTitle = document.getElementById('intro-title');
-            const formationCard = document.getElementById('formation-card');
-            const introHero = document.getElementById('intro-hero');
+        // ========== SIMPLE INTRO FADE-IN ==========
+        function initSimpleIntro() {
             const introHeroContent = document.getElementById('intro-hero-content');
 
-            // Pin the intro content in center
+            if (introHeroContent) {
+                gsap.from(introHeroContent, {
+                    opacity: 0,
+                    y: 60,
+                    duration: 1.5,
+                    ease: 'power3.out'
+                });
+            }
+
+            console.log('🎭 Simple intro fade-in initialized');
+        }
+
+        // ========== SIMPLE CONTENT FADE-INS ==========
+        function initSimpleContentAnimations() {
+            // Simple fade-in animations for content sections
+            gsap.utils.toArray('.section').forEach((section, index) => {
+                const sectionContent = section.querySelector('.section-content');
+                if (!sectionContent) return;
+
+                // Simple fade-in animation as section enters viewport
+                gsap.from(sectionContent, {
+                    opacity: 0,
+                    y: 60,
+                    scale: 0.95,
+                    duration: 1.2,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top 85%',
+                        once: true
+                    }
+                });
+            });
+
+            // Animate cards with stagger
+            gsap.utils.toArray('.morph-card').forEach(card => {
+                gsap.from(card, {
+                    opacity: 0,
+                    y: 60,
+                    scale: 0.95,
+                    duration: 1.2,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                        once: true
+                    }
+                });
+            });
+
+            console.log('✨ Simple content fade-ins initialized');
+        }
+
+        // ========== VISUALIZER PARAMETER SCROLL REACTIVITY ==========
+        // Changes ONLY shader parameters based on scroll, NOT position/transform
+        function initVisualizerScrollReactivity() {
             ScrollTrigger.create({
-                trigger: introHero,
+                trigger: 'body',
                 start: 'top top',
                 end: 'bottom bottom',
-                pin: introHeroContent,
-                pinSpacing: false,
                 onUpdate: (self) => {
-                    const progress = self.progress;
-                    console.log(`Intro progress: ${(progress * 100).toFixed(1)}%`);
+                    const progress = self.progress; // 0-1
 
-                    // Phase 1: Title centered, visualizer full (0-33%)
-                    if (progress < 0.33) {
-                        // Title is visible and centered from start
-                        // Visualizer at full opacity
-                    }
+                    // Update visualizer parameters (NOT position!)
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach((viz, i) => {
+                            // Gradually increase complexity as user scrolls
+                            viz.params.chaos = 0.2 + (progress * 0.6);
+                            viz.params.intensity = 0.5 + (progress * 0.5);
+                            viz.params.speed = 1.0 + (progress * 1.0);
+                            viz.params.morphFactor = 0.5 + (progress * 1.0);
+                            viz.params.gridDensity = 40 + (progress * 20);
 
-                    // Phase 2: Visualizer contracts into card (33-66%)
-                    else if (progress >= 0.33 && progress < 0.66) {
-                        const contractProgress = (progress - 0.33) / 0.33;
-
-                        // Contract visualizer using scale
-                        const scale = 1 - (contractProgress * 0.5); // Scale from 1 to 0.5
-                        quantumLayers.style.transform = `scale(${scale})`;
-                        quantumLayers.style.opacity = 1 - (contractProgress * 0.3);
-
-                        // Form card around title
-                        formationCard.style.opacity = contractProgress;
-                        formationCard.style.background = `rgba(10, 10, 20, ${0.85 * contractProgress})`;
-                        formationCard.style.backdropFilter = `blur(${30 * contractProgress}px)`;
-                        formationCard.style.border = `2px solid rgba(0, 255, 255, ${0.6 * contractProgress})`;
-                        formationCard.style.borderRadius = `${40 * contractProgress}px`;
-                        formationCard.style.boxShadow = `
-                            0 0 ${80 * contractProgress}px rgba(0, 255, 255, ${0.4 * contractProgress}),
-                            inset 0 0 ${60 * contractProgress}px rgba(0, 255, 255, ${0.1 * contractProgress})
-                        `;
-                    }
-
-                    // Phase 3: Card scrolls up (66-85%)
-                    else if (progress >= 0.66 && progress < 0.85) {
-                        const scrollProgress = (progress - 0.66) / 0.19;
-
-                        // Move card up
-                        const translateY = -100 * scrollProgress; // Move up
-                        introHeroContent.style.transform = `translateY(${translateY}vh)`;
-
-                        // Push visualizer further back
-                        quantumLayers.style.transform = `scale(0.3)`;
-                        quantumLayers.style.opacity = 0.5 * (1 - scrollProgress);
-                    }
-
-                    // Phase 4: Return to normal (85-100%)
-                    else {
-                        const exitProgress = (progress - 0.85) / 0.15;
-
-                        // Card off screen
-                        introHeroContent.style.opacity = 1 - exitProgress;
-
-                        // Visualizer returns to normal
-                        quantumLayers.style.transform = 'scale(1)';
-                        quantumLayers.style.opacity = 1;
+                            // Gentle 4D rotation based on scroll
+                            viz.params.rot4dXW = progress * Math.PI * 2;
+                            viz.params.rot4dYW = progress * Math.PI * 1.5;
+                            viz.params.rot4dZW = progress * Math.PI;
+                        });
                     }
                 }
             });
 
-            console.log('🎭 Intro sequence: Title visible from start, visualizer contracts on scroll');
+            console.log('🎨 Visualizer parameter reactivity initialized - scroll affects shader params only');
         }
 
-        // ========== CENTER-LOCK CHOREOGRAPHY WITH GASP TRIGGERS ==========
-        function initCenterLockChoreography() {
-            // Apply center-lock to all sections
-            document.querySelectorAll('.section').forEach((section, index) => {
-                const sectionContent = section.querySelector('.section-content');
-                if (!sectionContent) return;
+        // ========== SECTION THEME TRANSITIONS ==========
+        // Smooth color transitions when entering new sections
+        function initSectionThemeTransitions() {
+            const themeHueMap = {
+                cyan: 180,
+                magenta: 300,
+                green: 120,
+                purple: 270,
+                orange: 30
+            };
 
-                // Set initial state
-                gsap.set(sectionContent, {
-                    opacity: 0,
-                    y: 100,
-                    scale: 0.9,
-                    willChange: 'transform, opacity'
-                });
+            gsap.utils.toArray('.section').forEach(section => {
+                const theme = section.dataset.theme;
+                if (!theme) return;
 
-                // Create main timeline for this section
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top bottom', // Start when section enters viewport from bottom
-                        end: 'bottom top', // End when section leaves viewport from top
-                        scrub: 1, // Smooth scrubbing with 1s delay
-                        onEnter: () => {
-                            // Apply theme when section enters
-                            const theme = section.dataset.theme;
-                            if (theme) {
-                                applyVisualizerPreset(theme);
-                                console.log(`📍 Section ${index} (${theme}) entering focus`);
-
-                                // Trigger unity moment on section transitions
-                                if (index % 2 === 0) {
-                                    window.unityManager.triggerUnityMoment(2000);
-                                }
-                            }
-                        },
-                        onEnterBack: () => {
-                            // Re-apply theme when scrolling back
-                            const theme = section.dataset.theme;
-                            if (theme) {
-                                applyVisualizerPreset(theme);
-                            }
-                        }
-                    }
-                });
-
-                // Entrance animation (20% of scroll range)
-                tl.to(sectionContent, {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.2,
-                    ease: 'power2.out'
-                })
-                // Center-lock focus phase (60% of scroll range)
-                .to(sectionContent, {
-                    scale: 1.05, // Slight scale up when in focus
-                    duration: 0.3,
-                    ease: 'power1.inOut'
-                })
-                .to(sectionContent, {
-                    scale: 1.05, // Hold the scale
-                    duration: 0.3,
-                    ease: 'none'
-                })
-                .to(sectionContent, {
-                    scale: 1, // Scale back to normal
-                    duration: 0.2,
-                    ease: 'power1.inOut'
-                })
-                // Exit animation (20% of scroll range)
-                .to(sectionContent, {
-                    opacity: 0,
-                    y: -100,
-                    scale: 0.9,
-                    duration: 0.2,
-                    ease: 'power2.in'
-                });
-
-                // Add breathing animation during center phase
-                const breathingTl = gsap.timeline({
-                    repeat: -1,
-                    yoyo: true,
-                    paused: true
-                });
-
-                breathingTl.to(sectionContent, {
-                    scale: 1.08,
-                    duration: 2,
-                    ease: 'sine.inOut'
-                });
-
-                // Control breathing animation based on scroll position
                 ScrollTrigger.create({
                     trigger: section,
-                    start: 'top center',
-                    end: 'bottom center',
-                    onEnter: () => breathingTl.play(),
-                    onLeave: () => breathingTl.pause(),
-                    onEnterBack: () => breathingTl.play(),
-                    onLeaveBack: () => breathingTl.pause()
-                });
-
-                // Pin section when it's in center of viewport
-                ScrollTrigger.create({
-                    trigger: section,
-                    start: 'center center',
-                    end: '+=100%',
-                    pin: true,
-                    pinSpacing: true,
-                    anticipatePin: 1,
+                    start: 'top 50%',
+                    end: 'bottom 50%',
                     onEnter: () => {
-                        // Shockwave effect when section locks to center
-                        window.unityManager.triggerShockwave(0, 0, 1.5);
-                        sectionContent.style.filter = 'brightness(1.2)';
-                    },
-                    onLeave: () => {
-                        sectionContent.style.filter = 'brightness(1)';
+                        // Smoothly transition visualizer to section theme
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            const targetHue = themeHueMap[theme] || 180;
+
+                            window.quantumVisualizers.forEach(viz => {
+                                gsap.to(viz.params, {
+                                    hue: targetHue,
+                                    duration: 2,
+                                    ease: 'power2.out'
+                                });
+                            });
+                        }
+
+                        // Also apply preset for other parameters
+                        if (window.applyVisualizerPreset) {
+                            window.applyVisualizerPreset(theme);
+                        }
                     },
                     onEnterBack: () => {
-                        sectionContent.style.filter = 'brightness(1.2)';
-                    },
-                    onLeaveBack: () => {
-                        sectionContent.style.filter = 'brightness(1)';
+                        // Re-apply theme when scrolling back
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            const targetHue = themeHueMap[theme] || 180;
+
+                            window.quantumVisualizers.forEach(viz => {
+                                gsap.to(viz.params, {
+                                    hue: targetHue,
+                                    duration: 2,
+                                    ease: 'power2.out'
+                                });
+                            });
+                        }
+
+                        if (window.applyVisualizerPreset) {
+                            window.applyVisualizerPreset(theme);
+                        }
                     }
                 });
             });
 
-            console.log('🎯 Center-lock choreography initialized with proper pinning');
+            console.log('🌈 Section theme transitions initialized');
+        }
+
+        // ========== LENIS SMOOTH SCROLL INITIALIZATION ==========
+        function initLenisSmoothScroll() {
+            // Initialize Lenis smooth scroll
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smooth: true,
+                smoothTouch: false,
+                direction: 'vertical',
+                gestureDirection: 'vertical',
+                wheelMultiplier: 1,
+                touchMultiplier: 2
+            });
+
+            // RAF loop for Lenis
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Sync Lenis with ScrollTrigger
+            lenis.on('scroll', ScrollTrigger.update);
+
+            // Integrate with GSAP ticker
+            gsap.ticker.add((time) => {
+                lenis.raf(time * 1000);
+            });
+
+            gsap.ticker.lagSmoothing(0);
+
+            console.log('🚀 Lenis smooth scroll initialized');
         }
 
         // GASP moment: Shockwave + brief expansion/contraction
@@ -3425,11 +3140,11 @@ timer = client.timers.create(
 
             // Initialize all animation systems
             initPerformanceOptimizations(); // FIRST: Set up performance configs
-            initVisualizerTransforms(); // Transform visualizer layers (rotation, scale)
-            initVisualizerIntegration(); // Bind visualizer to UI elements
-            initVisualizerFlow(); // Flow visualizer into focused sections
-            initEpicIntro();
-            initCenterLockChoreography();
+            initLenisSmoothScroll(); // SECOND: Initialize smooth scroll
+            initVisualizerScrollReactivity(); // Visualizer parameter changes based on scroll
+            initSectionThemeTransitions(); // Smooth theme color transitions
+            initSimpleIntro(); // Simple intro fade-in
+            initSimpleContentAnimations(); // Simple content fade-ins (NO pinning)
             initScrollAnimations(); // Card hover effects + parallax
             initExpandableCards();
             initScrollProgress();
@@ -3439,16 +3154,24 @@ timer = client.timers.create(
             console.log('🚀 MINOOTS VIB3+ EMERGENT UNITY Experience Ready');
             console.log('═══════════════════════════════════════════════════');
             console.log('');
-            console.log('🎯 SCROLL EXPERIENCE ENHANCEMENTS:');
-            console.log('  ├─ ⚡ GSAP ScrollTrigger properly initialized');
-            console.log('  ├─ 🎨 Visualizer transforms (rotation/scale, NO dumb y-translation!)');
-            console.log('  ├─ 🎭 Center-lock pinning with proper spacing');
-            console.log('  ├─ 📦 Card parallax (0.8x and 1.2x alternating)');
-            console.log('  ├─ ✨ Smooth enter/exit animations');
-            console.log('  ├─ 🌈 Visualizer flows INTO focused sections');
-            console.log('  ├─ 💫 Breathing animations during focus');
-            console.log('  ├─ 🎪 Stagger effects on stat cards');
-            console.log('  └─ ⚙️  Performance optimizations (will-change, GPU acceleration)');
+            console.log('🎯 SMOOTH SCROLL SYSTEM (VIB3+ Style):');
+            console.log('  ├─ 🚀 Lenis smooth scroll with momentum');
+            console.log('  ├─ ⚡ GSAP ScrollTrigger integration');
+            console.log('  ├─ 🎨 Visualizer FIXED (NO transforms/parallax)');
+            console.log('  ├─ 📊 Shader parameters change based on scroll progress');
+            console.log('  ├─ ✨ Simple natural fade-in animations');
+            console.log('  ├─ 🌈 Smooth section theme transitions');
+            console.log('  ├─ 💫 NO aggressive center-lock pinning');
+            console.log('  └─ ⚙️  Performance optimizations');
+            console.log('');
+            console.log('🎨 VISUALIZER BEHAVIOR:');
+            console.log('  ├─ 🔮 Completely FIXED position (like VIB3+ engine)');
+            console.log('  ├─ 🎯 NO position/scale/rotation transforms on scroll');
+            console.log('  ├─ 📈 Chaos: 0.2 → 0.8 based on scroll progress');
+            console.log('  ├─ 💥 Intensity: 0.5 → 1.0 based on scroll progress');
+            console.log('  ├─ ⚡ Speed: 1.0 → 2.0 based on scroll progress');
+            console.log('  ├─ 🌀 4D rotation params update with scroll');
+            console.log('  └─ 🌊 Hue transitions smoothly between section themes');
             console.log('');
             console.log('✨ EMERGENT UNITY SYSTEMS:');
             console.log('  ├─ Cross-layer particle communication active');
@@ -3464,20 +3187,8 @@ timer = client.timers.create(
             console.log('');
             console.log('💨 INTERACTION EFFECTS:');
             console.log('  ├─ Shockwave ripples from interaction points');
-            console.log('  ├─ Breathing/pulsing effects on section focus');
-            console.log('  ├─ Brightness boost when sections lock to center');
-            console.log('  └─ "Intake of breath" moments at section transitions');
-            console.log('');
-            console.log('🎨 INTEGRATED VISUALIZER DESIGN SYSTEM:');
-            console.log('  ├─ 🔮 Visualizer flows INSIDE cards as breathing backgrounds');
-            console.log('  ├─ 🎯 Fixed position with rotation/scale transforms (no y-scroll)');
-            console.log('  ├─ ✨ Flowing gradient borders on cards');
-            console.log('  ├─ 💎 Holographic shimmer effects on UI elements');
-            console.log('  ├─ 🌈 Animated gradient text with visualizer colors');
-            console.log('  ├─ 🔥 Buttons pulse with flowing visualizer backgrounds');
-            console.log('  ├─ 📍 Scroll velocity intensifies visualizer chaos');
-            console.log('  ├─ 🎪 Section focus triggers visualizer intensity boost');
-            console.log('  └─ 🌊 Theme-based visualizer parameter adjustments');
+            console.log('  ├─ Natural breathing/pulsing on hover');
+            console.log('  └─ Unity moments at section transitions');
             console.log('');
             console.log('═══════════════════════════════════════════════════');
             console.log('🎵 Tip: Allow microphone access for audio reactivity!');
