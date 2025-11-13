@@ -169,13 +169,106 @@
             width: 100%;
             height: 100%;
             mix-blend-mode: screen;
+
+            /* ORGANIC MASK SYSTEM - Radial gradients instead of hard edges */
+            --mask-center-x: 50%;
+            --mask-center-y: 50%;
+            --mask-radius-x: 85%;
+            --mask-radius-y: 80%;
+            --mask-feather-start: 40%;
+            --mask-feather-end: 100%;
+
+            mask-image: radial-gradient(
+                ellipse var(--mask-radius-x) var(--mask-radius-y)
+                at var(--mask-center-x) var(--mask-center-y),
+                black 0%,
+                black var(--mask-feather-start),
+                transparent var(--mask-feather-end)
+            );
+            mask-composite: intersect;
+            -webkit-mask-image: radial-gradient(
+                ellipse var(--mask-radius-x) var(--mask-radius-y)
+                at var(--mask-center-x) var(--mask-center-y),
+                black 0%,
+                black var(--mask-feather-start),
+                transparent var(--mask-feather-end)
+            );
+            -webkit-mask-composite: source-in;
+
+            /* Breathing animation for organic feel */
+            animation: organic-breathing 8s ease-in-out infinite;
         }
 
-        #quantum-background { opacity: 0.3; z-index: 1; }
-        #quantum-shadow { opacity: 0.2; z-index: 2; mix-blend-mode: multiply; }
-        #quantum-content { opacity: 0.6; z-index: 3; }
-        #quantum-highlight { opacity: 0.4; z-index: 4; }
-        #quantum-accent { opacity: 0.25; z-index: 5; }
+        @keyframes organic-breathing {
+            0%, 100% {
+                --mask-radius-x: 85%;
+                --mask-radius-y: 80%;
+            }
+            25% {
+                --mask-radius-x: 90%;
+                --mask-radius-y: 75%;
+            }
+            50% {
+                --mask-radius-x: 80%;
+                --mask-radius-y: 85%;
+            }
+            75% {
+                --mask-radius-x: 88%;
+                --mask-radius-y: 78%;
+            }
+        }
+
+        /* Layer-specific mask variations for depth */
+        #quantum-background {
+            opacity: 0.3;
+            z-index: 1;
+            --mask-radius-x: 95%;
+            --mask-radius-y: 90%;
+            --mask-feather-start: 50%;
+            animation-delay: 0s;
+            animation-duration: 9s;
+        }
+
+        #quantum-shadow {
+            opacity: 0.2;
+            z-index: 2;
+            mix-blend-mode: multiply;
+            --mask-radius-x: 88%;
+            --mask-radius-y: 85%;
+            --mask-feather-start: 45%;
+            animation-delay: 0.5s;
+            animation-duration: 8.5s;
+        }
+
+        #quantum-content {
+            opacity: 0.6;
+            z-index: 3;
+            --mask-radius-x: 85%;
+            --mask-radius-y: 80%;
+            --mask-feather-start: 40%;
+            animation-delay: 1s;
+            animation-duration: 8s;
+        }
+
+        #quantum-highlight {
+            opacity: 0.4;
+            z-index: 4;
+            --mask-radius-x: 78%;
+            --mask-radius-y: 75%;
+            --mask-feather-start: 35%;
+            animation-delay: 1.5s;
+            animation-duration: 7.5s;
+        }
+
+        #quantum-accent {
+            opacity: 0.25;
+            z-index: 5;
+            --mask-radius-x: 70%;
+            --mask-radius-y: 68%;
+            --mask-feather-start: 30%;
+            animation-delay: 2s;
+            animation-duration: 7s;
+        }
 
         /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
@@ -2159,6 +2252,142 @@ timer = client.timers.create(
             });
         }
 
+        // ========== NEGATIVE SPACE CHOREOGRAPHER ==========
+        /**
+         * Dynamically carves out space around cards using organic mask compositing
+         * Creates the "negative space" effect where visualizers fill space AROUND cards
+         */
+        class NegativeSpaceChoreographer {
+            constructor() {
+                this.canvases = [];
+                this.cards = [];
+                this.updateQueued = false;
+                this.enabled = true;
+            }
+
+            init(canvasElements) {
+                this.canvases = canvasElements;
+                this.cards = Array.from(document.querySelectorAll('.morph-card'));
+
+                // Track card position changes
+                this.observeCards();
+
+                // Update on scroll with throttling
+                window.addEventListener('scroll', () => {
+                    if (!this.updateQueued && this.enabled) {
+                        this.updateQueued = true;
+                        requestAnimationFrame(() => {
+                            this.updateMasks();
+                            this.updateQueued = false;
+                        });
+                    }
+                }, { passive: true });
+
+                // Initial update
+                this.updateMasks();
+
+                console.log('🎭 Negative Space Choreographer initialized');
+            }
+
+            observeCards() {
+                // Watch for card expansion/collapse
+                const observer = new MutationObserver(() => {
+                    this.updateMasks();
+                });
+
+                this.cards.forEach(card => {
+                    observer.observe(card, {
+                        attributes: true,
+                        attributeFilter: ['class']
+                    });
+                });
+            }
+
+            updateMasks() {
+                if (!this.enabled || this.cards.length === 0) return;
+
+                const viewport = {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                };
+
+                // Create cutout gradients for each visible card
+                const cutouts = this.cards
+                    .map(card => {
+                        const rect = card.getBoundingClientRect();
+
+                        // Only process cards in viewport
+                        if (rect.bottom < 0 || rect.top > viewport.height) {
+                            return null;
+                        }
+
+                        // Calculate card center in viewport percentage
+                        const centerX = ((rect.left + rect.width / 2) / viewport.width * 100).toFixed(2);
+                        const centerY = ((rect.top + rect.height / 2) / viewport.height * 100).toFixed(2);
+
+                        // Calculate radii with organic padding
+                        const radiusX = ((rect.width / viewport.width) * 60).toFixed(2);  // 60% of card width
+                        const radiusY = ((rect.height / viewport.height) * 60).toFixed(2); // 60% of card height
+
+                        // Create radial gradient that is TRANSPARENT in center (card area)
+                        // and BLACK outside (visualizer area)
+                        return `radial-gradient(ellipse ${radiusX}% ${radiusY}% at ${centerX}% ${centerY}%,
+                            transparent 0%,
+                            transparent 40%,
+                            black 80%,
+                            black 100%)`;
+                    })
+                    .filter(cutout => cutout !== null);
+
+                // Apply composite mask to each canvas
+                this.canvases.forEach((canvas, i) => {
+                    if (!canvas) return;
+
+                    // Layer-specific expansion (background layers have larger cutouts)
+                    const layerMultiplier = 1 + (i * 0.1);
+
+                    if (cutouts.length > 0) {
+                        // Combine base organic mask with card cutouts
+                        const baseMask = canvas.style.getPropertyValue('--mask-radius-x') || '85%';
+                        const baseMaskY = canvas.style.getPropertyValue('--mask-radius-y') || '80%';
+
+                        // Create layered mask: base organic + card cutouts
+                        const masks = [
+                            // Base organic radial gradient
+                            `radial-gradient(ellipse ${baseMask} ${baseMaskY} at 50% 50%,
+                                black 0%,
+                                black 40%,
+                                transparent 100%)`,
+                            // Card cutouts
+                            ...cutouts
+                        ];
+
+                        canvas.style.maskImage = masks.join(', ');
+                        canvas.style.webkitMaskImage = masks.join(', ');
+
+                        // Composite mode: intersect all masks
+                        canvas.style.maskComposite = 'intersect';
+                        canvas.style.webkitMaskComposite = 'source-in';
+                    }
+                });
+            }
+
+            disable() {
+                this.enabled = false;
+                // Reset to base masks
+                this.canvases.forEach(canvas => {
+                    if (!canvas) return;
+                    canvas.style.maskImage = '';
+                    canvas.style.webkitMaskImage = '';
+                });
+            }
+
+            enable() {
+                this.enabled = true;
+                this.updateMasks();
+            }
+        }
+
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize Quantum Visualizers
@@ -2190,6 +2419,17 @@ timer = client.timers.create(
             initScrollProgress();
             initInteractiveStates();
 
+            // Initialize Negative Space Choreography
+            const canvasElements = [
+                document.getElementById('quantum-background'),
+                document.getElementById('quantum-shadow'),
+                document.getElementById('quantum-content'),
+                document.getElementById('quantum-highlight'),
+                document.getElementById('quantum-accent')
+            ];
+            window.negativeSpaceChoreographer = new NegativeSpaceChoreographer();
+            window.negativeSpaceChoreographer.init(canvasElements);
+
             console.log('🚀 MINOOTS VIB3+ Experience Ready');
             console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
             console.log('🎯 Center-lock choreography: All sections lock in focus');
@@ -2197,6 +2437,8 @@ timer = client.timers.create(
             console.log('📊 Scroll progress tracking active');
             console.log('🎮 Interactive states enabled');
             console.log('🌈 Background animates continuously');
+            console.log('🎨 Organic masks: Radial gradients with fluid breathing');
+            console.log('🔮 Negative space: Visualizers carve around cards dynamically');
         });
     </script>
 </body>
