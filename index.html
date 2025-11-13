@@ -2434,48 +2434,59 @@ timer = client.timers.create(
 
         // ========== SIMPLE CONTENT FADE-INS ==========
         function initSimpleContentAnimations() {
-            // Simple fade-in animations for content sections
+            // FIXED: Use gsap.fromTo() to ensure content is visible even if animation doesn't trigger
             gsap.utils.toArray('.section').forEach((section, index) => {
                 const sectionContent = section.querySelector('.section-content');
                 if (!sectionContent) return;
 
-                // Simple fade-in animation as section enters viewport
-                gsap.from(sectionContent, {
-                    opacity: 0,
-                    y: 60,
-                    scale: 0.95,
-                    duration: 1.2,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top 85%',
-                        once: true
+                // Ensure content starts visible, then animate if in viewport
+                gsap.set(sectionContent, { opacity: 1, y: 0, scale: 1 }); // Start visible!
+
+                gsap.fromTo(sectionContent,
+                    { opacity: 0, y: 60, scale: 0.95 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 1.2,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: section,
+                            start: 'top 85%',
+                            once: true
+                        }
                     }
-                });
+                );
             });
 
-            // Animate cards with stagger
+            // Animate cards with stagger - ENSURE CARDS ARE VISIBLE
             gsap.utils.toArray('.morph-card').forEach(card => {
-                gsap.from(card, {
-                    opacity: 0,
-                    y: 60,
-                    scale: 0.95,
-                    duration: 1.2,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top 85%',
-                        once: true
+                // Start visible to ensure content shows!
+                gsap.set(card, { opacity: 1, y: 0, scale: 1 });
+
+                gsap.fromTo(card,
+                    { opacity: 0, y: 60, scale: 0.95 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 1.2,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: card,
+                            start: 'top 85%',
+                            once: true
+                        }
                     }
-                });
+                );
             });
 
-            console.log('✨ Simple content fade-ins initialized');
+            console.log('✨ Simple content fade-ins initialized (CONTENT ALWAYS VISIBLE)');
         }
 
-        // ========== VISUALIZER PARAMETER SCROLL REACTIVITY ==========
-        // Changes ONLY shader parameters based on scroll, NOT position/transform
+        // ========== COMPLEX VISUALIZER DYNAMICS - HIGHLY REACTIVE ==========
         function initVisualizerScrollReactivity() {
+            // Global scroll-based smooth density changes (40 → 80)
             ScrollTrigger.create({
                 trigger: 'body',
                 start: 'top top',
@@ -2483,59 +2494,181 @@ timer = client.timers.create(
                 onUpdate: (self) => {
                     const progress = self.progress; // 0-1
 
-                    // Update visualizer parameters (NOT position!)
+                    // Smooth global changes based on scroll progress
                     if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
                         window.quantumVisualizers.forEach((viz, i) => {
-                            // Gradually increase complexity as user scrolls
-                            viz.params.chaos = 0.2 + (progress * 0.6);
-                            viz.params.intensity = 0.5 + (progress * 0.5);
-                            viz.params.speed = 1.0 + (progress * 1.0);
-                            viz.params.morphFactor = 0.5 + (progress * 1.0);
-                            viz.params.gridDensity = 40 + (progress * 20);
+                            // Store base values for smooth transitions
+                            if (!viz.baseParams) {
+                                viz.baseParams = {
+                                    baseChaos: 0.2 + (progress * 0.8),
+                                    baseIntensity: 0.5 + (progress * 0.5),
+                                    baseSpeed: 1.0 + (progress * 1.0),
+                                    baseMorphFactor: 0.5 + (progress * 1.5),
+                                    baseDensity: 40 + (progress * 40) // 40 → 80
+                                };
+                            }
 
-                            // Gentle 4D rotation based on scroll
-                            viz.params.rot4dXW = progress * Math.PI * 2;
-                            viz.params.rot4dYW = progress * Math.PI * 1.5;
-                            viz.params.rot4dZW = progress * Math.PI;
+                            // Update base parameters
+                            viz.baseParams.baseChaos = 0.2 + (progress * 0.8);
+                            viz.baseParams.baseIntensity = 0.5 + (progress * 0.5);
+                            viz.baseParams.baseSpeed = 1.0 + (progress * 1.0);
+                            viz.baseParams.baseMorphFactor = 0.5 + (progress * 1.5);
+                            viz.baseParams.baseDensity = 40 + (progress * 40);
+
+                            // Apply if not overridden by card center dynamics
+                            if (!viz.centerOverride) {
+                                viz.params.gridDensity = viz.baseParams.baseDensity;
+                            }
+
+                            // 4D rotation based on scroll
+                            viz.params.rot4dXW = progress * Math.PI * 4;
+                            viz.params.rot4dYW = progress * Math.PI * 3;
+                            viz.params.rot4dZW = progress * Math.PI * 2;
                         });
                     }
                 }
             });
 
-            console.log('🎨 Visualizer parameter reactivity initialized - scroll affects shader params only');
+            // ========== CARD ENTER: SNAP DENSITY TO OPPOSITE ==========
+            gsap.utils.toArray('.morph-card').forEach(card => {
+                ScrollTrigger.create({
+                    trigger: card,
+                    start: 'top bottom',
+                    onEnter: () => {
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            window.quantumVisualizers.forEach(viz => {
+                                // Get current density
+                                const current = viz.params.gridDensity || 60;
+                                // Calculate opposite (if current > 50, go low; else go high)
+                                const opposite = current > 50 ? 20 : 100;
+
+                                // SNAP immediately
+                                viz.params.gridDensity = opposite;
+
+                                console.log(`⚡ SNAP! Density ${current.toFixed(0)} → ${opposite}`);
+                            });
+                        }
+                    }
+                });
+            });
+
+            // ========== CARD CENTER DYNAMICS: CHAOS/MORPH UP, SPEED → 0, DENSITY PEAKS ==========
+            gsap.utils.toArray('.morph-card').forEach(card => {
+                ScrollTrigger.create({
+                    trigger: card,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    onUpdate: (self) => {
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            // Calculate distance from center (0 = at center, 1 = at edge)
+                            const distanceFromCenter = Math.abs(self.progress - 0.5) * 2;
+                            const centerAmount = 1 - distanceFromCenter; // 1 at center, 0 at edges
+
+                            window.quantumVisualizers.forEach(viz => {
+                                // Flag that we're overriding base parameters
+                                viz.centerOverride = centerAmount > 0.1;
+
+                                // Chaos increases at center: 0.2 → 1.0
+                                viz.params.chaos = 0.2 + (centerAmount * 0.8);
+
+                                // MorphFactor increases at center: 0.5 → 2.0
+                                viz.params.morphFactor = 0.5 + (centerAmount * 1.5);
+
+                                // Density PEAKS at center: base + peak amount
+                                const baseDensity = viz.baseParams?.baseDensity || 60;
+                                viz.params.gridDensity = baseDensity + (centerAmount * 40);
+
+                                // Speed goes to ZERO at center: 2.0 → 0
+                                viz.params.speed = 2.0 - (centerAmount * 2.0);
+
+                                // Intensity also peaks
+                                viz.params.intensity = 0.5 + (centerAmount * 0.5);
+                            });
+
+                            // Log when at exact center
+                            if (centerAmount > 0.95) {
+                                console.log('🎯 CARD AT CENTER - Speed → 0, Chaos → 1.0, Density PEAK!');
+                            }
+                        }
+                    },
+                    onLeave: () => {
+                        // Reset override flag
+                        if (window.quantumVisualizers) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.centerOverride = false;
+                            });
+                        }
+                    },
+                    onEnterBack: () => {
+                        // Re-enable override
+                        if (window.quantumVisualizers) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.centerOverride = true;
+                            });
+                        }
+                    },
+                    onLeaveBack: () => {
+                        // Reset override flag
+                        if (window.quantumVisualizers) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.centerOverride = false;
+                            });
+                        }
+                    }
+                });
+            });
+
+            console.log('🎨 COMPLEX VISUALIZER DYNAMICS initialized - HIGHLY REACTIVE!');
+            console.log('  ├─ Smooth density changes: 40 → 80');
+            console.log('  ├─ Card enter: SNAP density to opposite');
+            console.log('  ├─ Card center: Chaos/Morph UP, Speed → 0, Density PEAKS');
+            console.log('  └─ 4D rotations: Dramatic changes');
         }
 
-        // ========== SECTION THEME TRANSITIONS ==========
-        // Smooth color transitions when entering new sections
+        // ========== DRAMATIC SECTION CHANGES: COLOR + GEOMETRY + INTENSITY ==========
         function initSectionThemeTransitions() {
-            const themeHueMap = {
-                cyan: 180,
-                magenta: 300,
-                green: 120,
-                purple: 270,
-                orange: 30
+            // DRAMATIC section configurations with geometry changes
+            const sectionConfigs = {
+                cyan: { hue: 180, geometry: 0, intensity: 0.6 }, // Hypercube
+                magenta: { hue: 300, geometry: 2, intensity: 0.8 }, // Torus
+                green: { hue: 120, geometry: 3, intensity: 0.5 }, // Wave
+                purple: { hue: 270, geometry: 1, intensity: 0.7 }, // Sphere
+                orange: { hue: 30, geometry: 4, intensity: 0.9 } // Crystal
             };
 
             gsap.utils.toArray('.section').forEach(section => {
                 const theme = section.dataset.theme;
                 if (!theme) return;
 
+                const config = sectionConfigs[theme];
+                if (!config) return;
+
                 ScrollTrigger.create({
                     trigger: section,
                     start: 'top 50%',
                     end: 'bottom 50%',
                     onEnter: () => {
-                        // Smoothly transition visualizer to section theme
+                        // DRAMATIC changes when entering section
                         if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
-                            const targetHue = themeHueMap[theme] || 180;
-
                             window.quantumVisualizers.forEach(viz => {
+                                // SNAP color immediately
+                                viz.params.hue = config.hue / 360;
+
+                                // CHANGE geometry type (dramatic visual change!)
+                                viz.params.geometry = config.geometry;
+
+                                // Different intensity per section
                                 gsap.to(viz.params, {
-                                    hue: targetHue,
-                                    duration: 2,
+                                    intensity: config.intensity,
+                                    duration: 1.5,
                                     ease: 'power2.out'
                                 });
                             });
+
+                            console.log(`🎨 DRAMATIC SECTION CHANGE: ${theme.toUpperCase()}`);
+                            console.log(`  ├─ Hue: ${config.hue}°`);
+                            console.log(`  ├─ Geometry: ${['Hypercube', 'Sphere', 'Torus', 'Wave', 'Crystal'][config.geometry]}`);
+                            console.log(`  └─ Intensity: ${config.intensity}`);
                         }
 
                         // Also apply preset for other parameters
@@ -2546,15 +2679,18 @@ timer = client.timers.create(
                     onEnterBack: () => {
                         // Re-apply theme when scrolling back
                         if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
-                            const targetHue = themeHueMap[theme] || 180;
-
                             window.quantumVisualizers.forEach(viz => {
+                                viz.params.hue = config.hue / 360;
+                                viz.params.geometry = config.geometry;
+
                                 gsap.to(viz.params, {
-                                    hue: targetHue,
-                                    duration: 2,
+                                    intensity: config.intensity,
+                                    duration: 1.5,
                                     ease: 'power2.out'
                                 });
                             });
+
+                            console.log(`🔙 SECTION BACK: ${theme.toUpperCase()}`);
                         }
 
                         if (window.applyVisualizerPreset) {
@@ -2564,7 +2700,12 @@ timer = client.timers.create(
                 });
             });
 
-            console.log('🌈 Section theme transitions initialized');
+            console.log('🌈 DRAMATIC section transitions initialized');
+            console.log('  ├─ Cyan: Hypercube, 180° hue, 0.6 intensity');
+            console.log('  ├─ Magenta: Torus, 300° hue, 0.8 intensity');
+            console.log('  ├─ Green: Wave, 120° hue, 0.5 intensity');
+            console.log('  ├─ Purple: Sphere, 270° hue, 0.7 intensity');
+            console.log('  └─ Orange: Crystal, 30° hue, 0.9 intensity');
         }
 
         // ========== LENIS SMOOTH SCROLL INITIALIZATION ==========
@@ -2625,10 +2766,103 @@ timer = client.timers.create(
             console.log(`💨 GASP triggered at ${(progress * 100).toFixed(0)}%`);
         }
 
-        // ========== ENHANCED INTERACTIVE STATE MANAGEMENT ==========
+        // ========== COMPLETE VISUAL FEEDBACK SYSTEM - HIGHLY REACTIVE ==========
         function initInteractiveStates() {
-            // Add click/touch states to cards with shockwave effects
+            // ========== SCROLL VELOCITY FEEDBACK ==========
+            let lastScroll = window.scrollY || 0;
+            let lastScrollTime = Date.now();
+
+            window.addEventListener('scroll', () => {
+                const currentScroll = window.scrollY;
+                const currentTime = Date.now();
+                const timeDelta = Math.max(currentTime - lastScrollTime, 1);
+                const scrollDelta = Math.abs(currentScroll - lastScroll);
+                const velocity = scrollDelta / timeDelta * 10; // Normalized velocity
+
+                lastScroll = currentScroll;
+                lastScrollTime = currentTime;
+
+                // Fast scroll = more chaos
+                if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                    window.quantumVisualizers.forEach(viz => {
+                        const velocityChaos = Math.min(1.0, 0.2 + (velocity / 10));
+                        viz.params.chaos = Math.max(viz.params.chaos, velocityChaos);
+
+                        // Also affect speed
+                        const velocitySpeed = Math.min(3.0, 1.0 + velocity / 5);
+                        viz.params.speed = Math.max(viz.params.speed, velocitySpeed);
+                    });
+                }
+            });
+
+            // ========== MOUSE MOVEMENT FEEDBACK ==========
+            window.addEventListener('mousemove', (e) => {
+                const x = e.clientX / window.innerWidth; // 0-1
+                const y = e.clientY / window.innerHeight; // 0-1
+
+                if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                    window.quantumVisualizers.forEach(viz => {
+                        // Rotate 4D space based on mouse position
+                        viz.params.rot4dXW = x * Math.PI * 2;
+                        viz.params.rot4dYW = y * Math.PI * 2;
+                    });
+                }
+            });
+
+            // ========== GLOBAL CLICK FEEDBACK ==========
+            document.addEventListener('click', (e) => {
+                // Flash effect on any click
+                if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                    window.quantumVisualizers.forEach(viz => {
+                        const originalIntensity = viz.params.intensity;
+
+                        // Flash to high intensity
+                        viz.params.intensity = 1.5;
+
+                        // Fade back to original
+                        setTimeout(() => {
+                            gsap.to(viz.params, {
+                                intensity: originalIntensity,
+                                duration: 0.3,
+                                ease: 'power2.out'
+                            });
+                        }, 100);
+                    });
+                }
+            });
+
+            // ========== CARD HOVER FEEDBACK ==========
             document.querySelectorAll('.morph-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    // DRAMATIC visualizer response to card hover
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                chaos: 0.8,
+                                speed: 3.0,
+                                intensity: 1.2,
+                                duration: 0.4,
+                                ease: 'power2.out'
+                            });
+                        });
+                    }
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    // Return to normal
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                chaos: 0.2,
+                                speed: 1.0,
+                                intensity: 0.5,
+                                duration: 0.6,
+                                ease: 'power2.inOut'
+                            });
+                        });
+                    }
+                });
+
                 card.addEventListener('click', function(e) {
                     // Don't trigger if clicking expanded content
                     if (this.classList.contains('expanded')) return;
@@ -2664,32 +2898,38 @@ timer = client.timers.create(
                         }
                     });
                 });
+            });
 
-                // Hover triggers subtle breathing pulse
-                card.addEventListener('mouseenter', function() {
-                    gsap.to(window.quantumVisualizers, {
-                        duration: 0.6,
-                        onUpdate: function() {
-                            window.quantumVisualizers.forEach(viz => {
-                                viz.params.pulseIntensity = 0.3;
+            // ========== BUTTON HOVER FEEDBACK ==========
+            document.querySelectorAll('button, .btn, a[href]').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                intensity: viz.params.intensity * 1.3,
+                                morphFactor: viz.params.morphFactor * 1.2,
+                                duration: 0.3,
+                                ease: 'power2.out'
                             });
-                        }
-                    });
+                        });
+                    }
                 });
 
-                card.addEventListener('mouseleave', function() {
-                    gsap.to(window.quantumVisualizers, {
-                        duration: 0.6,
-                        onUpdate: function() {
-                            window.quantumVisualizers.forEach(viz => {
-                                viz.params.pulseIntensity = 0;
+                button.addEventListener('mouseleave', function() {
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                intensity: viz.params.intensity / 1.3,
+                                morphFactor: viz.params.morphFactor / 1.2,
+                                duration: 0.4,
+                                ease: 'power2.inOut'
                             });
-                        }
-                    });
+                        });
+                    }
                 });
             });
 
-            // Enhanced hover states for headlines with unity effects
+            // ========== HEADLINE HOVER FEEDBACK ==========
             document.querySelectorAll('h1, h2, h3').forEach(headline => {
                 headline.addEventListener('mouseenter', function() {
                     this.classList.add('active');
@@ -2743,7 +2983,7 @@ timer = client.timers.create(
                 });
             });
 
-            // Interactive accent text
+            // ========== ACCENT TEXT HOVER FEEDBACK ==========
             document.querySelectorAll('.accent, .highlight, .glow').forEach(accent => {
                 accent.addEventListener('mouseenter', function() {
                     gsap.to(this, {
@@ -2751,6 +2991,13 @@ timer = client.timers.create(
                         textShadow: `0 0 20px currentColor, 0 0 40px currentColor`,
                         duration: 0.3
                     });
+
+                    // Visualizer response
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            viz.params.chaos = Math.min(1.0, viz.params.chaos * 1.3);
+                        });
+                    }
                 });
 
                 accent.addEventListener('mouseleave', function() {
@@ -2759,10 +3006,24 @@ timer = client.timers.create(
                         textShadow: `0 0 0px currentColor`,
                         duration: 0.3
                     });
+
+                    // Return visualizer to normal
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            viz.params.chaos = Math.max(0.2, viz.params.chaos / 1.3);
+                        });
+                    }
                 });
             });
 
-            console.log('🎮 Interactive states enabled');
+            console.log('🎮 COMPLETE VISUAL FEEDBACK SYSTEM initialized');
+            console.log('  ├─ Scroll velocity → chaos + speed');
+            console.log('  ├─ Mouse movement → 4D rotation');
+            console.log('  ├─ Clicks → intensity flash');
+            console.log('  ├─ Card hovers → chaos/speed/intensity UP');
+            console.log('  ├─ Button hovers → intensity/morph UP');
+            console.log('  ├─ Headline hovers → intensity pulse');
+            console.log('  └─ Accent text hovers → chaos boost');
         }
 
         // ========== SECTION-AWARE VISUALIZER ==========
@@ -2809,31 +3070,17 @@ timer = client.timers.create(
                     }
                 });
 
-                // Add initial scale animation
-                gsap.set(card, {
-                    opacity: 0,
-                    scale: 0.9,
-                    y: 50
-                });
-
-                gsap.to(card, {
-                    opacity: 1,
-                    scale: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top 85%',
-                        toggleActions: 'play none none none'
-                    }
-                });
+                // REMOVED: Duplicate fade-in animation (already handled in initSimpleContentAnimations)
+                // Cards are now always visible by default, preventing the "content not visible" issue
             });
 
-            // Reveal animations with stagger
+            // Reveal animations with stagger - ENSURE VISIBLE
             gsap.utils.toArray('.reveal').forEach((elem, index) => {
                 const animType = elem.dataset.animate || 'fade-up';
                 const delay = parseFloat(elem.dataset.delay || 0);
+
+                // ENSURE element starts visible
+                gsap.set(elem, { opacity: 1 });
 
                 let fromVars = { opacity: 0 };
                 let toVars = { opacity: 1, duration: 1.2, delay, ease: 'power3.out' };
@@ -2860,9 +3107,13 @@ timer = client.timers.create(
                 });
             });
 
-            // Stagger animations for stat cards
+            // Stagger animations for stat cards - ENSURE VISIBLE
             const statCards = gsap.utils.toArray('.stat-card');
             if (statCards.length > 0) {
+                // ENSURE stat cards start visible
+                gsap.set(statCards, { opacity: 1, y: 0, scale: 1 });
+
+                // Then animate them if in viewport
                 gsap.set(statCards, { opacity: 0, y: 50, scale: 0.9 });
 
                 ScrollTrigger.create({
