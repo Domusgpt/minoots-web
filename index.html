@@ -2252,6 +2252,343 @@ timer = client.timers.create(
             });
         }
 
+        // ========== TIMELINE CHOREOGRAPHER ==========
+        /**
+         * Master choreography system - treats the entire experience as a fluid timeline
+         * where visualizers, masks, cards, and interactions dance together
+         */
+        class TimelineChoreographer {
+            constructor() {
+                this.sections = [];
+                this.currentSection = null;
+                this.canvases = [];
+                this.cards = [];
+                this.scrollProgress = 0;
+                this.sectionProgress = 0;
+            }
+
+            init(canvasElements) {
+                this.canvases = canvasElements;
+                this.cards = Array.from(document.querySelectorAll('.morph-card'));
+                this.sections = this.buildSectionTimeline();
+
+                this.setupScrollChoreography();
+                this.setupCardReactions();
+                this.setupMaskMorphing();
+
+                console.log('🎬 Timeline Choreographer initialized');
+                console.log(`📜 ${this.sections.length} sections in timeline`);
+            }
+
+            buildSectionTimeline() {
+                const sectionElements = Array.from(document.querySelectorAll('.section[data-theme]'));
+
+                return sectionElements.map((el, index) => {
+                    const theme = el.dataset.theme;
+                    const preset = SECTION_VIZ_PRESETS[theme];
+
+                    return {
+                        element: el,
+                        id: el.id,
+                        index,
+                        theme,
+                        preset,
+                        cards: Array.from(el.querySelectorAll('.morph-card')),
+                        // Each section has unique mask behavior
+                        maskBehavior: this.getSectionMaskBehavior(el.id, theme),
+                        // Each section has unique reactivity
+                        reactivity: this.getSectionReactivity(el.id)
+                    };
+                });
+            }
+
+            getSectionMaskBehavior(sectionId, theme) {
+                const behaviors = {
+                    'hero': {
+                        maskCenterY: '40%', // Top-heavy
+                        maskRadiusX: '100%', // Full width
+                        maskRadiusY: '90%',
+                        maskFeatherStart: '50%',
+                        breathingIntensity: 0.15
+                    },
+                    'overview': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '85%',
+                        maskRadiusY: '85%',
+                        maskFeatherStart: '40%',
+                        breathingIntensity: 0.2
+                    },
+                    'stats': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '75%', // More contained
+                        maskRadiusY: '70%',
+                        maskFeatherStart: '35%',
+                        breathingIntensity: 0.1 // Calmer
+                    },
+                    'architecture': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '90%',
+                        maskRadiusY: '80%',
+                        maskFeatherStart: '45%',
+                        breathingIntensity: 0.25 // More dramatic
+                    },
+                    'use-cases': {
+                        maskCenterY: '55%', // Bottom-heavy
+                        maskRadiusX: '95%',
+                        maskRadiusY: '85%',
+                        maskFeatherStart: '40%',
+                        breathingIntensity: 0.2
+                    },
+                    'integrations': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '80%',
+                        maskRadiusY: '80%',
+                        maskFeatherStart: '35%',
+                        breathingIntensity: 0.15
+                    },
+                    'cta': {
+                        maskCenterY: '60%', // Bottom-focused
+                        maskRadiusX: '70%', // More intimate
+                        maskRadiusY: '65%',
+                        maskFeatherStart: '30%',
+                        breathingIntensity: 0.3 // Most dramatic
+                    }
+                };
+
+                return behaviors[sectionId] || behaviors['overview'];
+            }
+
+            getSectionReactivity(sectionId) {
+                const reactivity = {
+                    'hero': { cardHover: 1.5, cardExpand: 2.0, intensity: 1.2 },
+                    'overview': { cardHover: 1.3, cardExpand: 1.8, intensity: 1.0 },
+                    'stats': { cardHover: 1.1, cardExpand: 1.3, intensity: 0.8 },
+                    'architecture': { cardHover: 1.4, cardExpand: 2.0, intensity: 1.1 },
+                    'use-cases': { cardHover: 1.3, cardExpand: 1.7, intensity: 1.0 },
+                    'integrations': { cardHover: 1.2, cardExpand: 1.6, intensity: 0.9 },
+                    'cta': { cardHover: 1.6, cardExpand: 2.5, intensity: 1.3 }
+                };
+
+                return reactivity[sectionId] || reactivity['overview'];
+            }
+
+            setupScrollChoreography() {
+                this.sections.forEach((section, index) => {
+                    const trigger = ScrollTrigger.create({
+                        trigger: section.element,
+                        start: 'top center',
+                        end: 'bottom center',
+                        onEnter: () => this.enterSection(section, 'forward'),
+                        onEnterBack: () => this.enterSection(section, 'backward'),
+                        onLeave: () => this.leaveSection(section, 'forward'),
+                        onLeaveBack: () => this.leaveSection(section, 'backward'),
+                        onUpdate: (self) => this.updateSectionProgress(section, self.progress)
+                    });
+
+                    section.trigger = trigger;
+                });
+            }
+
+            enterSection(section, direction) {
+                this.currentSection = section;
+                console.log(`🎬 Enter ${section.id} (${section.theme}) - ${direction}`);
+
+                // Fluid transition to section preset
+                this.morphToPreset(section.preset, section.theme);
+
+                // Morph masks to section behavior
+                this.morphMasks(section.maskBehavior);
+
+                // Update card reactivity
+                this.updateCardReactivity(section.reactivity);
+            }
+
+            leaveSection(section, direction) {
+                console.log(`👋 Leave ${section.id} - ${direction}`);
+            }
+
+            updateCardReactivity(reactivity) {
+                // Store current reactivity for this section
+                this.currentReactivity = reactivity;
+            }
+
+            updateSectionProgress(section, progress) {
+                if (section !== this.currentSection) return;
+
+                this.sectionProgress = progress;
+
+                // Micro-adjustments based on progress through section
+                // Creates subtle evolution as you scroll through each section
+                if (window.quantumVisualizers) {
+                    window.quantumVisualizers.forEach((viz, i) => {
+                        // Subtle chaos variation
+                        const chaosVariation = Math.sin(progress * Math.PI) * 0.1;
+                        viz.updateParameters({
+                            chaos: viz.params.chaos + chaosVariation
+                        });
+                    });
+                }
+            }
+
+            morphToPreset(preset, themeName) {
+                if (!preset || !window.quantumVisualizers) return;
+
+                window.quantumVisualizers.forEach((viz, i) => {
+                    const layerMultiplier = (i + 1) * 0.2;
+
+                    gsap.to(viz.params, {
+                        geometry: preset.geometry,
+                        gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
+                        chaos: preset.chaos * (1 + layerMultiplier * 0.3),
+                        speed: preset.speed,
+                        hue: preset.hue,
+                        intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
+                        rot4dXW: preset.rot4dXW * layerMultiplier,
+                        rot4dYW: preset.rot4dYW * layerMultiplier,
+                        rot4dZW: preset.rot4dZW * layerMultiplier,
+                        duration: 3, // Longer, more fluid transitions
+                        ease: 'power1.inOut'
+                    });
+                });
+
+                console.log(`🎨 Morphed to ${themeName} preset`);
+            }
+
+            morphMasks(maskBehavior) {
+                this.canvases.forEach((canvas, i) => {
+                    if (!canvas) return;
+
+                    // Layer-specific variations
+                    const layerScale = 1 + (i * 0.05);
+
+                    gsap.to(canvas.style, {
+                        '--mask-center-y': maskBehavior.maskCenterY,
+                        '--mask-radius-x': maskBehavior.maskRadiusX,
+                        '--mask-radius-y': maskBehavior.maskRadiusY,
+                        '--mask-feather-start': maskBehavior.maskFeatherStart,
+                        duration: 2.5,
+                        ease: 'power2.inOut'
+                    });
+                });
+            }
+
+            setupCardReactions() {
+                this.cards.forEach(card => {
+                    // Card hover boosts visualizer
+                    card.addEventListener('mouseenter', () => {
+                        if (!this.currentSection) return;
+
+                        const boost = this.currentSection.reactivity.cardHover;
+                        this.boostVisualizer(boost, 0.4);
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        this.resetVisualizerBoost(0.6);
+                    });
+
+                    // Track card expansion for dramatic visualizer dimming
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach(mutation => {
+                            if (mutation.attributeName === 'class') {
+                                if (card.classList.contains('expanded')) {
+                                    this.onCardExpand(card);
+                                } else if (mutation.oldValue?.includes('expanded')) {
+                                    this.onCardCollapse(card);
+                                }
+                            }
+                        });
+                    });
+
+                    observer.observe(card, {
+                        attributes: true,
+                        attributeOldValue: true,
+                        attributeFilter: ['class']
+                    });
+                });
+            }
+
+            setupMaskMorphing() {
+                // Continuous subtle mask breathing tied to scroll
+                let lastScroll = 0;
+
+                window.addEventListener('scroll', () => {
+                    const currentScroll = window.scrollY;
+                    const scrollDelta = Math.abs(currentScroll - lastScroll);
+                    lastScroll = currentScroll;
+
+                    // Faster scrolling = more breathing
+                    const breathingBoost = Math.min(scrollDelta / 10, 2);
+
+                    if (this.currentSection) {
+                        const baseIntensity = this.currentSection.maskBehavior.breathingIntensity;
+                        // Apply to animation speed
+                    }
+                }, { passive: true });
+            }
+
+            boostVisualizer(multiplier, duration = 0.3) {
+                window.quantumVisualizers?.forEach(viz => {
+                    gsap.to(viz.params, {
+                        intensity: viz.params.intensity * multiplier,
+                        chaos: viz.params.chaos * multiplier,
+                        duration,
+                        ease: 'power2.out'
+                    });
+                });
+            }
+
+            resetVisualizerBoost(duration = 0.5) {
+                if (!this.currentSection) return;
+
+                // Return to section's baseline
+                this.morphToPreset(this.currentSection.preset, this.currentSection.theme);
+            }
+
+            onCardExpand(card) {
+                if (!this.currentSection) return;
+
+                const expandMultiplier = this.currentSection.reactivity.cardExpand;
+
+                // Dramatic dim of visualizer
+                window.quantumVisualizers?.forEach(viz => {
+                    gsap.to(viz.params, {
+                        intensity: viz.params.intensity * 0.2, // Much dimmer
+                        speed: viz.params.speed * 0.5, // Slower
+                        chaos: viz.params.chaos * 0.6,
+                        duration: 0.6,
+                        ease: 'power3.out'
+                    });
+                });
+
+                // Mask morphs to focus on card center
+                const rect = card.getBoundingClientRect();
+                const centerY = ((rect.top + rect.height / 2) / window.innerHeight * 100).toFixed(0) + '%';
+
+                this.canvases.forEach(canvas => {
+                    if (!canvas) return;
+                    gsap.to(canvas.style, {
+                        '--mask-center-y': centerY,
+                        '--mask-radius-x': '60%',
+                        '--mask-radius-y': '50%',
+                        duration: 0.6,
+                        ease: 'power3.out'
+                    });
+                });
+
+                console.log(`🎯 Card expanded - visualizer focused`);
+            }
+
+            onCardCollapse(card) {
+                // Return to section baseline
+                if (!this.currentSection) return;
+
+                this.morphToPreset(this.currentSection.preset, this.currentSection.theme);
+                this.morphMasks(this.currentSection.maskBehavior);
+
+                console.log(`🎯 Card collapsed - visualizer reset`);
+            }
+        }
+
         // ========== NEGATIVE SPACE CHOREOGRAPHER ==========
         /**
          * Dynamically carves out space around cards using organic mask compositing
@@ -2419,26 +2756,27 @@ timer = client.timers.create(
             initScrollProgress();
             initInteractiveStates();
 
-            // Initialize Negative Space Choreography (DISABLED - fixing mask logic)
-            // const canvasElements = [
-            //     document.getElementById('quantum-background'),
-            //     document.getElementById('quantum-shadow'),
-            //     document.getElementById('quantum-content'),
-            //     document.getElementById('quantum-highlight'),
-            //     document.getElementById('quantum-accent')
-            // ];
-            // window.negativeSpaceChoreographer = new NegativeSpaceChoreographer();
-            // window.negativeSpaceChoreographer.init(canvasElements);
+            // Initialize Timeline Choreographer - master coordination system
+            const canvasElements = [
+                document.getElementById('quantum-background'),
+                document.getElementById('quantum-shadow'),
+                document.getElementById('quantum-content'),
+                document.getElementById('quantum-highlight'),
+                document.getElementById('quantum-accent')
+            ];
+            window.timelineChoreographer = new TimelineChoreographer();
+            window.timelineChoreographer.init(canvasElements);
 
             console.log('🚀 MINOOTS VIB3+ Experience Ready');
+            console.log('🎬 Timeline Choreographer: Fluid section-based morphing');
             console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
             console.log('🎯 Center-lock choreography: All sections lock in focus');
             console.log('📦 Expandable cards enabled');
             console.log('📊 Scroll progress tracking active');
             console.log('🎮 Interactive states enabled');
             console.log('🌈 Background animates continuously');
-            console.log('🎨 Organic masks: Radial gradients with fluid breathing');
-            console.log('🔮 Negative space: Visualizers carve around cards dynamically');
+            console.log('🎨 Organic masks: Radial gradients morphing per section');
+            console.log('🔮 Card reactions: Hover boosts, expand dims, section-aware');
         });
     </script>
 </body>
