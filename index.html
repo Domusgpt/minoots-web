@@ -195,27 +195,7 @@
             );
             -webkit-mask-composite: source-in;
 
-            /* Breathing animation for organic feel */
-            animation: organic-breathing 8s ease-in-out infinite;
-        }
-
-        @keyframes organic-breathing {
-            0%, 100% {
-                --mask-radius-x: 85%;
-                --mask-radius-y: 80%;
-            }
-            25% {
-                --mask-radius-x: 90%;
-                --mask-radius-y: 75%;
-            }
-            50% {
-                --mask-radius-x: 80%;
-                --mask-radius-y: 85%;
-            }
-            75% {
-                --mask-radius-x: 88%;
-                --mask-radius-y: 78%;
-            }
+            /* Breathing will be animated via GSAP for proper CSS var support */
         }
 
         /* Layer-specific mask variations for depth */
@@ -2508,22 +2488,66 @@ timer = client.timers.create(
             }
 
             setupMaskMorphing() {
-                // Continuous subtle mask breathing tied to scroll
-                let lastScroll = 0;
+                // Continuous organic breathing animation using GSAP
+                // CSS custom properties CAN'T be animated via @keyframes
+                // so we use GSAP timeline for smooth breathing effect
 
-                window.addEventListener('scroll', () => {
-                    const currentScroll = window.scrollY;
-                    const scrollDelta = Math.abs(currentScroll - lastScroll);
-                    lastScroll = currentScroll;
+                this.canvases.forEach((canvas, i) => {
+                    if (!canvas) return;
 
-                    // Faster scrolling = more breathing
-                    const breathingBoost = Math.min(scrollDelta / 10, 2);
+                    // Get base values for this layer from COMPUTED styles (not inline)
+                    const computedStyle = window.getComputedStyle(canvas);
+                    const baseRadiusX = computedStyle.getPropertyValue('--mask-radius-x').trim() || '85%';
+                    const baseRadiusY = computedStyle.getPropertyValue('--mask-radius-y').trim() || '80%';
+                    const baseFeather = computedStyle.getPropertyValue('--mask-feather-start').trim() || '40%';
 
-                    if (this.currentSection) {
-                        const baseIntensity = this.currentSection.maskBehavior.breathingIntensity;
-                        // Apply to animation speed
-                    }
-                }, { passive: true });
+                    // Parse percentages
+                    const radiusXNum = parseFloat(baseRadiusX);
+                    const radiusYNum = parseFloat(baseRadiusY);
+                    const featherNum = parseFloat(baseFeather);
+
+                    // Stagger the breathing across layers for depth
+                    const delay = i * 0.5;
+                    const duration = 8 + i; // Varying durations create organic feel
+
+                    // Create breathing timeline for this canvas
+                    const breatheTimeline = gsap.timeline({
+                        repeat: -1,
+                        yoyo: true,
+                        delay
+                    });
+
+                    breatheTimeline
+                        .to(canvas, {
+                            '--mask-radius-x': `${radiusXNum + 5}%`,
+                            '--mask-radius-y': `${radiusYNum - 5}%`,
+                            '--mask-feather-start': `${featherNum + 5}%`,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        })
+                        .to(canvas, {
+                            '--mask-radius-x': `${radiusXNum - 5}%`,
+                            '--mask-radius-y': `${radiusYNum + 5}%`,
+                            '--mask-feather-start': `${featherNum - 5}%`,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        })
+                        .to(canvas, {
+                            '--mask-radius-x': `${radiusXNum + 3}%`,
+                            '--mask-radius-y': `${radiusYNum - 2}%`,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        })
+                        .to(canvas, {
+                            '--mask-radius-x': baseRadiusX,
+                            '--mask-radius-y': baseRadiusY,
+                            '--mask-feather-start': baseFeather,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        });
+                });
+
+                console.log('🌊 Organic mask breathing initialized via GSAP');
             }
 
             boostVisualizer(multiplier, duration = 0.3) {
