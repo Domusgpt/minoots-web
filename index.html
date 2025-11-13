@@ -819,25 +819,25 @@
             transition: width 0.2s ease;
         }
 
-        /* REVEAL ANIMATIONS */
+        /* REVEAL ANIMATIONS - TEMPORARILY DISABLED FOR DEBUGGING */
         .reveal {
-            opacity: 0;
-            transform: translateY(60px);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: translateY(0); /* Changed from 60px to 0 */
         }
 
         .reveal-left {
-            opacity: 0;
-            transform: translateX(-60px);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: translateX(0); /* Changed from -60px to 0 */
         }
 
         .reveal-right {
-            opacity: 0;
-            transform: translateX(60px);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: translateX(0); /* Changed from 60px to 0 */
         }
 
         .reveal-scale {
-            opacity: 0;
-            transform: scale(0.8);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: scale(1); /* Changed from 0.8 to 1 */
         }
 
         /* OVERLAY */
@@ -2419,16 +2419,16 @@ timer = client.timers.create(
             initScrollProgress();
             initInteractiveStates();
 
-            // Initialize Negative Space Choreography
-            const canvasElements = [
-                document.getElementById('quantum-background'),
-                document.getElementById('quantum-shadow'),
-                document.getElementById('quantum-content'),
-                document.getElementById('quantum-highlight'),
-                document.getElementById('quantum-accent')
-            ];
-            window.negativeSpaceChoreographer = new NegativeSpaceChoreographer();
-            window.negativeSpaceChoreographer.init(canvasElements);
+            // Initialize Negative Space Choreography (DISABLED - fixing mask logic)
+            // const canvasElements = [
+            //     document.getElementById('quantum-background'),
+            //     document.getElementById('quantum-shadow'),
+            //     document.getElementById('quantum-content'),
+            //     document.getElementById('quantum-highlight'),
+            //     document.getElementById('quantum-accent')
+            // ];
+            // window.negativeSpaceChoreographer = new NegativeSpaceChoreographer();
+            // window.negativeSpaceChoreographer.init(canvasElements);
 
             console.log('🚀 MINOOTS VIB3+ Experience Ready');
             console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
