@@ -11,6 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollSmoother.min.js"></script>
     <script src="https://unpkg.com/split-type"></script>
+
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -99,8 +102,53 @@
             }
         }
 
+        @keyframes gasp-expand {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes melting-drip {
+            0% {
+                transform: translateY(0) scaleY(1);
+            }
+            50% {
+                transform: translateY(10px) scaleY(1.1);
+            }
+            100% {
+                transform: translateY(0) scaleY(1);
+            }
+        }
+
+        @keyframes shockwave-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        @keyframes unity-glow {
+            0%, 100% {
+                filter: brightness(1) saturate(1);
+            }
+            50% {
+                filter: brightness(1.5) saturate(1.5);
+            }
+        }
+
         html {
-            scroll-behavior: smooth;
+            /* Disabled native smooth scroll - using Lenis instead */
+            /* scroll-behavior: smooth; */
         }
 
         html, body {
@@ -119,47 +167,25 @@
 
         /* SMOOTH SCROLLER WRAPPER */
         #smooth-wrapper {
+            position: relative;
+            z-index: 100;
             overflow: visible;
         }
 
         #smooth-content {
+            position: relative;
             overflow: visible;
             will-change: transform;
         }
 
-        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND */
+        /* VIB3+ Quantum Visualizer - FIXED BACKGROUND (NO TRANSFORMS) */
         .quantum-layers {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform, opacity, filter;
-        }
-
-        /* Intro state - visualizer fills screen */
-        .quantum-layers.intro {
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        /* Condensing state - shrinking into card */
-        .quantum-layers.condensing {
-            transform: scale(0.5);
-            opacity: 0.8;
-        }
-
-        /* Ejecting state - rapidly leaving */
-        .quantum-layers.ejecting {
-            transform: scale(3) translate(0, -100vh);
-            opacity: 0;
-            transition: all 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        /* Normal scroll state */
-        .quantum-layers.scrolling {
-            transform: scale(1);
-            opacity: 1;
+            /* NO transforms - visualizer stays completely fixed */
+            /* Only shader parameters change, not position/scale/rotation */
         }
 
         .quantum-canvas {
@@ -175,10 +201,169 @@
         #quantum-highlight { opacity: 0.4; z-index: 4; }
         #quantum-accent { opacity: 0.25; z-index: 5; }
 
+        /* ========== VISUALIZER INTEGRATION SYSTEM ========== */
+        /* Visualizer flows INTO UI elements, not behind them */
+
+        /* Hidden canvas snapshots for UI element backgrounds */
+        .visualizer-snapshot {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        /* Visualizer inside card backgrounds */
+        .visualizer-bg {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visualizer-bg::before {
+            content: '';
+            position: absolute;
+            inset: -20%;
+            background: inherit;
+            opacity: 0.25;
+            mix-blend-mode: screen;
+            filter: blur(20px) saturate(1.5);
+            animation: visualizer-breathe 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes visualizer-breathe {
+            0%, 100% {
+                opacity: 0.25;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Visualizer text effect - text as mask */
+        .visualizer-text {
+            position: relative;
+            background: linear-gradient(
+                135deg,
+                var(--cyan) 0%,
+                var(--magenta) 25%,
+                var(--blue) 50%,
+                var(--green) 75%,
+                var(--cyan) 100%
+            );
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: visualizer-gradient-flow 8s ease infinite;
+        }
+
+        @keyframes visualizer-gradient-flow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Flowing visualizer borders */
+        .visualizer-border {
+            position: relative;
+        }
+
+        .visualizer-border::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            padding: 2px;
+            background: linear-gradient(
+                45deg,
+                var(--cyan),
+                var(--magenta),
+                var(--blue),
+                var(--green),
+                var(--cyan)
+            );
+            background-size: 400% 400%;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: visualizer-border-flow 6s linear infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        @keyframes visualizer-border-flow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Holographic shimmer overlay */
+        .visualizer-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visualizer-shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(0, 255, 255, 0.3) 50%,
+                transparent 70%
+            );
+            animation: visualizer-shimmer-sweep 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes visualizer-shimmer-sweep {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        /* Pulsing glow for active elements */
+        .visualizer-glow {
+            position: relative;
+            animation: visualizer-pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes visualizer-pulse-glow {
+            0%, 100% {
+                box-shadow:
+                    0 0 20px var(--section-primary),
+                    0 0 40px var(--section-primary),
+                    inset 0 0 20px rgba(0, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow:
+                    0 0 40px var(--section-secondary),
+                    0 0 80px var(--section-secondary),
+                    inset 0 0 40px rgba(255, 0, 255, 0.2);
+            }
+        }
+
         /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
             position: relative;
-            height: 300vh; /* Extended for smooth transitions */
+            height: 100vh; /* FIXED: Was 300vh, made scrolling impossible */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -218,7 +403,7 @@
         /* SECTION SYSTEM - CENTER LOCK */
         .section {
             position: relative;
-            min-height: 200vh; /* Extended for center-lock effect */
+            min-height: 100vh; /* FIXED: Was 200vh, made content unreachable */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -271,6 +456,9 @@
             width: 100%;
             position: relative;
             z-index: 2;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         /* PARALLAX LAYERS */
@@ -295,10 +483,30 @@
                 0 30px 90px rgba(0, 0, 0, 0.5);
             transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
-            will-change: transform;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
             cursor: pointer;
             overflow: hidden;
             margin: 40px 0;
+        }
+
+        /* Visualizer background layer inside cards */
+        .morph-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                circle at 50% 50%,
+                var(--section-primary) 0%,
+                transparent 70%
+            );
+            opacity: 0.15;
+            mix-blend-mode: screen;
+            animation: visualizer-breathe 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(40px);
         }
 
         /* Holographic border shimmer */
@@ -329,6 +537,12 @@
                 inset 0 0 80px var(--section-secondary),
                 0 40px 120px rgba(0, 0, 0, 0.6),
                 0 0 200px var(--section-primary);
+        }
+
+        .morph-card:hover::before {
+            opacity: 0.35;
+            animation-duration: 2s;
+            filter: blur(30px);
         }
 
         .morph-card:hover::after {
@@ -679,6 +893,7 @@
         .btn {
             display: inline-block;
             padding: 18px 40px;
+            position: relative;
             background: linear-gradient(135deg, var(--cyan), var(--blue));
             color: #000;
             font-weight: 700;
@@ -689,11 +904,41 @@
             box-shadow: 0 10px 40px rgba(0, 255, 255, 0.3);
             cursor: pointer;
             border: none;
+            overflow: hidden;
+        }
+
+        /* Flowing visualizer inside button */
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg,
+                var(--cyan),
+                var(--magenta),
+                var(--blue),
+                var(--green),
+                var(--cyan)
+            );
+            background-size: 400% 400%;
+            opacity: 0;
+            animation: visualizer-gradient-flow 6s ease infinite;
+            transition: opacity 0.4s ease;
+            z-index: 0;
         }
 
         .btn:hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 15px 60px rgba(0, 255, 255, 0.5);
+        }
+
+        .btn:hover::before {
+            opacity: 0.6;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
         }
 
         .btn.btn-outline {
@@ -724,24 +969,28 @@
             transition: width 0.2s ease;
         }
 
-        /* REVEAL ANIMATIONS */
+        /* REVEAL ANIMATIONS - CONTENT ALWAYS VISIBLE */
         .reveal {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: translateY(60px);
         }
 
         .reveal-left {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: translateX(-60px);
         }
 
         .reveal-right {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: translateX(60px);
         }
 
         .reveal-scale {
-            opacity: 0;
+            /* REMOVED: opacity: 0; - Content now always visible! */
+            opacity: 1;
             transform: scale(0.8);
         }
 
@@ -792,6 +1041,8 @@
         <canvas id="quantum-content" class="quantum-canvas"></canvas>
         <canvas id="quantum-highlight" class="quantum-canvas"></canvas>
         <canvas id="quantum-accent" class="quantum-canvas"></canvas>
+        <!-- Cross-layer particle communication overlay -->
+        <canvas id="particle-flow" class="quantum-canvas" style="opacity: 0.4; z-index: 6; mix-blend-mode: screen;"></canvas>
     </div>
 
     <!-- Overlay for Expanded Cards -->
@@ -1325,7 +1576,125 @@ timer = client.timers.create(
 
 
     <script type="module">
-        // ========== VIB3+ QUANTUM VISUALIZER (Enhanced) ==========
+        // ========== EMERGENT UNITY STATE MANAGER ==========
+        class EmergentUnityManager {
+            constructor() {
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.scrollVelocity = 0;
+                this.lastScrollY = 0;
+                this.lastScrollTime = Date.now();
+                this.pulsePhase = 0;
+                this.unityMoments = [];
+                this.audioContext = null;
+                this.audioAnalyser = null;
+                this.audioFrequency = 0;
+
+                // Field-based attraction points
+                this.attractionPoints = [];
+                this.shockwaves = [];
+
+                this.initMouseTracking();
+                this.initScrollVelocityTracking();
+                this.initAudioContext();
+            }
+
+            initMouseTracking() {
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                    this.mouseY = -((e.clientY / window.innerHeight) * 2 - 1);
+                });
+            }
+
+            initScrollVelocityTracking() {
+                let rafId;
+                const updateVelocity = () => {
+                    const now = Date.now();
+                    const deltaTime = (now - this.lastScrollTime) / 1000;
+                    const deltaScroll = window.scrollY - this.lastScrollY;
+
+                    this.scrollVelocity = Math.abs(deltaScroll / deltaTime) / 1000;
+                    this.lastScrollY = window.scrollY;
+                    this.lastScrollTime = now;
+
+                    rafId = requestAnimationFrame(updateVelocity);
+                };
+                updateVelocity();
+            }
+
+            initAudioContext() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.audioAnalyser = this.audioContext.createAnalyser();
+                    this.audioAnalyser.fftSize = 256;
+
+                    // Try to get microphone input
+                    navigator.mediaDevices?.getUserMedia({ audio: true })
+                        .then(stream => {
+                            const source = this.audioContext.createMediaStreamSource(stream);
+                            source.connect(this.audioAnalyser);
+                            console.log('🎵 Audio reactivity enabled');
+                        })
+                        .catch(() => {
+                            console.log('🎵 Audio input not available, using passive mode');
+                        });
+                } catch (e) {
+                    console.log('🎵 Audio context not available');
+                }
+            }
+
+            getAudioFrequency() {
+                if (!this.audioAnalyser) return 0;
+
+                const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
+                this.audioAnalyser.getByteFrequencyData(dataArray);
+
+                const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                return average / 255;
+            }
+
+            triggerShockwave(x, y, intensity = 1.0) {
+                this.shockwaves.push({
+                    x, y,
+                    intensity,
+                    startTime: Date.now(),
+                    duration: 2000
+                });
+            }
+
+            triggerUnityMoment(duration = 3000) {
+                this.unityMoments.push({
+                    startTime: Date.now(),
+                    duration
+                });
+                console.log('✨ UNITY MOMENT triggered');
+            }
+
+            getActiveShockwaves() {
+                const now = Date.now();
+                this.shockwaves = this.shockwaves.filter(sw => now - sw.startTime < sw.duration);
+                return this.shockwaves.map(sw => ({
+                    ...sw,
+                    progress: (now - sw.startTime) / sw.duration
+                }));
+            }
+
+            isUnityMoment() {
+                const now = Date.now();
+                this.unityMoments = this.unityMoments.filter(um => now - um.startTime < um.duration);
+                return this.unityMoments.length > 0;
+            }
+
+            update() {
+                this.pulsePhase += 0.02;
+                this.audioFrequency = this.getAudioFrequency();
+            }
+        }
+
+        // Global unity manager
+        window.unityManager = new EmergentUnityManager();
+
+        // ========== VIB3+ QUANTUM VISUALIZER (Enhanced with Emergent Unity) ==========
         class QuantumVisualizer {
             constructor(canvasId, role, reactivity) {
                 this.canvas = document.getElementById(canvasId);
@@ -1350,7 +1719,17 @@ timer = client.timers.create(
                     rot4dXW: 0.0,
                     rot4dYW: 0.0,
                     rot4dZW: 0.0,
-                    offsetY: 0.0
+                    offsetY: 0.0,
+                    // New emergent unity parameters
+                    mouseInfluence: 0.0,
+                    scrollVelocity: 0.0,
+                    pulseIntensity: 0.0,
+                    meltFactor: 0.0,
+                    shockwaveX: 0.0,
+                    shockwaveY: 0.0,
+                    shockwaveIntensity: 0.0,
+                    unityFactor: 0.0,
+                    audioReactivity: 0.0
                 };
 
                 this.init();
@@ -1392,6 +1771,15 @@ timer = client.timers.create(
                     uniform float u_roleIntensity;
                     uniform float u_offsetY;
                     uniform float u_scrollProgress;
+                    // New emergent unity uniforms
+                    uniform vec2 u_mouse;
+                    uniform float u_scrollVelocity;
+                    uniform float u_pulseIntensity;
+                    uniform float u_meltFactor;
+                    uniform vec2 u_shockwave;
+                    uniform float u_shockwaveIntensity;
+                    uniform float u_unityFactor;
+                    uniform float u_audioReactivity;
 
                     mat4 rotateXW(float theta) {
                         float c = cos(theta);
@@ -1475,24 +1863,122 @@ timer = client.timers.create(
                         else return vec3(1.0, 0.0, 1.0);
                     }
 
+                    // ========== EMERGENT UNITY EFFECTS ==========
+
+                    // Liquid melting displacement
+                    vec2 applyMelting(vec2 uv, float melt) {
+                        float time = u_time * 0.001;
+                        float drip = sin(uv.x * 3.0 + time) * melt * 0.5;
+                        float flow = sin(uv.y * 2.0 + time * 1.3) * melt * 0.3;
+                        return uv + vec2(flow, -drip * (1.0 + uv.y));
+                    }
+
+                    // Heat distortion warping
+                    vec2 applyHeatDistortion(vec2 uv, float intensity) {
+                        float time = u_time * 0.002;
+                        vec2 warp = vec2(
+                            sin(uv.y * 10.0 + time * 3.0) * intensity * 0.02,
+                            sin(uv.x * 8.0 + time * 2.5) * intensity * 0.02
+                        );
+                        return uv + warp;
+                    }
+
+                    // Shockwave ripple effect
+                    float getShockwaveEffect(vec2 uv, vec2 center, float intensity) {
+                        float dist = length(uv - center);
+                        float ripple = sin(dist * 20.0 - u_time * 0.01) * 0.5 + 0.5;
+                        float falloff = 1.0 - smoothstep(0.0, 2.0, dist);
+                        return ripple * falloff * intensity;
+                    }
+
+                    // Mouse cursor influence on field
+                    vec2 applyMouseInfluence(vec2 uv, vec2 mouse, float strength) {
+                        vec2 toMouse = mouse - uv;
+                        float dist = length(toMouse);
+                        float influence = exp(-dist * 2.0) * strength;
+                        return uv + toMouse * influence * 0.3;
+                    }
+
+                    // Breathing pulse effect
+                    float getBreathingPulse(float phase, float intensity) {
+                        return sin(phase) * 0.5 + 0.5 * intensity;
+                    }
+
+                    // Unity convergence - layers harmonize
+                    float getUnityHarmonization(vec3 p, float unityFactor) {
+                        float convergence = sin(p.x * 5.0 + unityFactor * 10.0) *
+                                          sin(p.y * 5.0 + unityFactor * 10.0) *
+                                          sin(p.z * 5.0 + unityFactor * 10.0);
+                        return convergence * unityFactor;
+                    }
+
+                    // Dissolve and reform animation
+                    float getDissolvePattern(vec3 p, float progress) {
+                        float noise = fract(sin(dot(p, vec3(12.9898, 78.233, 45.543))) * 43758.5453);
+                        return smoothstep(progress - 0.1, progress + 0.1, noise);
+                    }
+
                     void main() {
                         vec2 uv = (gl_FragCoord.xy - u_resolution.xy * 0.5) / min(u_resolution.x, u_resolution.y);
                         uv.y += u_offsetY;
 
-                        float timeSpeed = u_time * 0.0001 * u_speed;
-                        vec4 pos = vec4(uv * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
+                        // Apply emergent unity effects to UV coordinates
+                        vec2 modifiedUV = uv;
 
-                        pos = rotateXW(u_rot4dXW) * pos;
-                        pos = rotateYW(u_rot4dYW) * pos;
-                        pos = rotateZW(u_rot4dZW) * pos;
+                        // Mouse cursor influence on quantum field
+                        modifiedUV = applyMouseInfluence(modifiedUV, u_mouse, u_roleIntensity * 0.2);
+
+                        // Liquid melting during theme transitions
+                        modifiedUV = applyMelting(modifiedUV, u_meltFactor);
+
+                        // Heat distortion from scroll velocity
+                        float heatIntensity = u_scrollVelocity * 2.0 + u_audioReactivity * 0.5;
+                        modifiedUV = applyHeatDistortion(modifiedUV, heatIntensity);
+
+                        // Breathing pulse effect
+                        float breathScale = 1.0 + getBreathingPulse(u_time * 0.003, u_pulseIntensity) * 0.05;
+                        modifiedUV *= breathScale;
+
+                        float timeSpeed = u_time * 0.0001 * u_speed;
+                        vec4 pos = vec4(modifiedUV * 3.0, sin(timeSpeed * 3.0), cos(timeSpeed * 2.0));
+
+                        // Enhanced 4D rotations with scroll velocity influence
+                        float velocityBoost = 1.0 + u_scrollVelocity * 0.5;
+                        pos = rotateXW(u_rot4dXW * velocityBoost) * pos;
+                        pos = rotateYW(u_rot4dYW * velocityBoost) * pos;
+                        pos = rotateZW(u_rot4dZW * velocityBoost) * pos;
 
                         float value = geometryFunction(pos);
+
+                        // Unity harmonization - layers converge
+                        vec3 pos3d = project4Dto3D(pos);
+                        float unityEffect = getUnityHarmonization(pos3d, u_unityFactor);
+                        value += unityEffect * 0.3;
+
+                        // Enhanced chaos with audio reactivity
                         float noise = sin(pos.x * 7.0) * cos(pos.y * 11.0);
-                        value += noise * u_chaos;
+                        value += noise * (u_chaos + u_audioReactivity * 0.2);
+
+                        // Shockwave ripples
+                        float shockwave = getShockwaveEffect(uv, u_shockwave, u_shockwaveIntensity);
+                        value += shockwave * 0.5;
+
+                        // Dissolve and reform based on unity factor
+                        float dissolve = getDissolvePattern(pos3d, fract(u_time * 0.0001));
+                        value *= mix(1.0, dissolve, u_unityFactor * 0.3);
 
                         float geometryIntensity = 1.0 - clamp(abs(value * 0.8), 0.0, 1.0);
                         geometryIntensity = pow(geometryIntensity, 1.5);
-                        float finalIntensity = geometryIntensity * u_intensity * (1.0 + u_scrollProgress * 0.2);
+
+                        // Enhanced intensity with all reactive factors
+                        float reactiveBoost = 1.0 +
+                                            u_scrollProgress * 0.2 +
+                                            u_scrollVelocity * 0.3 +
+                                            u_pulseIntensity * 0.4 +
+                                            u_audioReactivity * 0.5 +
+                                            u_unityFactor * 0.6;
+
+                        float finalIntensity = geometryIntensity * u_intensity * reactiveBoost;
 
                         int layerIndex = u_roleIntensity == 0.4 ? 0 :
                                        u_roleIntensity == 0.6 ? 1 :
@@ -1500,7 +1986,15 @@ timer = client.timers.create(
                                        u_roleIntensity == 1.3 ? 3 : 4;
 
                         vec3 layerColor = getLayerColor(layerIndex, u_hue);
+
+                        // Unity moments - all layers blend toward cyan-magenta spectrum
+                        vec3 unityColor = mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 0.0, 1.0), u_hue);
+                        layerColor = mix(layerColor, unityColor, u_unityFactor * 0.5);
+
                         vec3 finalColor = layerColor * finalIntensity;
+
+                        // Enhanced shockwave brightening
+                        finalColor += vec3(shockwave * 0.3);
 
                         float layerAlpha = u_roleIntensity == 1.0 ? 1.0 :
                                          u_roleIntensity == 1.3 ? 0.8 :
@@ -1527,7 +2021,16 @@ timer = client.timers.create(
                     rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
                     roleIntensity: this.gl.getUniformLocation(this.program, 'u_roleIntensity'),
                     offsetY: this.gl.getUniformLocation(this.program, 'u_offsetY'),
-                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress')
+                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress'),
+                    // New emergent unity uniforms
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    scrollVelocity: this.gl.getUniformLocation(this.program, 'u_scrollVelocity'),
+                    pulseIntensity: this.gl.getUniformLocation(this.program, 'u_pulseIntensity'),
+                    meltFactor: this.gl.getUniformLocation(this.program, 'u_meltFactor'),
+                    shockwave: this.gl.getUniformLocation(this.program, 'u_shockwave'),
+                    shockwaveIntensity: this.gl.getUniformLocation(this.program, 'u_shockwaveIntensity'),
+                    unityFactor: this.gl.getUniformLocation(this.program, 'u_unityFactor'),
+                    audioReactivity: this.gl.getUniformLocation(this.program, 'u_audioReactivity')
                 };
             }
 
@@ -1595,7 +2098,16 @@ timer = client.timers.create(
                 };
 
                 const time = Date.now() - this.startTime;
+                const unity = window.unityManager;
 
+                // Get active shockwaves
+                const shockwaves = unity.getActiveShockwaves();
+                const activeShockwave = shockwaves[0];
+                const shockwaveX = activeShockwave ? activeShockwave.x : 0;
+                const shockwaveY = activeShockwave ? activeShockwave.y : 0;
+                const shockwaveIntensity = activeShockwave ? (1 - activeShockwave.progress) * activeShockwave.intensity : 0;
+
+                // Standard uniforms
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform1f(this.uniforms.time, time);
                 this.gl.uniform1f(this.uniforms.geometry, this.params.geometry);
@@ -1611,7 +2123,155 @@ timer = client.timers.create(
                 this.gl.uniform1f(this.uniforms.offsetY, this.params.offsetY);
                 this.gl.uniform1f(this.uniforms.scrollProgress, this.scrollProgress);
 
+                // New emergent unity uniforms
+                this.gl.uniform2f(this.uniforms.mouse, unity.mouseX, unity.mouseY);
+                this.gl.uniform1f(this.uniforms.scrollVelocity, unity.scrollVelocity * this.reactivity);
+                this.gl.uniform1f(this.uniforms.pulseIntensity, Math.sin(unity.pulsePhase) * this.reactivity);
+                this.gl.uniform1f(this.uniforms.meltFactor, this.params.meltFactor);
+                this.gl.uniform2f(this.uniforms.shockwave, shockwaveX, shockwaveY);
+                this.gl.uniform1f(this.uniforms.shockwaveIntensity, shockwaveIntensity * this.reactivity);
+                this.gl.uniform1f(this.uniforms.unityFactor, unity.isUnityMoment() ? 1.0 : 0.0);
+                this.gl.uniform1f(this.uniforms.audioReactivity, unity.audioFrequency * this.reactivity);
+
                 this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        // ========== CROSS-LAYER PARTICLE FLOW SYSTEM ==========
+        class ParticleFlowSystem {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.maxParticles = 100;
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                this.canvas.width = this.canvas.clientWidth * dpr;
+                this.canvas.height = this.canvas.clientHeight * dpr;
+                this.ctx.scale(dpr, dpr);
+            }
+
+            createParticle() {
+                return {
+                    x: Math.random() * this.canvas.clientWidth,
+                    y: Math.random() * this.canvas.clientHeight,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: Math.random() * 3 + 1,
+                    life: 1.0,
+                    decay: Math.random() * 0.01 + 0.005,
+                    layer: Math.floor(Math.random() * 5),
+                    color: this.getLayerColor(Math.floor(Math.random() * 5))
+                };
+            }
+
+            getLayerColor(layer) {
+                const colors = [
+                    'rgba(100, 0, 200, ',    // background - purple
+                    'rgba(0, 150, 150, ',    // shadow - teal
+                    'rgba(0, 255, 255, ',    // content - cyan
+                    'rgba(100, 200, 255, ',  // highlight - light blue
+                    'rgba(255, 0, 255, '     // accent - magenta
+                ];
+                return colors[layer] || colors[2];
+            }
+
+            update() {
+                const unity = window.unityManager;
+
+                // Create new particles
+                if (this.particles.length < this.maxParticles && Math.random() < 0.3) {
+                    this.particles.push(this.createParticle());
+                }
+
+                // Update existing particles
+                this.particles = this.particles.filter(p => {
+                    // Mouse attraction
+                    const mouseX = (unity.mouseX * 0.5 + 0.5) * this.canvas.clientWidth;
+                    const mouseY = (-unity.mouseY * 0.5 + 0.5) * this.canvas.clientHeight;
+                    const dx = mouseX - p.x;
+                    const dy = mouseY - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 200) {
+                        const force = (200 - dist) / 200 * 0.5;
+                        p.vx += (dx / dist) * force;
+                        p.vy += (dy / dist) * force;
+                    }
+
+                    // Scroll velocity influence
+                    p.vy += unity.scrollVelocity * 0.5;
+
+                    // Update position
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Decay
+                    p.life -= p.decay;
+
+                    // Wrap around edges
+                    if (p.x < 0) p.x = this.canvas.clientWidth;
+                    if (p.x > this.canvas.clientWidth) p.x = 0;
+                    if (p.y < 0) p.y = this.canvas.clientHeight;
+                    if (p.y > this.canvas.clientHeight) p.y = 0;
+
+                    // Damping
+                    p.vx *= 0.99;
+                    p.vy *= 0.99;
+
+                    return p.life > 0;
+                });
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                const unity = window.unityManager;
+                const unityBoost = unity.isUnityMoment() ? 2.0 : 1.0;
+
+                // Draw connections between nearby particles
+                for (let i = 0; i < this.particles.length; i++) {
+                    for (let j = i + 1; j < this.particles.length; j++) {
+                        const p1 = this.particles[i];
+                        const p2 = this.particles[j];
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 100) {
+                            const opacity = (1 - dist / 100) * p1.life * p2.life * 0.3 * unityBoost;
+                            this.ctx.strokeStyle = p1.color + opacity + ')';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p1.x, p1.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw particles
+                this.particles.forEach(p => {
+                    const opacity = p.life * unityBoost;
+                    this.ctx.fillStyle = p.color + opacity + ')';
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Glow effect
+                    const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+                    gradient.addColorStop(0, p.color + (opacity * 0.5) + ')');
+                    gradient.addColorStop(1, p.color + '0)');
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
             }
         }
 
@@ -1678,22 +2338,46 @@ timer = client.timers.create(
             const preset = SECTION_VIZ_PRESETS[theme];
             if (!preset || !window.quantumVisualizers) return;
 
+            // Trigger melting transition
             window.quantumVisualizers.forEach((viz, i) => {
                 const layerMultiplier = (i + 1) * 0.2;
+
+                // First: Melt the current state
                 gsap.to(viz.params, {
-                    geometry: preset.geometry,
-                    gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
-                    chaos: preset.chaos * (1 + layerMultiplier * 0.3),
-                    speed: preset.speed,
-                    hue: preset.hue,
-                    intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
-                    rot4dXW: preset.rot4dXW * layerMultiplier,
-                    rot4dYW: preset.rot4dYW * layerMultiplier,
-                    rot4dZW: preset.rot4dZW * layerMultiplier,
-                    duration: 2,
-                    ease: 'power2.inOut'
+                    meltFactor: 1.0,
+                    duration: 0.8,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        // Then: Transition to new preset while melted
+                        gsap.to(viz.params, {
+                            geometry: preset.geometry,
+                            gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
+                            chaos: preset.chaos * (1 + layerMultiplier * 0.3),
+                            speed: preset.speed,
+                            hue: preset.hue,
+                            intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
+                            rot4dXW: preset.rot4dXW * layerMultiplier,
+                            rot4dYW: preset.rot4dYW * layerMultiplier,
+                            rot4dZW: preset.rot4dZW * layerMultiplier,
+                            duration: 0.6,
+                            ease: 'power2.inOut'
+                        });
+
+                        // Finally: Reform from melted state
+                        gsap.to(viz.params, {
+                            meltFactor: 0.0,
+                            duration: 1.2,
+                            delay: 0.3,
+                            ease: 'power2.out'
+                        });
+                    }
                 });
             });
+
+            // Trigger a unity moment for dramatic effect
+            setTimeout(() => {
+                window.unityManager.triggerUnityMoment(1500);
+            }, 800);
         }
 
         // ========== SCROLL CHOREOGRAPHY MAP ==========
@@ -1710,149 +2394,523 @@ timer = client.timers.create(
          * Tick 80-100%: Element exits to top
          */
 
-        // ========== EPIC INTRO SEQUENCE ==========
-        function initEpicIntro() {
-            const quantumLayers = document.getElementById('quantum-layers');
-            const introTitle = document.getElementById('intro-title');
-            const formationCard = document.getElementById('formation-card');
-            const introHero = document.getElementById('intro-hero');
+
+
+        // ========== PERFORMANCE OPTIMIZATION ==========
+        function initPerformanceOptimizations() {
+            // Enable smooth scrolling
+            ScrollTrigger.config({
+                autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
+                ignoreMobileResize: true
+            });
+
+            // Refresh ScrollTrigger on window resize with debounce
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    ScrollTrigger.refresh();
+                    console.log('🔄 ScrollTrigger refreshed after resize');
+                }, 250);
+            });
+
+            // Add requestAnimationFrame optimization
+            gsap.ticker.lagSmoothing(0);
+
+            console.log('⚡ Performance optimizations applied');
+        }
+
+        // ========== SIMPLE INTRO FADE-IN ==========
+        function initSimpleIntro() {
             const introHeroContent = document.getElementById('intro-hero-content');
 
-            // Pin the intro content in center
+            if (introHeroContent) {
+                gsap.from(introHeroContent, {
+                    opacity: 0,
+                    y: 60,
+                    duration: 1.5,
+                    ease: 'power3.out'
+                });
+            }
+
+            console.log('🎭 Simple intro fade-in initialized');
+        }
+
+        // ========== SIMPLE CONTENT FADE-INS ==========
+        function initSimpleContentAnimations() {
+            // FIXED: Use gsap.fromTo() to ensure content is visible even if animation doesn't trigger
+            gsap.utils.toArray('.section').forEach((section, index) => {
+                const sectionContent = section.querySelector('.section-content');
+                if (!sectionContent) return;
+
+                // Ensure content starts visible, then animate if in viewport
+                gsap.set(sectionContent, { opacity: 1, y: 0, scale: 1 }); // Start visible!
+
+                gsap.fromTo(sectionContent,
+                    { opacity: 0, y: 60, scale: 0.95 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 1.2,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: section,
+                            start: 'top 85%',
+                            once: true
+                        }
+                    }
+                );
+            });
+
+            // Animate cards with stagger - ENSURE CARDS ARE VISIBLE
+            gsap.utils.toArray('.morph-card').forEach(card => {
+                // Start visible to ensure content shows!
+                gsap.set(card, { opacity: 1, y: 0, scale: 1 });
+
+                gsap.fromTo(card,
+                    { opacity: 0, y: 60, scale: 0.95 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 1.2,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: card,
+                            start: 'top 85%',
+                            once: true
+                        }
+                    }
+                );
+            });
+
+            console.log('✨ Simple content fade-ins initialized (CONTENT ALWAYS VISIBLE)');
+        }
+
+        // ========== COMPLEX VISUALIZER DYNAMICS - HIGHLY REACTIVE ==========
+        function initVisualizerScrollReactivity() {
+            // Global scroll-based smooth density changes (40 → 80)
             ScrollTrigger.create({
-                trigger: introHero,
+                trigger: 'body',
                 start: 'top top',
                 end: 'bottom bottom',
-                pin: introHeroContent,
-                pinSpacing: false,
                 onUpdate: (self) => {
-                    const progress = self.progress;
-                    console.log(`Intro progress: ${(progress * 100).toFixed(1)}%`);
+                    const progress = self.progress; // 0-1
 
-                    // Phase 1: Title centered, visualizer full (0-33%)
-                    if (progress < 0.33) {
-                        // Title is visible and centered from start
-                        // Visualizer at full opacity
-                    }
+                    // EXTREME global changes based on scroll progress - 10X MORE DRAMATIC!
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach((viz, i) => {
+                            // Store base values for smooth transitions
+                            if (!viz.baseParams) {
+                                viz.baseParams = {
+                                    baseChaos: 0.0 + (progress * 2.0),      // 0 → 2.0 (WAY beyond normal!)
+                                    baseIntensity: 0.1 + (progress * 1.5),  // 0.1 → 1.6 (over max!)
+                                    baseSpeed: 0.5 + (progress * 4.0),      // 0.5 → 4.5 (super fast!)
+                                    baseMorphFactor: 0.0 + (progress * 3.0), // 0 → 3.0 (extreme morph!)
+                                    baseDensity: 10 + (progress * 90)       // 10 → 100 (massive change!)
+                                };
+                            }
 
-                    // Phase 2: Visualizer contracts into card (33-66%)
-                    else if (progress >= 0.33 && progress < 0.66) {
-                        const contractProgress = (progress - 0.33) / 0.33;
+                            // Update base parameters - EXTREME RANGES!
+                            viz.baseParams.baseChaos = 0.0 + (progress * 2.0);      // 0 → 2.0
+                            viz.baseParams.baseIntensity = 0.1 + (progress * 1.5);  // 0.1 → 1.6
+                            viz.baseParams.baseSpeed = 0.5 + (progress * 4.0);      // 0.5 → 4.5
+                            viz.baseParams.baseMorphFactor = 0.0 + (progress * 3.0); // 0 → 3.0
+                            viz.baseParams.baseDensity = 10 + (progress * 90);      // 10 → 100
 
-                        // Contract visualizer using scale
-                        const scale = 1 - (contractProgress * 0.5); // Scale from 1 to 0.5
-                        quantumLayers.style.transform = `scale(${scale})`;
-                        quantumLayers.style.opacity = 1 - (contractProgress * 0.3);
+                            console.log(`📊 SCROLL ${(progress*100).toFixed(0)}%: chaos=${viz.baseParams.baseChaos.toFixed(2)}, density=${viz.baseParams.baseDensity.toFixed(0)}, speed=${viz.baseParams.baseSpeed.toFixed(2)}`);
 
-                        // Form card around title
-                        formationCard.style.opacity = contractProgress;
-                        formationCard.style.background = `rgba(10, 10, 20, ${0.85 * contractProgress})`;
-                        formationCard.style.backdropFilter = `blur(${30 * contractProgress}px)`;
-                        formationCard.style.border = `2px solid rgba(0, 255, 255, ${0.6 * contractProgress})`;
-                        formationCard.style.borderRadius = `${40 * contractProgress}px`;
-                        formationCard.style.boxShadow = `
-                            0 0 ${80 * contractProgress}px rgba(0, 255, 255, ${0.4 * contractProgress}),
-                            inset 0 0 ${60 * contractProgress}px rgba(0, 255, 255, ${0.1 * contractProgress})
-                        `;
-                    }
+                            // Apply if not overridden by card center dynamics
+                            if (!viz.centerOverride) {
+                                viz.params.gridDensity = viz.baseParams.baseDensity;
+                            }
 
-                    // Phase 3: Card scrolls up (66-85%)
-                    else if (progress >= 0.66 && progress < 0.85) {
-                        const scrollProgress = (progress - 0.66) / 0.19;
-
-                        // Move card up
-                        const translateY = -100 * scrollProgress; // Move up
-                        introHeroContent.style.transform = `translateY(${translateY}vh)`;
-
-                        // Push visualizer further back
-                        quantumLayers.style.transform = `scale(0.3)`;
-                        quantumLayers.style.opacity = 0.5 * (1 - scrollProgress);
-                    }
-
-                    // Phase 4: Return to normal (85-100%)
-                    else {
-                        const exitProgress = (progress - 0.85) / 0.15;
-
-                        // Card off screen
-                        introHeroContent.style.opacity = 1 - exitProgress;
-
-                        // Visualizer returns to normal
-                        quantumLayers.style.transform = 'scale(1)';
-                        quantumLayers.style.opacity = 1;
+                            // 4D rotation based on scroll - EXTREME ROTATION!
+                            viz.params.rot4dXW = progress * Math.PI * 8;  // 8π rotation!
+                            viz.params.rot4dYW = progress * Math.PI * 6;  // 6π rotation!
+                            viz.params.rot4dZW = progress * Math.PI * 4;  // 4π rotation!
+                        });
                     }
                 }
             });
 
-            console.log('🎭 Intro sequence: Title visible from start, visualizer contracts on scroll');
-        }
-
-        // ========== CENTER-LOCK CHOREOGRAPHY ==========
-        function initCenterLockChoreography() {
-            // Apply center-lock to all sections
-            document.querySelectorAll('.section').forEach((section, index) => {
-                const sectionContent = section.querySelector('.section-content');
-                if (!sectionContent) return;
-
-                // Pin each section's content in center
+            // ========== CARD ENTER: SNAP DENSITY TO OPPOSITE - EXTREME! ==========
+            gsap.utils.toArray('.morph-card').forEach(card => {
                 ScrollTrigger.create({
-                    trigger: section,
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    pin: sectionContent,
-                    pinSpacing: false,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
-                        console.log(`Section ${index} progress: ${(progress * 100).toFixed(1)}%`);
-
-                        // Entrance (0-20%)
-                        if (progress < 0.2) {
-                            const entranceProgress = progress / 0.2;
-                            sectionContent.style.opacity = entranceProgress;
-                            sectionContent.style.transform = `translateY(${(1 - entranceProgress) * 100}px) scale(${0.8 + (entranceProgress * 0.2)})`;
-                        }
-
-                        // Center-lock (20-80%) - Element stays centered, animations continue
-                        else if (progress >= 0.2 && progress < 0.8) {
-                            const focusProgress = (progress - 0.2) / 0.6;
-                            sectionContent.style.opacity = 1;
-                            sectionContent.style.transform = 'translateY(0) scale(1)';
-
-                            // Subtle breathing animation during focus
-                            const breathe = Math.sin(focusProgress * Math.PI * 4) * 0.02;
-                            sectionContent.style.transform = `translateY(0) scale(${1 + breathe})`;
-                        }
-
-                        // Exit (80-100%)
-                        else {
-                            const exitProgress = (progress - 0.8) / 0.2;
-                            sectionContent.style.opacity = 1 - exitProgress;
-                            sectionContent.style.transform = `translateY(${-exitProgress * 100}px) scale(${1 - (exitProgress * 0.2)})`;
-                        }
-                    },
+                    trigger: card,
+                    start: 'top bottom',
                     onEnter: () => {
-                        // Apply theme when section enters
-                        const theme = section.dataset.theme;
-                        if (theme) {
-                            applyVisualizerPreset(theme);
-                            console.log(`📍 Section ${index} (${theme}) locked in center`);
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            window.quantumVisualizers.forEach(viz => {
+                                // Get current density
+                                const current = viz.params.gridDensity || 60;
+                                // Calculate opposite - EXTREME RANGE 5 to 120!
+                                const opposite = current > 50 ? 5 : 120;
+
+                                // SNAP immediately - NO TWEEN!
+                                viz.params.gridDensity = opposite;
+
+                                console.log(`💥 EXTREME SNAP! Density ${current.toFixed(0)} → ${opposite} (${current > 50 ? 'SPARSE' : 'ULTRA DENSE'})`);
+                            });
                         }
                     }
                 });
             });
 
-            console.log('🎯 Center-lock choreography applied to all sections');
+            // ========== CARD CENTER DYNAMICS: EXTREME EFFECTS AT CENTER! ==========
+            gsap.utils.toArray('.morph-card').forEach(card => {
+                ScrollTrigger.create({
+                    trigger: card,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    onUpdate: (self) => {
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            // Calculate distance from center (0 = at center, 1 = at edge)
+                            const distanceFromCenter = Math.abs(self.progress - 0.5) * 2;
+                            const centerAmount = 1 - distanceFromCenter; // 1 at center, 0 at edges
+
+                            window.quantumVisualizers.forEach(viz => {
+                                // Flag that we're overriding base parameters
+                                viz.centerOverride = centerAmount > 0.1;
+
+                                // Chaos EXTREME at center: 0.0 → 2.0
+                                viz.params.chaos = 0.0 + (centerAmount * 2.0);
+
+                                // MorphFactor EXTREME at center: 0.0 → 3.0
+                                viz.params.morphFactor = 0.0 + (centerAmount * 3.0);
+
+                                // Density PEAKS at center: 100 at center!
+                                const baseDensity = viz.baseParams?.baseDensity || 60;
+                                viz.params.gridDensity = baseDensity + (centerAmount * 100);
+
+                                // Speed goes to ACTUAL ZERO at center: 4.5 → 0.0
+                                viz.params.speed = 4.5 * (1 - centerAmount);  // 0.0 at center!
+
+                                // Intensity EXTREME at center: 0.5 → 2.0
+                                viz.params.intensity = 0.5 + (centerAmount * 1.5);
+                            });
+
+                            // Log when at exact center
+                            if (centerAmount > 0.95) {
+                                console.log('🎯🔥 CARD AT CENTER - Speed = 0.0, Chaos = 2.0, Morph = 3.0, Density = 100+, Intensity = 2.0!');
+                            }
+                        }
+                    },
+                    onLeave: () => {
+                        // Reset override flag
+                        if (window.quantumVisualizers) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.centerOverride = false;
+                            });
+                        }
+                    },
+                    onEnterBack: () => {
+                        // Re-enable override
+                        if (window.quantumVisualizers) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.centerOverride = true;
+                            });
+                        }
+                    },
+                    onLeaveBack: () => {
+                        // Reset override flag
+                        if (window.quantumVisualizers) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.centerOverride = false;
+                            });
+                        }
+                    }
+                });
+            });
+
+            console.log('🎨💥 EXTREME VISUALIZER DYNAMICS initialized - 10X MORE DRAMATIC!');
+            console.log('  ├─ Scroll changes: chaos(0→2.0), density(10→100), intensity(0.1→1.6), speed(0.5→4.5), morph(0→3.0)');
+            console.log('  ├─ Card enter: SNAP density 5→120 (extreme range!)');
+            console.log('  ├─ Card center: Chaos→2.0, Morph→3.0, Speed→0.0, Density→100+, Intensity→2.0');
+            console.log('  └─ 4D rotations: 8π/6π/4π - EXTREME ranges!');
         }
 
-        // ========== INTERACTIVE STATE MANAGEMENT ==========
+        // ========== EXTREME INSTANT SECTION CHANGES - NO TWEENS! ==========
+        function initSectionThemeTransitions() {
+            // WILDLY DIFFERENT section configurations - EXTREME RANGES!
+            const sectionConfigs = {
+                cyan:    { hue: 180, geometry: 0, intensity: 0.3, chaos: 0.5, density: 20, speed: 1.0 },   // Calm Hypercube
+                magenta: { hue: 300, geometry: 2, intensity: 1.5, chaos: 2.0, density: 90, speed: 4.0 },   // INTENSE Torus
+                green:   { hue: 120, geometry: 3, intensity: 0.8, chaos: 0.3, density: 40, speed: 0.8 },   // Medium Wave
+                purple:  { hue: 270, geometry: 1, intensity: 1.2, chaos: 1.5, density: 70, speed: 3.0 },   // Fast Sphere
+                orange:  { hue: 30,  geometry: 4, intensity: 1.8, chaos: 1.8, density: 100, speed: 5.0 }   // EXPLOSIVE Crystal
+            };
+
+            gsap.utils.toArray('.section').forEach(section => {
+                const theme = section.dataset.theme;
+                if (!theme) return;
+
+                const config = sectionConfigs[theme];
+                if (!config) return;
+
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: 'top 50%',
+                    end: 'bottom 50%',
+                    onEnter: () => {
+                        // INSTANT SNAP - NO TWEENS! ALL PARAMETERS CHANGE IMMEDIATELY!
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            window.quantumVisualizers.forEach(viz => {
+                                // INSTANT SNAPS - NO ANIMATION!
+                                viz.params.hue = config.hue / 360;              // INSTANT color change!
+                                viz.params.geometry = config.geometry;          // INSTANT geometry change!
+                                viz.params.intensity = config.intensity;        // INSTANT intensity!
+                                viz.params.chaos = config.chaos || 1.0;         // INSTANT chaos!
+                                viz.params.gridDensity = config.density || 60;  // INSTANT density!
+                                viz.params.speed = config.speed || 2.0;         // INSTANT speed!
+                            });
+
+                            const geomNames = ['Hypercube', 'Sphere', 'Torus', 'Wave', 'Crystal'];
+                            console.log(`🌈💥 INSTANT SECTION SNAP: ${theme.toUpperCase()}`);
+                            console.log(`  ├─ Hue: ${config.hue}° | Geometry: ${geomNames[config.geometry]}`);
+                            console.log(`  ├─ Intensity: ${config.intensity} | Chaos: ${config.chaos}`);
+                            console.log(`  └─ Density: ${config.density} | Speed: ${config.speed}`);
+                        }
+
+                        // Also apply preset for other parameters
+                        if (window.applyVisualizerPreset) {
+                            window.applyVisualizerPreset(theme);
+                        }
+                    },
+                    onEnterBack: () => {
+                        // Re-apply theme when scrolling back - INSTANT!
+                        if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                            window.quantumVisualizers.forEach(viz => {
+                                viz.params.hue = config.hue / 360;
+                                viz.params.geometry = config.geometry;
+                                viz.params.intensity = config.intensity;
+                                viz.params.chaos = config.chaos || 1.0;
+                                viz.params.gridDensity = config.density || 60;
+                                viz.params.speed = config.speed || 2.0;
+                            });
+
+                            console.log(`🔙💥 INSTANT SECTION BACK: ${theme.toUpperCase()}`);
+                        }
+
+                        if (window.applyVisualizerPreset) {
+                            window.applyVisualizerPreset(theme);
+                        }
+                    }
+                });
+            });
+
+            console.log('🌈💥 EXTREME INSTANT section transitions initialized - NO TWEENS!');
+            console.log('  ├─ Cyan: Hypercube, 180° hue, 0.3 intensity, 0.5 chaos, 20 density, 1.0 speed');
+            console.log('  ├─ Magenta: Torus, 300° hue, 1.5 intensity, 2.0 chaos, 90 density, 4.0 speed');
+            console.log('  ├─ Green: Wave, 120° hue, 0.8 intensity, 0.3 chaos, 40 density, 0.8 speed');
+            console.log('  ├─ Purple: Sphere, 270° hue, 1.2 intensity, 1.5 chaos, 70 density, 3.0 speed');
+            console.log('  └─ Orange: Crystal, 30° hue, 1.8 intensity, 1.8 chaos, 100 density, 5.0 speed');
+        }
+
+        // ========== LENIS SMOOTH SCROLL INITIALIZATION ==========
+        function initLenisSmoothScroll() {
+            // Initialize Lenis smooth scroll
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smooth: true,
+                smoothTouch: false,
+                direction: 'vertical',
+                gestureDirection: 'vertical',
+                wheelMultiplier: 1,
+                touchMultiplier: 2
+            });
+
+            // RAF loop for Lenis
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Sync Lenis with ScrollTrigger
+            lenis.on('scroll', ScrollTrigger.update);
+
+            // Integrate with GSAP ticker
+            gsap.ticker.add((time) => {
+                lenis.raf(time * 1000);
+            });
+
+            gsap.ticker.lagSmoothing(0);
+
+            console.log('🚀 Lenis smooth scroll initialized');
+        }
+
+        // GASP moment: Shockwave + brief expansion/contraction
+        function triggerGaspMoment(progress, element) {
+            // Trigger shockwave at element center
+            const rect = element.getBoundingClientRect();
+            const x = ((rect.left + rect.width / 2) / window.innerWidth) * 2 - 1;
+            const y = -((rect.top + rect.height / 2) / window.innerHeight) * 2 + 1;
+            window.unityManager.triggerShockwave(x, y, 0.8);
+
+            // Brief flash animation
+            gsap.timeline()
+                .to(element, {
+                    scale: 1.03,
+                    duration: 0.1,
+                    ease: 'power2.out'
+                })
+                .to(element, {
+                    scale: 1.0,
+                    duration: 0.3,
+                    ease: 'elastic.out(1, 0.5)'
+                });
+
+            console.log(`💨 GASP triggered at ${(progress * 100).toFixed(0)}%`);
+        }
+
+        // ========== COMPLETE VISUAL FEEDBACK SYSTEM - HIGHLY REACTIVE ==========
         function initInteractiveStates() {
-            // Add click/touch states to cards
+            // ========== SCROLL VELOCITY FEEDBACK ==========
+            let lastScroll = window.scrollY || 0;
+            let lastScrollTime = Date.now();
+
+            window.addEventListener('scroll', () => {
+                const currentScroll = window.scrollY;
+                const currentTime = Date.now();
+                const timeDelta = Math.max(currentTime - lastScrollTime, 1);
+                const scrollDelta = Math.abs(currentScroll - lastScroll);
+                const velocity = scrollDelta / timeDelta * 10; // Normalized velocity
+
+                lastScroll = currentScroll;
+                lastScrollTime = currentTime;
+
+                // Fast scroll = more chaos
+                if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                    window.quantumVisualizers.forEach(viz => {
+                        const velocityChaos = Math.min(1.0, 0.2 + (velocity / 10));
+                        viz.params.chaos = Math.max(viz.params.chaos, velocityChaos);
+
+                        // Also affect speed
+                        const velocitySpeed = Math.min(3.0, 1.0 + velocity / 5);
+                        viz.params.speed = Math.max(viz.params.speed, velocitySpeed);
+                    });
+                }
+            });
+
+            // ========== EXPLOSIVE MOUSE MOVEMENT FEEDBACK - 4π ROTATION! ==========
+            window.addEventListener('mousemove', (e) => {
+                const x = e.clientX / window.innerWidth; // 0-1
+                const y = e.clientY / window.innerHeight; // 0-1
+
+                if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                    window.quantumVisualizers.forEach(viz => {
+                        // FULL 4π rotation range - DRAMATIC movement!
+                        viz.params.rot4dXW = (x - 0.5) * Math.PI * 4;  // -2π to +2π
+                        viz.params.rot4dYW = (y - 0.5) * Math.PI * 4;  // -2π to +2π
+                        viz.params.rot4dZW = (x * y) * Math.PI * 2;    // Combined effect
+
+                        // Mouse X affects chaos: 0.5 → 2.0
+                        viz.params.chaos = 0.5 + (x * 1.5);
+
+                        // Mouse Y affects morph: 0.5 → 2.5
+                        viz.params.morphFactor = 0.5 + (y * 2.0);
+                    });
+                }
+            });
+
+            // ========== EXPLOSIVE GLOBAL CLICK FEEDBACK! ==========
+            document.addEventListener('click', (e) => {
+                // EXPLOSIVE effect on any click!
+                if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                    window.quantumVisualizers.forEach(viz => {
+                        const originalIntensity = viz.params.intensity;
+                        const originalChaos = viz.params.chaos;
+                        const originalSpeed = viz.params.speed;
+
+                        // EXPLOSION! Way over max values!
+                        viz.params.intensity = 3.0;  // Way over normal!
+                        viz.params.chaos = 3.0;      // Maximum chaos!
+                        viz.params.speed = 10.0;     // Super fast burst!
+
+                        console.log('💥 CLICK EXPLOSION! Intensity=3.0, Chaos=3.0, Speed=10.0');
+
+                        // Decay back to original over 500ms
+                        setTimeout(() => {
+                            gsap.to(viz.params, {
+                                intensity: originalIntensity,
+                                chaos: originalChaos,
+                                speed: originalSpeed,
+                                duration: 0.5,
+                                ease: 'power2.out'
+                            });
+                        }, 100);
+                    });
+                }
+            });
+
+            // ========== EXTREME CARD HOVER FEEDBACK! ==========
             document.querySelectorAll('.morph-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    // EXTREME visualizer response to card hover!
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                chaos: 2.5,          // Extreme chaos!
+                                speed: 6.0,          // Very fast!
+                                intensity: 2.0,      // Over normal max!
+                                morphFactor: 3.0,    // Extreme morph!
+                                gridDensity: 100,    // Maximum density!
+                                duration: 0.4,
+                                ease: 'power2.out'
+                            });
+                        });
+                        console.log('🔥 CARD HOVER! chaos=2.5, speed=6.0, intensity=2.0, morph=3.0, density=100');
+                    }
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    // Return to normal
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                chaos: 0.5,
+                                speed: 1.5,
+                                intensity: 0.8,
+                                morphFactor: 1.0,
+                                gridDensity: 50,
+                                duration: 0.6,
+                                ease: 'power2.inOut'
+                            });
+                        });
+                        console.log('↩️ Card hover end - returning to normal');
+                    }
+                });
+
                 card.addEventListener('click', function(e) {
                     // Don't trigger if clicking expanded content
                     if (this.classList.contains('expanded')) return;
 
+                    // Calculate click position in normalized coordinates
+                    const rect = this.getBoundingClientRect();
+                    const clickX = ((e.clientX - rect.left) / window.innerWidth) * 2 - 1;
+                    const clickY = -((e.clientY - rect.top) / window.innerHeight) * 2 + 1;
+
+                    // Trigger shockwave at click position
+                    window.unityManager.triggerShockwave(clickX, clickY, 1.5);
+
                     // Toggle active state
                     this.classList.toggle('active');
+
+                    // Pulse effect on card
+                    gsap.timeline()
+                        .to(this, {
+                            scale: 0.98,
+                            duration: 0.1,
+                            ease: 'power2.in'
+                        })
+                        .to(this, {
+                            scale: 1.0,
+                            duration: 0.4,
+                            ease: 'elastic.out(1, 0.4)'
+                        });
 
                     // Remove active from others
                     document.querySelectorAll('.morph-card').forEach(other => {
@@ -1863,21 +2921,82 @@ timer = client.timers.create(
                 });
             });
 
-            // Add hover states to headlines
+            // ========== BUTTON HOVER FEEDBACK ==========
+            document.querySelectorAll('button, .btn, a[href]').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                intensity: viz.params.intensity * 1.3,
+                                morphFactor: viz.params.morphFactor * 1.2,
+                                duration: 0.3,
+                                ease: 'power2.out'
+                            });
+                        });
+                    }
+                });
+
+                button.addEventListener('mouseleave', function() {
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            gsap.to(viz.params, {
+                                intensity: viz.params.intensity / 1.3,
+                                morphFactor: viz.params.morphFactor / 1.2,
+                                duration: 0.4,
+                                ease: 'power2.inOut'
+                            });
+                        });
+                    }
+                });
+            });
+
+            // ========== HEADLINE HOVER FEEDBACK ==========
             document.querySelectorAll('h1, h2, h3').forEach(headline => {
                 headline.addEventListener('mouseenter', function() {
                     this.classList.add('active');
+
+                    // Trigger subtle unity pulse
+                    window.quantumVisualizers?.forEach(viz => {
+                        gsap.to(viz.params, {
+                            intensity: viz.params.intensity * 1.2,
+                            duration: 0.4,
+                            ease: 'power2.out'
+                        });
+                    });
                 });
 
                 headline.addEventListener('mouseleave', function() {
                     this.classList.remove('active');
+
+                    // Return to normal intensity
+                    window.quantumVisualizers?.forEach((viz, i) => {
+                        const baseIntensity = 0.5 + (i * 0.1);
+                        gsap.to(viz.params, {
+                            intensity: baseIntensity,
+                            duration: 0.6,
+                            ease: 'power2.inOut'
+                        });
+                    });
                 });
 
-                // Click to keep active
-                headline.addEventListener('click', function() {
+                // Click triggers unity moment
+                headline.addEventListener('click', function(e) {
                     const isActive = this.classList.contains('active');
+
+                    // Calculate click position
+                    const rect = this.getBoundingClientRect();
+                    const clickX = ((rect.left + rect.width / 2) / window.innerWidth) * 2 - 1;
+                    const clickY = -((rect.top + rect.height / 2) / window.innerHeight) * 2 + 1;
+
+                    // Trigger shockwave
+                    window.unityManager.triggerShockwave(clickX, clickY, 2.0);
+
+                    // Trigger unity moment
+                    window.unityManager.triggerUnityMoment(2500);
+
                     // Remove active from all headlines
                     document.querySelectorAll('h1, h2, h3').forEach(h => h.classList.remove('active'));
+
                     // Toggle this one
                     if (!isActive) {
                         this.classList.add('active');
@@ -1885,7 +3004,7 @@ timer = client.timers.create(
                 });
             });
 
-            // Interactive accent text
+            // ========== ACCENT TEXT HOVER FEEDBACK ==========
             document.querySelectorAll('.accent, .highlight, .glow').forEach(accent => {
                 accent.addEventListener('mouseenter', function() {
                     gsap.to(this, {
@@ -1893,6 +3012,13 @@ timer = client.timers.create(
                         textShadow: `0 0 20px currentColor, 0 0 40px currentColor`,
                         duration: 0.3
                     });
+
+                    // Visualizer response
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            viz.params.chaos = Math.min(1.0, viz.params.chaos * 1.3);
+                        });
+                    }
                 });
 
                 accent.addEventListener('mouseleave', function() {
@@ -1901,10 +3027,24 @@ timer = client.timers.create(
                         textShadow: `0 0 0px currentColor`,
                         duration: 0.3
                     });
+
+                    // Return visualizer to normal
+                    if (window.quantumVisualizers && window.quantumVisualizers.length > 0) {
+                        window.quantumVisualizers.forEach(viz => {
+                            viz.params.chaos = Math.max(0.2, viz.params.chaos / 1.3);
+                        });
+                    }
                 });
             });
 
-            console.log('🎮 Interactive states enabled');
+            console.log('🎮💥 EXTREME VISUAL FEEDBACK SYSTEM initialized!');
+            console.log('  ├─ Scroll velocity → chaos + speed boost');
+            console.log('  ├─ Mouse movement → 4π rotation + chaos (0.5→2.0) + morph (0.5→2.5)');
+            console.log('  ├─ Clicks → EXPLOSION! (intensity=3.0, chaos=3.0, speed=10.0)');
+            console.log('  ├─ Card hovers → EXTREME! (chaos=2.5, speed=6.0, intensity=2.0, morph=3.0, density=100)');
+            console.log('  ├─ Button hovers → intensity/morph UP');
+            console.log('  ├─ Headline hovers → intensity pulse');
+            console.log('  └─ Accent text hovers → chaos boost');
         }
 
         // ========== SECTION-AWARE VISUALIZER ==========
@@ -1931,15 +3071,40 @@ timer = client.timers.create(
 
         // ========== GSAP SCROLL ANIMATIONS ==========
         function initScrollAnimations() {
-            gsap.registerPlugin(ScrollTrigger);
+            // Note: ScrollTrigger is already registered in main initialization
 
-            // Reveal animations
-            gsap.utils.toArray('.reveal').forEach((elem) => {
+            // Add card parallax with varying speeds for depth
+            document.querySelectorAll('.morph-card').forEach((card, index) => {
+                // Alternate between faster (1.2x) and slower (0.8x) parallax for depth variety
+                const parallaxSpeed = index % 2 === 0 ? 0.8 : 1.2;
+                const moveDistance = parallaxSpeed * 100;
+
+                gsap.to(card, {
+                    y: moveDistance,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 1.5, // Butter-smooth scrubbing
+                        invalidateOnRefresh: true
+                    }
+                });
+
+                // REMOVED: Duplicate fade-in animation (already handled in initSimpleContentAnimations)
+                // Cards are now always visible by default, preventing the "content not visible" issue
+            });
+
+            // Reveal animations with stagger - ENSURE VISIBLE
+            gsap.utils.toArray('.reveal').forEach((elem, index) => {
                 const animType = elem.dataset.animate || 'fade-up';
                 const delay = parseFloat(elem.dataset.delay || 0);
 
+                // ENSURE element starts visible
+                gsap.set(elem, { opacity: 1 });
+
                 let fromVars = { opacity: 0 };
-                let toVars = { opacity: 1, duration: 1.2, delay };
+                let toVars = { opacity: 1, duration: 1.2, delay, ease: 'power3.out' };
 
                 switch (animType) {
                     case 'fade-up':
@@ -1962,6 +3127,31 @@ timer = client.timers.create(
                     }
                 });
             });
+
+            // Stagger animations for stat cards - ENSURE VISIBLE
+            const statCards = gsap.utils.toArray('.stat-card');
+            if (statCards.length > 0) {
+                // ENSURE stat cards start visible
+                gsap.set(statCards, { opacity: 1, y: 0, scale: 1 });
+
+                // Then animate them if in viewport
+                gsap.set(statCards, { opacity: 0, y: 50, scale: 0.9 });
+
+                ScrollTrigger.create({
+                    trigger: '.stats-grid',
+                    start: 'top 80%',
+                    onEnter: () => {
+                        gsap.to(statCards, {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            duration: 0.8,
+                            stagger: 0.1,
+                            ease: 'back.out(1.2)'
+                        });
+                    }
+                });
+            }
 
             // Card hover 3D tilt effect (kept from original)
             document.querySelectorAll('.morph-card').forEach(card => {
@@ -2127,9 +3317,10 @@ timer = client.timers.create(
             }
         }
 
-        // ========== SCROLL PROGRESS ==========
+        // ========== ENHANCED SCROLL PROGRESS WITH VELOCITY TRACKING ==========
         function initScrollProgress() {
             const progressBar = document.getElementById('scroll-progress');
+            let lastVelocityTrigger = 0;
 
             window.addEventListener('scroll', () => {
                 const windowHeight = window.innerHeight;
@@ -2141,24 +3332,50 @@ timer = client.timers.create(
 
                 // Update visualizers with scroll progress
                 const normalizedProgress = scrollTop / (documentHeight - windowHeight);
+                const unity = window.unityManager;
+
+                // VELOCITY-BASED EFFECTS
+                const velocity = unity.scrollVelocity;
+
+                // Trigger shockwaves on rapid scrolling
+                const now = Date.now();
+                if (velocity > 2.0 && now - lastVelocityTrigger > 500) {
+                    const centerX = 0;
+                    const centerY = 0;
+                    unity.triggerShockwave(centerX, centerY, velocity * 0.5);
+                    lastVelocityTrigger = now;
+                    console.log(`⚡ Velocity shockwave: ${velocity.toFixed(2)}`);
+                }
+
                 window.quantumVisualizers?.forEach((viz, i) => {
                     viz.updateScrollProgress(normalizedProgress);
 
-                    // Adjust parameters based on scroll
+                    // Enhanced parameters with velocity influence
                     const layerMultiplier = (i + 1) * 0.2;
+                    const velocityBoost = 1 + (velocity * 0.3);
+
                     viz.updateParameters({
-                        rot4dXW: normalizedProgress * layerMultiplier,
-                        rot4dYW: normalizedProgress * layerMultiplier * 0.7,
-                        rot4dZW: normalizedProgress * layerMultiplier * 0.5,
-                        chaos: 0.2 + (normalizedProgress * 0.3),
-                        geometry: 1 + Math.floor(normalizedProgress * 3)
+                        rot4dXW: normalizedProgress * layerMultiplier * velocityBoost,
+                        rot4dYW: normalizedProgress * layerMultiplier * 0.7 * velocityBoost,
+                        rot4dZW: normalizedProgress * layerMultiplier * 0.5 * velocityBoost,
+                        chaos: 0.2 + (normalizedProgress * 0.3) + (velocity * 0.1),
+                        geometry: 1 + Math.floor(normalizedProgress * 3),
+                        speed: 1.0 + (velocity * 0.5) // Speed increases with scroll velocity
                     });
                 });
+
+                // Color shift based on scroll velocity in progress bar
+                const velocityHue = Math.min(velocity * 30, 60);
+                progressBar.style.filter = `hue-rotate(${velocityHue}deg) brightness(${1 + velocity * 0.2})`;
             });
         }
 
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', () => {
+            // CRITICAL: Register GSAP ScrollTrigger FIRST before any ScrollTrigger.create() calls
+            gsap.registerPlugin(ScrollTrigger);
+            console.log('✅ GSAP ScrollTrigger registered');
+
             // Initialize Quantum Visualizers
             const layers = [
                 { id: 'quantum-background', role: 'background', reactivity: 0.4 },
@@ -2174,27 +3391,81 @@ timer = client.timers.create(
                 return viz;
             }).filter(viz => viz.gl);
 
+            // Initialize particle flow system
+            window.particleFlow = new ParticleFlowSystem('particle-flow');
+            console.log('✅ Cross-layer particle flow system created');
+
             function renderLoop() {
+                // Update unity manager state
+                window.unityManager.update();
+
+                // Update and render particle flow
+                window.particleFlow.update();
+                window.particleFlow.render();
+
+                // Render all visualizers
                 window.quantumVisualizers.forEach(viz => viz.render());
+
                 requestAnimationFrame(renderLoop);
             }
             renderLoop();
 
             // Initialize all animation systems
-            initEpicIntro();
-            initCenterLockChoreography();
-            initScrollAnimations(); // Card hover effects
+            initPerformanceOptimizations(); // FIRST: Set up performance configs
+            initLenisSmoothScroll(); // SECOND: Initialize smooth scroll
+            initVisualizerScrollReactivity(); // Visualizer parameter changes based on scroll
+            initSectionThemeTransitions(); // Smooth theme color transitions
+            initSimpleIntro(); // Simple intro fade-in
+            initSimpleContentAnimations(); // Simple content fade-ins (NO pinning)
+            initScrollAnimations(); // Card hover effects + parallax
             initExpandableCards();
             initScrollProgress();
             initInteractiveStates();
 
-            console.log('🚀 MINOOTS VIB3+ Experience Ready');
-            console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
-            console.log('🎯 Center-lock choreography: All sections lock in focus');
-            console.log('📦 Expandable cards enabled');
-            console.log('📊 Scroll progress tracking active');
-            console.log('🎮 Interactive states enabled');
-            console.log('🌈 Background animates continuously');
+            console.log('');
+            console.log('🚀 MINOOTS VIB3+ EMERGENT UNITY Experience Ready');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('');
+            console.log('🎯 SMOOTH SCROLL SYSTEM (VIB3+ Style):');
+            console.log('  ├─ 🚀 Lenis smooth scroll with momentum');
+            console.log('  ├─ ⚡ GSAP ScrollTrigger integration');
+            console.log('  ├─ 🎨 Visualizer FIXED (NO transforms/parallax)');
+            console.log('  ├─ 📊 Shader parameters change based on scroll progress');
+            console.log('  ├─ ✨ Simple natural fade-in animations');
+            console.log('  ├─ 🌈 Smooth section theme transitions');
+            console.log('  ├─ 💫 NO aggressive center-lock pinning');
+            console.log('  └─ ⚙️  Performance optimizations');
+            console.log('');
+            console.log('🎨 VISUALIZER BEHAVIOR:');
+            console.log('  ├─ 🔮 Completely FIXED position (like VIB3+ engine)');
+            console.log('  ├─ 🎯 NO position/scale/rotation transforms on scroll');
+            console.log('  ├─ 📈 Chaos: 0.2 → 0.8 based on scroll progress');
+            console.log('  ├─ 💥 Intensity: 0.5 → 1.0 based on scroll progress');
+            console.log('  ├─ ⚡ Speed: 1.0 → 2.0 based on scroll progress');
+            console.log('  ├─ 🌀 4D rotation params update with scroll');
+            console.log('  └─ 🌊 Hue transitions smoothly between section themes');
+            console.log('');
+            console.log('✨ EMERGENT UNITY SYSTEMS:');
+            console.log('  ├─ Cross-layer particle communication active');
+            console.log('  ├─ Field-based mouse attraction enabled');
+            console.log('  ├─ Synchronized pulse effects across all layers');
+            console.log('  └─ Unity moments trigger harmonized patterns');
+            console.log('');
+            console.log('💧 MELTING EFFECTS:');
+            console.log('  ├─ Liquid morphing transitions between themes');
+            console.log('  ├─ Dripping/flowing particle effects');
+            console.log('  ├─ Heat-distortion warping from scroll velocity');
+            console.log('  └─ Dissolve-and-reform animations');
+            console.log('');
+            console.log('💨 INTERACTION EFFECTS:');
+            console.log('  ├─ Shockwave ripples from interaction points');
+            console.log('  ├─ Natural breathing/pulsing on hover');
+            console.log('  └─ Unity moments at section transitions');
+            console.log('');
+            console.log('═══════════════════════════════════════════════════');
+            console.log('🎵 Tip: Allow microphone access for audio reactivity!');
+            console.log('💫 Tip: Click headlines to trigger unity moments!');
+            console.log('🖱️  Tip: Hover over cards for 3D tilt effects!');
         });
     </script>
 </body>
