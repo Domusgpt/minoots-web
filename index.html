@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MINOOTS - Distributed Horology Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts - commented out for testing, good fallbacks in CSS -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"> -->
 
-    <!-- GSAP Core + Plugins -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollSmoother.min.js"></script>
-    <script src="https://unpkg.com/split-type"></script>
+    <!-- GSAP Core + Plugins (LOCAL) -->
+    <script src="./lib/gsap.min.js"></script>
+    <script src="./lib/ScrollTrigger.min.js"></script>
+    <!-- Note: ScrollSmoother and split-type not currently used, commented out -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollSmoother.min.js"></script>
+    <script src="https://unpkg.com/split-type"></script> -->
     <style>
         * {
             margin: 0;
@@ -26,8 +28,8 @@
             --yellow: #ffff00;
             --orange: #ff8800;
             --purple: #8800ff;
-            --font-display: 'Orbitron', sans-serif;
-            --font-body: 'Inter', system-ui, sans-serif;
+            --font-display: 'Orbitron', 'Courier New', monospace, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 
             /* Dynamic section colors */
             --section-primary: var(--cyan);
