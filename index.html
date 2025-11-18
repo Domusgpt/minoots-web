@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MINOOTS - Distributed Horology Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts - commented out for testing, good fallbacks in CSS -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"> -->
 
-    <!-- GSAP Core + Plugins -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollSmoother.min.js"></script>
-    <script src="https://unpkg.com/split-type"></script>
+    <!-- GSAP Core + Plugins (LOCAL) -->
+    <script src="./lib/gsap.min.js"></script>
+    <script src="./lib/ScrollTrigger.min.js"></script>
+    <!-- Note: ScrollSmoother and split-type not currently used, commented out -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollSmoother.min.js"></script>
+    <script src="https://unpkg.com/split-type"></script> -->
     <style>
         * {
             margin: 0;
@@ -26,8 +28,8 @@
             --yellow: #ffff00;
             --orange: #ff8800;
             --purple: #8800ff;
-            --font-display: 'Orbitron', sans-serif;
-            --font-body: 'Inter', system-ui, sans-serif;
+            --font-display: 'Orbitron', 'Courier New', monospace, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 
             /* Dynamic section colors */
             --section-primary: var(--cyan);
@@ -167,13 +169,86 @@
             width: 100%;
             height: 100%;
             mix-blend-mode: screen;
+
+            /* ORGANIC MASK SYSTEM - Radial gradients instead of hard edges */
+            --mask-center-x: 50%;
+            --mask-center-y: 50%;
+            --mask-radius-x: 85%;
+            --mask-radius-y: 80%;
+            --mask-feather-start: 40%;
+            --mask-feather-end: 100%;
+
+            mask-image: radial-gradient(
+                ellipse var(--mask-radius-x) var(--mask-radius-y)
+                at var(--mask-center-x) var(--mask-center-y),
+                black 0%,
+                black var(--mask-feather-start),
+                transparent var(--mask-feather-end)
+            );
+            mask-composite: intersect;
+            -webkit-mask-image: radial-gradient(
+                ellipse var(--mask-radius-x) var(--mask-radius-y)
+                at var(--mask-center-x) var(--mask-center-y),
+                black 0%,
+                black var(--mask-feather-start),
+                transparent var(--mask-feather-end)
+            );
+            -webkit-mask-composite: source-in;
+
+            /* Breathing will be animated via GSAP for proper CSS var support */
         }
 
-        #quantum-background { opacity: 0.3; z-index: 1; }
-        #quantum-shadow { opacity: 0.2; z-index: 2; mix-blend-mode: multiply; }
-        #quantum-content { opacity: 0.6; z-index: 3; }
-        #quantum-highlight { opacity: 0.4; z-index: 4; }
-        #quantum-accent { opacity: 0.25; z-index: 5; }
+        /* Layer-specific mask variations for depth */
+        #quantum-background {
+            opacity: 0.3;
+            z-index: 1;
+            --mask-radius-x: 95%;
+            --mask-radius-y: 90%;
+            --mask-feather-start: 50%;
+            animation-delay: 0s;
+            animation-duration: 9s;
+        }
+
+        #quantum-shadow {
+            opacity: 0.2;
+            z-index: 2;
+            mix-blend-mode: multiply;
+            --mask-radius-x: 88%;
+            --mask-radius-y: 85%;
+            --mask-feather-start: 45%;
+            animation-delay: 0.5s;
+            animation-duration: 8.5s;
+        }
+
+        #quantum-content {
+            opacity: 0.6;
+            z-index: 3;
+            --mask-radius-x: 85%;
+            --mask-radius-y: 80%;
+            --mask-feather-start: 40%;
+            animation-delay: 1s;
+            animation-duration: 8s;
+        }
+
+        #quantum-highlight {
+            opacity: 0.4;
+            z-index: 4;
+            --mask-radius-x: 78%;
+            --mask-radius-y: 75%;
+            --mask-feather-start: 35%;
+            animation-delay: 1.5s;
+            animation-duration: 7.5s;
+        }
+
+        #quantum-accent {
+            opacity: 0.25;
+            z-index: 5;
+            --mask-radius-x: 70%;
+            --mask-radius-y: 68%;
+            --mask-feather-start: 30%;
+            animation-delay: 2s;
+            animation-duration: 7s;
+        }
 
         /* INTRO HERO - STARTS VISIBLE */
         #intro-hero {
@@ -724,25 +799,25 @@
             transition: width 0.2s ease;
         }
 
-        /* REVEAL ANIMATIONS */
+        /* REVEAL ANIMATIONS - TEMPORARILY DISABLED FOR DEBUGGING */
         .reveal {
-            opacity: 0;
-            transform: translateY(60px);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: translateY(0); /* Changed from 60px to 0 */
         }
 
         .reveal-left {
-            opacity: 0;
-            transform: translateX(-60px);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: translateX(0); /* Changed from -60px to 0 */
         }
 
         .reveal-right {
-            opacity: 0;
-            transform: translateX(60px);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: translateX(0); /* Changed from 60px to 0 */
         }
 
         .reveal-scale {
-            opacity: 0;
-            transform: scale(0.8);
+            opacity: 1; /* Changed from 0 to 1 for testing */
+            transform: scale(1); /* Changed from 0.8 to 1 */
         }
 
         /* OVERLAY */
@@ -1626,7 +1701,13 @@ timer = client.timers.create(
                 intensity: 0.6,
                 rot4dXW: 0.5,
                 rot4dYW: 0.3,
-                rot4dZW: 0.2
+                rot4dZW: 0.2,
+                // 5X ENHANCEMENTS
+                complementaryHue: 0.08, // Orange (complementary to cyan)
+                vibrancyRange: [0.4, 1.2],
+                accentMoments: [0.3, 0.7], // Progress points for color bursts
+                pulseIntensity: 0.3,
+                colorShiftSpeed: 2.0
             },
             'magenta': {
                 geometry: 2,
@@ -1637,7 +1718,13 @@ timer = client.timers.create(
                 intensity: 0.75,
                 rot4dXW: 1.0,
                 rot4dYW: 0.7,
-                rot4dZW: 0.5
+                rot4dZW: 0.5,
+                // 5X ENHANCEMENTS
+                complementaryHue: 0.33, // Green (complementary to magenta)
+                vibrancyRange: [0.5, 1.5],
+                accentMoments: [0.2, 0.5, 0.8],
+                pulseIntensity: 0.5,
+                colorShiftSpeed: 1.8
             },
             'green': {
                 geometry: 3,
@@ -1648,7 +1735,13 @@ timer = client.timers.create(
                 intensity: 0.55,
                 rot4dXW: 0.3,
                 rot4dYW: 0.6,
-                rot4dZW: 0.9
+                rot4dZW: 0.9,
+                // 5X ENHANCEMENTS
+                complementaryHue: 0.83, // Magenta (complementary to green)
+                vibrancyRange: [0.3, 0.9],
+                accentMoments: [0.4, 0.6],
+                pulseIntensity: 0.2,
+                colorShiftSpeed: 2.5
             },
             'purple': {
                 geometry: 4,
@@ -1659,7 +1752,13 @@ timer = client.timers.create(
                 intensity: 0.85,
                 rot4dXW: 1.5,
                 rot4dYW: 1.2,
-                rot4dZW: 0.8
+                rot4dZW: 0.8,
+                // 5X ENHANCEMENTS
+                complementaryHue: 0.25, // Yellow-green (complementary to purple)
+                vibrancyRange: [0.6, 1.8],
+                accentMoments: [0.15, 0.45, 0.75],
+                pulseIntensity: 0.7,
+                colorShiftSpeed: 1.5
             },
             'orange': {
                 geometry: 5,
@@ -1670,7 +1769,13 @@ timer = client.timers.create(
                 intensity: 0.7,
                 rot4dXW: 0.8,
                 rot4dYW: 1.0,
-                rot4dZW: 0.6
+                rot4dZW: 0.6,
+                // 5X ENHANCEMENTS
+                complementaryHue: 0.50, // Cyan (complementary to orange)
+                vibrancyRange: [0.5, 1.4],
+                accentMoments: [0.25, 0.6],
+                pulseIntensity: 0.4,
+                colorShiftSpeed: 2.2
             }
         };
 
@@ -2157,6 +2262,942 @@ timer = client.timers.create(
             });
         }
 
+        // ========== 5X ENHANCEMENT SYSTEMS ==========
+
+        /**
+         * COLOR MOMENT SYSTEM
+         * Creates dramatic complementary color bursts at specific moments
+         */
+        class ColorMomentSystem {
+            constructor() {
+                this.activeColorShifts = [];
+                this.burstTimelines = [];
+            }
+
+            init(visualizers) {
+                this.visualizers = visualizers;
+                console.log('🎨 Color Moment System initialized');
+            }
+
+            triggerComplementaryBurst(preset, duration = 3, intensity = 1.0) {
+                if (!preset.complementaryHue) return;
+
+                const burstId = Date.now();
+
+                // Create color shift timeline
+                this.visualizers.forEach((viz, i) => {
+                    const originalHue = viz.params.hue;
+                    const layerDelay = i * 0.1;
+
+                    // Burst to complementary color
+                    const timeline = gsap.timeline({
+                        onComplete: () => {
+                            this.burstTimelines = this.burstTimelines.filter(t => t.id !== burstId);
+                        }
+                    });
+
+                    timeline
+                        .to(viz.params, {
+                            hue: preset.complementaryHue,
+                            intensity: viz.params.intensity * (1 + intensity),
+                            chaos: viz.params.chaos * (1 + intensity * 0.5),
+                            duration: duration * 0.3,
+                            delay: layerDelay,
+                            ease: 'power2.out'
+                        })
+                        .to(viz.params, {
+                            hue: originalHue,
+                            intensity: viz.params.intensity,
+                            chaos: viz.params.chaos,
+                            duration: duration * 0.7,
+                            ease: 'power2.inOut'
+                        });
+
+                    this.burstTimelines.push({ id: burstId, timeline });
+                });
+
+                console.log(`💥 Complementary burst: ${preset.hue} → ${preset.complementaryHue}`);
+            }
+
+            triggerColorWave(fromHue, toHue, duration = 4) {
+                // Ripple color change across layers
+                this.visualizers.forEach((viz, i) => {
+                    gsap.to(viz.params, {
+                        hue: toHue,
+                        duration,
+                        delay: i * 0.2,
+                        ease: 'sine.inOut'
+                    });
+                });
+            }
+
+            createRainbowMoment(duration = 6) {
+                // Cycle through rainbow
+                const hues = [0, 0.17, 0.33, 0.50, 0.67, 0.83];
+                let index = 0;
+
+                const interval = setInterval(() => {
+                    this.visualizers.forEach((viz, i) => {
+                        gsap.to(viz.params, {
+                            hue: hues[(index + i) % hues.length],
+                            duration: 1,
+                            ease: 'sine.inOut'
+                        });
+                    });
+                    index++;
+                    if (index >= hues.length * 2) {
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+        }
+
+        /**
+         * VIBRANCY ENGINE
+         * Controls dynamic intensity bursts and vibrancy modulation
+         */
+        class VibrancyEngine {
+            constructor() {
+                this.pulseTimelines = [];
+                this.ambientPulse = null;
+            }
+
+            init(visualizers) {
+                this.visualizers = visualizers;
+                this.startAmbientPulse();
+                console.log('⚡ Vibrancy Engine initialized');
+            }
+
+            startAmbientPulse() {
+                // Subtle continuous pulse
+                this.visualizers.forEach((viz, i) => {
+                    const baseIntensity = viz.params.intensity;
+                    const pulseAmount = 0.1;
+                    const pulseDuration = 4 + i;
+
+                    gsap.to(viz.params, {
+                        intensity: baseIntensity + pulseAmount,
+                        duration: pulseDuration,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'sine.inOut'
+                    });
+                });
+            }
+
+            triggerIntensityBurst(multiplier = 2.0, duration = 2) {
+                // Dramatic intensity spike
+                this.visualizers.forEach((viz, i) => {
+                    const originalIntensity = viz.params.intensity;
+                    const originalChaos = viz.params.chaos;
+                    const originalSpeed = viz.params.speed;
+
+                    gsap.timeline()
+                        .to(viz.params, {
+                            intensity: originalIntensity * multiplier,
+                            chaos: originalChaos * multiplier,
+                            speed: originalSpeed * 1.5,
+                            gridDensity: viz.params.gridDensity * 1.3,
+                            duration: duration * 0.2,
+                            delay: i * 0.05,
+                            ease: 'power4.out'
+                        })
+                        .to(viz.params, {
+                            intensity: originalIntensity,
+                            chaos: originalChaos,
+                            speed: originalSpeed,
+                            gridDensity: viz.params.gridDensity,
+                            duration: duration * 0.8,
+                            ease: 'power2.inOut'
+                        });
+                });
+
+                console.log(`⚡ Intensity burst: ${multiplier}x`);
+            }
+
+            modulateVibrancy(minRange, maxRange, duration = 8) {
+                // Slow vibrancy wave
+                this.visualizers.forEach((viz, i) => {
+                    const currentIntensity = viz.params.intensity;
+
+                    gsap.timeline({ repeat: -1, yoyo: true })
+                        .to(viz.params, {
+                            intensity: currentIntensity * maxRange,
+                            duration: duration / 2,
+                            delay: i * 0.3,
+                            ease: 'sine.inOut'
+                        })
+                        .to(viz.params, {
+                            intensity: currentIntensity * minRange,
+                            duration: duration / 2,
+                            ease: 'sine.inOut'
+                        });
+                });
+            }
+
+            createFlickerMoment(flickerCount = 3, speed = 0.1) {
+                // Rapid intensity flicker
+                this.visualizers.forEach((viz, i) => {
+                    const timeline = gsap.timeline();
+                    const baseIntensity = viz.params.intensity;
+
+                    for (let f = 0; f < flickerCount; f++) {
+                        timeline
+                            .to(viz.params, {
+                                intensity: 0,
+                                duration: speed,
+                                delay: i * 0.02,
+                                ease: 'none'
+                            })
+                            .to(viz.params, {
+                                intensity: baseIntensity * 1.5,
+                                duration: speed,
+                                ease: 'none'
+                            });
+                    }
+
+                    timeline.to(viz.params, {
+                        intensity: baseIntensity,
+                        duration: speed * 2,
+                        ease: 'power2.out'
+                    });
+                });
+            }
+        }
+
+        /**
+         * MICRO-INTERACTION LAYER
+         * Subtle details that respond to user interactions
+         */
+        class MicroInteractionLayer {
+            constructor() {
+                this.mousePosition = { x: 0.5, y: 0.5 };
+                this.mouseVelocity = { x: 0, y: 0 };
+                this.lastMousePos = { x: 0, y: 0 };
+            }
+
+            init(visualizers, canvases) {
+                this.visualizers = visualizers;
+                this.canvases = canvases;
+
+                // Track mouse movement
+                document.addEventListener('mousemove', (e) => {
+                    const x = e.clientX / window.innerWidth;
+                    const y = e.clientY / window.innerHeight;
+
+                    this.mouseVelocity.x = x - this.lastMousePos.x;
+                    this.mouseVelocity.y = y - this.lastMousePos.y;
+
+                    this.mousePosition = { x, y };
+                    this.lastMousePos = { x, y };
+
+                    this.onMouseMove();
+                });
+
+                // Track scroll velocity
+                let lastScrollY = window.scrollY;
+                let scrollVelocity = 0;
+
+                window.addEventListener('scroll', () => {
+                    const currentScrollY = window.scrollY;
+                    scrollVelocity = Math.abs(currentScrollY - lastScrollY);
+                    lastScrollY = currentScrollY;
+
+                    this.onScrollVelocity(scrollVelocity);
+                }, { passive: true });
+
+                console.log('🔬 Micro-Interaction Layer initialized');
+            }
+
+            onMouseMove() {
+                // Subtle rotation based on mouse position
+                this.visualizers.forEach((viz, i) => {
+                    const influence = 0.3 / (i + 1); // Less influence on deeper layers
+
+                    gsap.to(viz.params, {
+                        rot4dXW: viz.params.rot4dXW + (this.mousePosition.y - 0.5) * influence,
+                        rot4dYW: viz.params.rot4dYW + (this.mousePosition.x - 0.5) * influence,
+                        duration: 1.5,
+                        ease: 'power1.out'
+                    });
+                });
+
+                // Mask follows mouse subtly
+                const speed = Math.sqrt(
+                    this.mouseVelocity.x ** 2 + this.mouseVelocity.y ** 2
+                );
+
+                if (speed > 0.01) {
+                    this.canvases.forEach((canvas, i) => {
+                        const influence = 5 / (i + 1);
+                        const offsetX = 50 + this.mousePosition.x * influence;
+                        const offsetY = 50 + this.mousePosition.y * influence;
+
+                        gsap.to(canvas, {
+                            '--mask-center-x': `${offsetX}%`,
+                            '--mask-center-y': `${offsetY}%`,
+                            duration: 2,
+                            ease: 'power1.out'
+                        });
+                    });
+                }
+            }
+
+            onScrollVelocity(velocity) {
+                if (velocity > 20) {
+                    // Fast scroll creates chaos spike
+                    const chaosBoost = Math.min(velocity / 100, 0.5);
+
+                    this.visualizers.forEach(viz => {
+                        gsap.to(viz.params, {
+                            chaos: viz.params.chaos + chaosBoost,
+                            duration: 0.3,
+                            ease: 'power2.out',
+                            onComplete: () => {
+                                gsap.to(viz.params, {
+                                    chaos: viz.params.chaos,
+                                    duration: 1.5,
+                                    ease: 'power2.inOut'
+                                });
+                            }
+                        });
+                    });
+                }
+            }
+
+            createClickRipple(x, y) {
+                // Visual ripple from click position
+                const rippleIntensity = 1.5;
+
+                this.visualizers.forEach((viz, i) => {
+                    gsap.timeline()
+                        .to(viz.params, {
+                            intensity: viz.params.intensity * rippleIntensity,
+                            gridDensity: viz.params.gridDensity * 1.2,
+                            duration: 0.2,
+                            delay: i * 0.05,
+                            ease: 'power2.out'
+                        })
+                        .to(viz.params, {
+                            intensity: viz.params.intensity,
+                            gridDensity: viz.params.gridDensity,
+                            duration: 0.8,
+                            ease: 'elastic.out(1, 0.5)'
+                        });
+                });
+            }
+        }
+
+        // ========== TIMELINE CHOREOGRAPHER (ENHANCED) ==========
+        /**
+         * Master choreography system - treats the entire experience as a fluid timeline
+         * where visualizers, masks, cards, and interactions dance together
+         *
+         * 5X ENHANCED with: color moments, vibrancy bursts, micro-interactions
+         */
+        class TimelineChoreographer {
+            constructor() {
+                this.sections = [];
+                this.currentSection = null;
+                this.canvases = [];
+                this.cards = [];
+                this.scrollProgress = 0;
+                this.sectionProgress = 0;
+
+                // 5X ENHANCEMENT SYSTEMS
+                this.colorMoments = new ColorMomentSystem();
+                this.vibrancyEngine = new VibrancyEngine();
+                this.microInteractions = new MicroInteractionLayer();
+
+                this.accentMomentTrackers = new Map(); // Track triggered accent moments
+            }
+
+            init(canvasElements) {
+                this.canvases = canvasElements;
+                this.cards = Array.from(document.querySelectorAll('.morph-card'));
+                this.sections = this.buildSectionTimeline();
+
+                // Initialize base systems
+                this.setupScrollChoreography();
+                this.setupCardReactions();
+                this.setupMaskMorphing();
+
+                // Initialize enhancement systems
+                this.colorMoments.init(window.quantumVisualizers);
+                this.vibrancyEngine.init(window.quantumVisualizers);
+                this.microInteractions.init(window.quantumVisualizers, canvasElements);
+
+                // Setup global click listener for ripples
+                document.addEventListener('click', (e) => {
+                    this.microInteractions.createClickRipple(
+                        e.clientX / window.innerWidth,
+                        e.clientY / window.innerHeight
+                    );
+                });
+
+                console.log('🎬 Timeline Choreographer initialized (5X ENHANCED)');
+                console.log(`📜 ${this.sections.length} sections in timeline`);
+                console.log('🎨 Color Moments, ⚡ Vibrancy Engine, 🔬 Micro-Interactions active');
+            }
+
+            buildSectionTimeline() {
+                const sectionElements = Array.from(document.querySelectorAll('.section[data-theme]'));
+
+                return sectionElements.map((el, index) => {
+                    const theme = el.dataset.theme;
+                    const preset = SECTION_VIZ_PRESETS[theme];
+
+                    return {
+                        element: el,
+                        id: el.id,
+                        index,
+                        theme,
+                        preset,
+                        cards: Array.from(el.querySelectorAll('.morph-card')),
+                        // Each section has unique mask behavior
+                        maskBehavior: this.getSectionMaskBehavior(el.id, theme),
+                        // Each section has unique reactivity
+                        reactivity: this.getSectionReactivity(el.id)
+                    };
+                });
+            }
+
+            getSectionMaskBehavior(sectionId, theme) {
+                const behaviors = {
+                    'hero': {
+                        maskCenterY: '40%', // Top-heavy
+                        maskRadiusX: '100%', // Full width
+                        maskRadiusY: '90%',
+                        maskFeatherStart: '50%',
+                        breathingIntensity: 0.15
+                    },
+                    'overview': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '85%',
+                        maskRadiusY: '85%',
+                        maskFeatherStart: '40%',
+                        breathingIntensity: 0.2
+                    },
+                    'stats': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '75%', // More contained
+                        maskRadiusY: '70%',
+                        maskFeatherStart: '35%',
+                        breathingIntensity: 0.1 // Calmer
+                    },
+                    'architecture': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '90%',
+                        maskRadiusY: '80%',
+                        maskFeatherStart: '45%',
+                        breathingIntensity: 0.25 // More dramatic
+                    },
+                    'use-cases': {
+                        maskCenterY: '55%', // Bottom-heavy
+                        maskRadiusX: '95%',
+                        maskRadiusY: '85%',
+                        maskFeatherStart: '40%',
+                        breathingIntensity: 0.2
+                    },
+                    'integrations': {
+                        maskCenterY: '50%',
+                        maskRadiusX: '80%',
+                        maskRadiusY: '80%',
+                        maskFeatherStart: '35%',
+                        breathingIntensity: 0.15
+                    },
+                    'cta': {
+                        maskCenterY: '60%', // Bottom-focused
+                        maskRadiusX: '70%', // More intimate
+                        maskRadiusY: '65%',
+                        maskFeatherStart: '30%',
+                        breathingIntensity: 0.3 // Most dramatic
+                    }
+                };
+
+                return behaviors[sectionId] || behaviors['overview'];
+            }
+
+            getSectionReactivity(sectionId) {
+                const reactivity = {
+                    'hero': { cardHover: 1.5, cardExpand: 2.0, intensity: 1.2 },
+                    'overview': { cardHover: 1.3, cardExpand: 1.8, intensity: 1.0 },
+                    'stats': { cardHover: 1.1, cardExpand: 1.3, intensity: 0.8 },
+                    'architecture': { cardHover: 1.4, cardExpand: 2.0, intensity: 1.1 },
+                    'use-cases': { cardHover: 1.3, cardExpand: 1.7, intensity: 1.0 },
+                    'integrations': { cardHover: 1.2, cardExpand: 1.6, intensity: 0.9 },
+                    'cta': { cardHover: 1.6, cardExpand: 2.5, intensity: 1.3 }
+                };
+
+                return reactivity[sectionId] || reactivity['overview'];
+            }
+
+            setupScrollChoreography() {
+                this.sections.forEach((section, index) => {
+                    const trigger = ScrollTrigger.create({
+                        trigger: section.element,
+                        start: 'top center',
+                        end: 'bottom center',
+                        onEnter: () => this.enterSection(section, 'forward'),
+                        onEnterBack: () => this.enterSection(section, 'backward'),
+                        onLeave: () => this.leaveSection(section, 'forward'),
+                        onLeaveBack: () => this.leaveSection(section, 'backward'),
+                        onUpdate: (self) => this.updateSectionProgress(section, self.progress)
+                    });
+
+                    section.trigger = trigger;
+                });
+            }
+
+            enterSection(section, direction) {
+                this.currentSection = section;
+                console.log(`🎬 Enter ${section.id} (${section.theme}) - ${direction}`);
+
+                // Fluid transition to section preset
+                this.morphToPreset(section.preset, section.theme);
+
+                // Morph masks to section behavior
+                this.morphMasks(section.maskBehavior);
+
+                // Update card reactivity
+                this.updateCardReactivity(section.reactivity);
+
+                // 5X ENHANCEMENT: Trigger entry moment
+                if (section.preset) {
+                    // Intensity burst on section enter
+                    const burstIntensity = section.preset.pulseIntensity || 0.3;
+                    this.vibrancyEngine.triggerIntensityBurst(1 + burstIntensity, 2.5);
+
+                    // Start vibrancy modulation for this section
+                    if (section.preset.vibrancyRange) {
+                        this.vibrancyEngine.modulateVibrancy(
+                            section.preset.vibrancyRange[0],
+                            section.preset.vibrancyRange[1],
+                            10
+                        );
+                    }
+                }
+
+                // Reset accent moment tracker for this section
+                this.accentMomentTrackers.set(section.id, new Set());
+            }
+
+            leaveSection(section, direction) {
+                console.log(`👋 Leave ${section.id} - ${direction}`);
+
+                // 5X ENHANCEMENT: Transition moment
+                if (direction === 'forward' && section.preset) {
+                    // Color flash as we leave
+                    this.vibrancyEngine.createFlickerMoment(2, 0.15);
+                }
+            }
+
+            updateCardReactivity(reactivity) {
+                // Store current reactivity for this section
+                this.currentReactivity = reactivity;
+            }
+
+            updateSectionProgress(section, progress) {
+                if (section !== this.currentSection) return;
+
+                this.sectionProgress = progress;
+
+                // Micro-adjustments based on progress through section
+                // Creates subtle evolution as you scroll through each section
+                if (window.quantumVisualizers) {
+                    window.quantumVisualizers.forEach((viz, i) => {
+                        // Subtle chaos variation
+                        const chaosVariation = Math.sin(progress * Math.PI) * 0.1;
+                        viz.updateParameters({
+                            chaos: viz.params.chaos + chaosVariation
+                        });
+                    });
+                }
+
+                // 5X ENHANCEMENT: Trigger accent moments at specific progress points
+                if (section.preset && section.preset.accentMoments) {
+                    const tracker = this.accentMomentTrackers.get(section.id);
+                    if (!tracker) return;
+
+                    section.preset.accentMoments.forEach((momentProgress, index) => {
+                        const momentKey = `moment-${index}`;
+
+                        // Check if we've crossed this moment threshold
+                        if (progress >= momentProgress && !tracker.has(momentKey)) {
+                            tracker.add(momentKey);
+
+                            // Trigger complementary color burst
+                            this.colorMoments.triggerComplementaryBurst(
+                                section.preset,
+                                3,
+                                section.preset.pulseIntensity || 0.5
+                            );
+
+                            console.log(`💥 Accent moment ${index + 1} at ${(momentProgress * 100).toFixed(0)}% of ${section.id}`);
+                        }
+                    });
+                }
+            }
+
+            morphToPreset(preset, themeName) {
+                if (!preset || !window.quantumVisualizers) return;
+
+                window.quantumVisualizers.forEach((viz, i) => {
+                    const layerMultiplier = (i + 1) * 0.2;
+
+                    gsap.to(viz.params, {
+                        geometry: preset.geometry,
+                        gridDensity: preset.gridDensity * (0.8 + layerMultiplier * 0.4),
+                        chaos: preset.chaos * (1 + layerMultiplier * 0.3),
+                        speed: preset.speed,
+                        hue: preset.hue,
+                        intensity: preset.intensity * (0.7 + layerMultiplier * 0.3),
+                        rot4dXW: preset.rot4dXW * layerMultiplier,
+                        rot4dYW: preset.rot4dYW * layerMultiplier,
+                        rot4dZW: preset.rot4dZW * layerMultiplier,
+                        duration: 3, // Longer, more fluid transitions
+                        ease: 'power1.inOut'
+                    });
+                });
+
+                console.log(`🎨 Morphed to ${themeName} preset`);
+            }
+
+            morphMasks(maskBehavior) {
+                this.canvases.forEach((canvas, i) => {
+                    if (!canvas) return;
+
+                    // Layer-specific variations
+                    const layerScale = 1 + (i * 0.05);
+
+                    gsap.to(canvas.style, {
+                        '--mask-center-y': maskBehavior.maskCenterY,
+                        '--mask-radius-x': maskBehavior.maskRadiusX,
+                        '--mask-radius-y': maskBehavior.maskRadiusY,
+                        '--mask-feather-start': maskBehavior.maskFeatherStart,
+                        duration: 2.5,
+                        ease: 'power2.inOut'
+                    });
+                });
+            }
+
+            setupCardReactions() {
+                this.cards.forEach(card => {
+                    // Card hover boosts visualizer
+                    card.addEventListener('mouseenter', () => {
+                        if (!this.currentSection) return;
+
+                        const boost = this.currentSection.reactivity.cardHover;
+                        this.boostVisualizer(boost, 0.4);
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        this.resetVisualizerBoost(0.6);
+                    });
+
+                    // Track card expansion for dramatic visualizer dimming
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach(mutation => {
+                            if (mutation.attributeName === 'class') {
+                                if (card.classList.contains('expanded')) {
+                                    this.onCardExpand(card);
+                                } else if (mutation.oldValue?.includes('expanded')) {
+                                    this.onCardCollapse(card);
+                                }
+                            }
+                        });
+                    });
+
+                    observer.observe(card, {
+                        attributes: true,
+                        attributeOldValue: true,
+                        attributeFilter: ['class']
+                    });
+                });
+            }
+
+            setupMaskMorphing() {
+                // Continuous organic breathing animation using GSAP
+                // CSS custom properties CAN'T be animated via @keyframes
+                // so we use GSAP timeline for smooth breathing effect
+
+                this.canvases.forEach((canvas, i) => {
+                    if (!canvas) return;
+
+                    // Get base values for this layer from COMPUTED styles (not inline)
+                    const computedStyle = window.getComputedStyle(canvas);
+                    const baseRadiusX = computedStyle.getPropertyValue('--mask-radius-x').trim() || '85%';
+                    const baseRadiusY = computedStyle.getPropertyValue('--mask-radius-y').trim() || '80%';
+                    const baseFeather = computedStyle.getPropertyValue('--mask-feather-start').trim() || '40%';
+
+                    // Parse percentages
+                    const radiusXNum = parseFloat(baseRadiusX);
+                    const radiusYNum = parseFloat(baseRadiusY);
+                    const featherNum = parseFloat(baseFeather);
+
+                    // Stagger the breathing across layers for depth
+                    const delay = i * 0.5;
+                    const duration = 8 + i; // Varying durations create organic feel
+
+                    // Create breathing timeline for this canvas
+                    const breatheTimeline = gsap.timeline({
+                        repeat: -1,
+                        yoyo: true,
+                        delay
+                    });
+
+                    breatheTimeline
+                        .to(canvas, {
+                            '--mask-radius-x': `${radiusXNum + 5}%`,
+                            '--mask-radius-y': `${radiusYNum - 5}%`,
+                            '--mask-feather-start': `${featherNum + 5}%`,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        })
+                        .to(canvas, {
+                            '--mask-radius-x': `${radiusXNum - 5}%`,
+                            '--mask-radius-y': `${radiusYNum + 5}%`,
+                            '--mask-feather-start': `${featherNum - 5}%`,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        })
+                        .to(canvas, {
+                            '--mask-radius-x': `${radiusXNum + 3}%`,
+                            '--mask-radius-y': `${radiusYNum - 2}%`,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        })
+                        .to(canvas, {
+                            '--mask-radius-x': baseRadiusX,
+                            '--mask-radius-y': baseRadiusY,
+                            '--mask-feather-start': baseFeather,
+                            duration: duration / 4,
+                            ease: 'sine.inOut'
+                        });
+                });
+
+                console.log('🌊 Organic mask breathing initialized via GSAP');
+            }
+
+            boostVisualizer(multiplier, duration = 0.3) {
+                window.quantumVisualizers?.forEach(viz => {
+                    gsap.to(viz.params, {
+                        intensity: viz.params.intensity * multiplier,
+                        chaos: viz.params.chaos * multiplier,
+                        duration,
+                        ease: 'power2.out'
+                    });
+                });
+            }
+
+            resetVisualizerBoost(duration = 0.5) {
+                if (!this.currentSection) return;
+
+                // Return to section's baseline
+                this.morphToPreset(this.currentSection.preset, this.currentSection.theme);
+            }
+
+            onCardExpand(card) {
+                if (!this.currentSection) return;
+
+                const expandMultiplier = this.currentSection.reactivity.cardExpand;
+
+                // 5X ENHANCEMENT: Flicker moment on expand
+                this.vibrancyEngine.createFlickerMoment(2, 0.12);
+
+                // Wait for flicker to complete, then dim
+                setTimeout(() => {
+                    // Dramatic dim of visualizer
+                    window.quantumVisualizers?.forEach(viz => {
+                        gsap.to(viz.params, {
+                            intensity: viz.params.intensity * 0.2, // Much dimmer
+                            speed: viz.params.speed * 0.5, // Slower
+                            chaos: viz.params.chaos * 0.6,
+                            duration: 0.6,
+                            ease: 'power3.out'
+                        });
+                    });
+                }, 250);
+
+                // Mask morphs to focus on card center
+                const rect = card.getBoundingClientRect();
+                const centerY = ((rect.top + rect.height / 2) / window.innerHeight * 100).toFixed(0) + '%';
+
+                this.canvases.forEach(canvas => {
+                    if (!canvas) return;
+                    gsap.to(canvas.style, {
+                        '--mask-center-y': centerY,
+                        '--mask-radius-x': '60%',
+                        '--mask-radius-y': '50%',
+                        duration: 0.6,
+                        ease: 'power3.out'
+                    });
+                });
+
+                console.log(`🎯 Card expanded - visualizer focused with flicker`);
+            }
+
+            onCardCollapse(card) {
+                // Return to section baseline
+                if (!this.currentSection) return;
+
+                // 5X ENHANCEMENT: Intensity burst on collapse
+                if (this.currentSection.preset) {
+                    this.vibrancyEngine.triggerIntensityBurst(1.5, 1.5);
+
+                    // Brief complementary color flash
+                    setTimeout(() => {
+                        this.colorMoments.triggerComplementaryBurst(
+                            this.currentSection.preset,
+                            2,
+                            0.6
+                        );
+                    }, 200);
+                }
+
+                this.morphToPreset(this.currentSection.preset, this.currentSection.theme);
+                this.morphMasks(this.currentSection.maskBehavior);
+
+                console.log(`🎯 Card collapsed - visualizer burst & reset`);
+            }
+        }
+
+        // ========== NEGATIVE SPACE CHOREOGRAPHER ==========
+        /**
+         * Dynamically carves out space around cards using organic mask compositing
+         * Creates the "negative space" effect where visualizers fill space AROUND cards
+         */
+        class NegativeSpaceChoreographer {
+            constructor() {
+                this.canvases = [];
+                this.cards = [];
+                this.updateQueued = false;
+                this.enabled = true;
+            }
+
+            init(canvasElements) {
+                this.canvases = canvasElements;
+                this.cards = Array.from(document.querySelectorAll('.morph-card'));
+
+                // Track card position changes
+                this.observeCards();
+
+                // Update on scroll with throttling
+                window.addEventListener('scroll', () => {
+                    if (!this.updateQueued && this.enabled) {
+                        this.updateQueued = true;
+                        requestAnimationFrame(() => {
+                            this.updateMasks();
+                            this.updateQueued = false;
+                        });
+                    }
+                }, { passive: true });
+
+                // Initial update
+                this.updateMasks();
+
+                console.log('🎭 Negative Space Choreographer initialized');
+            }
+
+            observeCards() {
+                // Watch for card expansion/collapse
+                const observer = new MutationObserver(() => {
+                    this.updateMasks();
+                });
+
+                this.cards.forEach(card => {
+                    observer.observe(card, {
+                        attributes: true,
+                        attributeFilter: ['class']
+                    });
+                });
+            }
+
+            updateMasks() {
+                if (!this.enabled || this.cards.length === 0) return;
+
+                const viewport = {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                };
+
+                // Create cutout gradients for each visible card
+                const cutouts = this.cards
+                    .map(card => {
+                        const rect = card.getBoundingClientRect();
+
+                        // Only process cards in viewport
+                        if (rect.bottom < 0 || rect.top > viewport.height) {
+                            return null;
+                        }
+
+                        // Calculate card center in viewport percentage
+                        const centerX = ((rect.left + rect.width / 2) / viewport.width * 100).toFixed(2);
+                        const centerY = ((rect.top + rect.height / 2) / viewport.height * 100).toFixed(2);
+
+                        // Calculate radii with organic padding
+                        const radiusX = ((rect.width / viewport.width) * 60).toFixed(2);  // 60% of card width
+                        const radiusY = ((rect.height / viewport.height) * 60).toFixed(2); // 60% of card height
+
+                        // Create radial gradient that is TRANSPARENT in center (card area)
+                        // and BLACK outside (visualizer area)
+                        return `radial-gradient(ellipse ${radiusX}% ${radiusY}% at ${centerX}% ${centerY}%,
+                            transparent 0%,
+                            transparent 40%,
+                            black 80%,
+                            black 100%)`;
+                    })
+                    .filter(cutout => cutout !== null);
+
+                // Apply composite mask to each canvas
+                this.canvases.forEach((canvas, i) => {
+                    if (!canvas) return;
+
+                    // Layer-specific expansion (background layers have larger cutouts)
+                    const layerMultiplier = 1 + (i * 0.1);
+
+                    if (cutouts.length > 0) {
+                        // Combine base organic mask with card cutouts
+                        const baseMask = canvas.style.getPropertyValue('--mask-radius-x') || '85%';
+                        const baseMaskY = canvas.style.getPropertyValue('--mask-radius-y') || '80%';
+
+                        // Create layered mask: base organic + card cutouts
+                        const masks = [
+                            // Base organic radial gradient
+                            `radial-gradient(ellipse ${baseMask} ${baseMaskY} at 50% 50%,
+                                black 0%,
+                                black 40%,
+                                transparent 100%)`,
+                            // Card cutouts
+                            ...cutouts
+                        ];
+
+                        canvas.style.maskImage = masks.join(', ');
+                        canvas.style.webkitMaskImage = masks.join(', ');
+
+                        // Composite mode: intersect all masks
+                        canvas.style.maskComposite = 'intersect';
+                        canvas.style.webkitMaskComposite = 'source-in';
+                    }
+                });
+            }
+
+            disable() {
+                this.enabled = false;
+                // Reset to base masks
+                this.canvases.forEach(canvas => {
+                    if (!canvas) return;
+                    canvas.style.maskImage = '';
+                    canvas.style.webkitMaskImage = '';
+                });
+            }
+
+            enable() {
+                this.enabled = true;
+                this.updateMasks();
+            }
+        }
+
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize Quantum Visualizers
@@ -2188,13 +3229,27 @@ timer = client.timers.create(
             initScrollProgress();
             initInteractiveStates();
 
+            // Initialize Timeline Choreographer - master coordination system
+            const canvasElements = [
+                document.getElementById('quantum-background'),
+                document.getElementById('quantum-shadow'),
+                document.getElementById('quantum-content'),
+                document.getElementById('quantum-highlight'),
+                document.getElementById('quantum-accent')
+            ];
+            window.timelineChoreographer = new TimelineChoreographer();
+            window.timelineChoreographer.init(canvasElements);
+
             console.log('🚀 MINOOTS VIB3+ Experience Ready');
+            console.log('🎬 Timeline Choreographer: Fluid section-based morphing');
             console.log('🎭 Epic intro: Title visible from start, visualizer contracts');
             console.log('🎯 Center-lock choreography: All sections lock in focus');
             console.log('📦 Expandable cards enabled');
             console.log('📊 Scroll progress tracking active');
             console.log('🎮 Interactive states enabled');
             console.log('🌈 Background animates continuously');
+            console.log('🎨 Organic masks: Radial gradients morphing per section');
+            console.log('🔮 Card reactions: Hover boosts, expand dims, section-aware');
         });
     </script>
 </body>
